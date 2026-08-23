@@ -1,0 +1,7 @@
+img1,img2,img3,label
+/home/nouran/MMFM/data/quick_start_demo/sample_0_modality_1.png,/home/nouran/MMFM/data/quick_start_demo/sample_0_modality_2.png,/home/nouran/MMFM/data/quick_start_demo/sample_0_modality_3.png,0
+/home/nouran/MMFM/data/quick_start_demo/sample_1_modality_1.png,MISSING,/home/nouran/MMFM/data/quick_start_demo/sample_1_modality_3.png,1
+/home/nouran/MMFM/data/quick_start_demo/sample_2_modality_1.png,/home/nouran/MMFM/data/quick_start_demo/sample_2_modality_2.png,MISSING,0
+/home/nouran/MMFM/data/quick_start_demo/sample_3_modality_1.png,/home/nouran/MMFM/data/quick_start_demo/sample_3_modality_2.png,/home/nouran/MMFM/data/quick_start_demo/sample_3_modality_3.png,1
+MISSING,/home/nouran/MMFM/data/quick_start_demo/sample_4_modality_2.png,/home/nouran/MMFM/data/quick_start_demo/sample_4_modality_3.png,0
+/home/nouran/MMFM/data/quick_start_demo/sample_5_modality_1.png,/home/nouran/MMFM/data/quick_start_demo/sample_5_modality_2.png,/home/nouran/MMFM/data/quick_start_demo/sample_5_modality_3.png,1
