@@ -2,8 +2,24 @@ import csv
 from pathlib import Path
 
 from PIL import Image
+import numpy as np
+import torch
 
+from data.dataset import BusbraTransform
 from data.preprocess import build_manifest
+
+
+def test_busbra_transform_crops_mask_and_normalizes():
+    image = Image.fromarray(np.full((20, 30), 128, dtype=np.uint8), mode="L")
+    mask_array = np.zeros((20, 30), dtype=np.uint8)
+    mask_array[5:15, 10:20] = 255
+    mask = Image.fromarray(mask_array, mode="L")
+
+    output = BusbraTransform(size=16)(image, mask)
+
+    assert output.shape == (3, 16, 16)
+    assert output.dtype == torch.float32
+    assert torch.allclose(output, torch.full_like(output, 128 / 255))
 
 
 def test_build_manifest_creates_rows_and_processed_images(tmp_path):

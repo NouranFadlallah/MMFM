@@ -28,12 +28,8 @@ class FusionLateModel(nn.Module):
 
         # projection heads to embedding_dim
         self.projections = nn.ModuleList([
-            nn.Sequential(
-                nn.AdaptiveAvgPool2d(1),
-                nn.Flatten(),
-                nn.Linear(fd, embedding_dim),
-                nn.ReLU(inplace=True)
-            ) for fd in self.feature_dims
+            nn.Sequential(nn.Linear(fd, embedding_dim), nn.ReLU(inplace=True))
+            for fd in self.feature_dims
         ])
 
         # per-branch classifier heads
@@ -59,10 +55,14 @@ class FusionLateModel(nn.Module):
         for i, x in enumerate(xs):
             if x is None:
                 # create zero embedding
-                emb = torch.zeros((presence_mask.shape[0], self.projections[i][2].out_features), device=device)
+                emb = torch.zeros((presence_mask.shape[0], self.projections[i][0].out_features), device=device)
                 logits = torch.zeros((presence_mask.shape[0], self.classifiers[i].out_features), device=device)
             else:
                 feat = self.backbones[i](x)
+                if feat.dim() == 4:
+                    feat = F.adaptive_avg_pool2d(feat, 1).flatten(1)
+                else:
+                    feat = feat.flatten(1)
                 emb = self.projections[i](feat)
                 logits = self.classifiers[i](emb)
             embeddings.append(emb)
