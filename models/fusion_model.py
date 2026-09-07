@@ -11,18 +11,21 @@ class FusionLateModel(nn.Module):
                  embedding_dim=512,
                  num_classes=2,
                  fusion_mode='masked_scalar',
-                 use_auxiliary=False):
+                 use_auxiliary=False,
+                 input_channels=(3, 3, 3)):
         """Late fusion model with three independent backbones.
 
         fusion_mode: 'masked_scalar' or 'gating' (gating not implemented here)
+        input_channels: per-branch input channel count, e.g. (3, 3, 9) for a
+            9-channel MRI branch.
         """
         super().__init__()
         assert len(backbone_names) == 3
         self.num_branches = 3
         self.backbones = nn.ModuleList()
         self.feature_dims = []
-        for name in backbone_names:
-            m, feat_dim = create_backbone(name, pretrained=pretrained, remove_head=True)
+        for name, channels in zip(backbone_names, input_channels):
+            m, feat_dim = create_backbone(name, pretrained=pretrained, remove_head=True, input_channels=channels)
             self.backbones.append(m)
             self.feature_dims.append(feat_dim)
 
@@ -51,12 +54,18 @@ class FusionLateModel(nn.Module):
         branch_logits = []
         embeddings = []
         device = xs[0].device if xs[0] is not None else (xs[1].device if xs[1] is not None else xs[2].device)
+        batch_size = next(x.shape[0] for x in xs if x is not None)
+
+        if presence_mask is None:
+            presence_mask = torch.tensor(
+                [[x is not None for x in xs]] * batch_size, dtype=torch.bool, device=device
+            )
 
         for i, x in enumerate(xs):
             if x is None:
                 # create zero embedding
-                emb = torch.zeros((presence_mask.shape[0], self.projections[i][0].out_features), device=device)
-                logits = torch.zeros((presence_mask.shape[0], self.classifiers[i].out_features), device=device)
+                emb = torch.zeros((batch_size, self.projections[i][0].out_features), device=device)
+                logits = torch.zeros((batch_size, self.classifiers[i].out_features), device=device)
             else:
                 feat = self.backbones[i](x)
                 if feat.dim() == 4:
@@ -69,11 +78,7 @@ class FusionLateModel(nn.Module):
             branch_logits.append(logits)
 
         # compute weights
-        if presence_mask is None:
-            # assume all present
-            pres = torch.ones((branch_logits[0].shape[0], self.num_branches), device=branch_logits[0].device)
-        else:
-            pres = presence_mask.float()
+        pres = presence_mask.float()
 
         if self.fusion_mode == 'masked_scalar':
             # expand scalar per-batch and mask

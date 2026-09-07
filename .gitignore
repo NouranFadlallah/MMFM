@@ -1,5 +1,6 @@
 datasets/
 wandb/
+*.pth
 
 __pycache__/
 
