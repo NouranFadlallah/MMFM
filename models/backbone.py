@@ -2,7 +2,25 @@ import torch
 import torch.nn as nn
 
 
-def create_backbone(name: str, pretrained: bool = True, remove_head: bool = True):
+def _adapt_first_conv(model, name, input_channels):
+    """Replace a resnet's conv1 to accept input_channels, averaging pretrained weights."""
+    if not name.startswith('resnet') or input_channels == 3:
+        return
+    first_layer = model.conv1
+    if first_layer.in_channels == input_channels:
+        return
+    replacement = nn.Conv2d(
+        input_channels, first_layer.out_channels, first_layer.kernel_size,
+        first_layer.stride, first_layer.padding, bias=False
+    )
+    with torch.no_grad():
+        replacement.weight.copy_(
+            first_layer.weight.mean(dim=1, keepdim=True).repeat(1, input_channels, 1, 1)
+        )
+    model.conv1 = replacement
+
+
+def create_backbone(name: str, pretrained: bool = True, remove_head: bool = True, input_channels: int = 3):
     """Create a backbone feature extractor. Returns (module, feature_dim).
 
     Tries torchvision first, then timm. If neither is available, returns a small
@@ -48,6 +66,7 @@ def create_backbone(name: str, pretrained: bool = True, remove_head: bool = True
                     feat_dim = getattr(m.fc, 'in_features', 512)
                 if feat_dim is None:
                     feat_dim = 512
+            _adapt_first_conv(m, name, input_channels)
             return m, feat_dim
 
     # Try timm

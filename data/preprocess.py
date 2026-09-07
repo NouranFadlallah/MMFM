@@ -15,7 +15,7 @@ def _safe_list_images(root: Path) -> list[Path]:
     supported_suffixes = {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".dcm", ".nii", ".nii.gz"}
     return sorted(
         p for p in root.rglob("*")
-        if p.is_file() and p.suffix.lower() in supported_suffixes or p.name.endswith(".nii.gz")
+        if p.is_file() and (p.suffix.lower() in supported_suffixes or p.name.endswith(".nii.gz"))
     )
 
 
