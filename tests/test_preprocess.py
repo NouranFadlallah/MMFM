@@ -6,7 +6,7 @@ import numpy as np
 import torch
 
 from data.dataset import BusbraTransform
-from data.preprocess import build_manifest
+from data.preprocess import _safe_list_images, build_manifest
 
 
 def test_busbra_transform_crops_mask_and_normalizes():
@@ -57,3 +57,29 @@ def test_build_manifest_creates_rows_and_processed_images(tmp_path):
     assert all(Path(row["img2"]).exists() for row in data)
     assert all(Path(row["img3"]).exists() for row in data)
     assert len(rows) == 2
+
+
+def test_safe_list_images_excludes_directories_even_when_name_matches_nii_gz(tmp_path):
+    # Regression test: a directory whose name ends in .nii.gz used to slip
+    # through the file filter because of an operator-precedence bug
+    # (`is_file() and suffix_ok or name.endswith(...)`).
+    (tmp_path / "not_a_file.nii.gz").mkdir()
+    real_image = tmp_path / "scan.png"
+    Image.new("L", (4, 4)).save(real_image)
+
+    result = _safe_list_images(tmp_path)
+
+    assert result == [real_image]
+
+
+def test_safe_list_images_includes_nii_gz_files(tmp_path):
+    nii_file = tmp_path / "scan.nii.gz"
+    nii_file.write_bytes(b"not a real nifti file, just needs to exist")
+
+    result = _safe_list_images(tmp_path)
+
+    assert result == [nii_file]
+
+
+def test_safe_list_images_returns_empty_for_missing_root(tmp_path):
+    assert _safe_list_images(tmp_path / "does_not_exist") == []
