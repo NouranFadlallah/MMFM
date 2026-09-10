@@ -1,0 +1,409 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage[numbers,sort]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\title{ResNet-18 Baseline Reproductions on Six Public\\Breast-Imaging Datasets: A Results Comparison}
+\author{Nouran Fadlallah}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We report single-modality binary (benign vs.\ malignant) classification
+baselines on six public breast-imaging datasets: BUS-BRA
+\citep{gomezflores2024busbra}, BUSI \citep{aldhabyani2020busi}, BUSC
+\citep{busc2023mendeley,iqbalsharif2023pdfunet}, BrEaST-Lesions USG
+\citep{pawlowska2024breast}, mini-MIAS \citep{suckling1994mias}, and
+BreastDM \citep{zhao2023breastdm}. They span ultrasound, mammography, and
+DCE-MRI. Every dataset uses a pretrained ResNet-18 under stratified group
+$k$-fold cross validation, at patient or case level where the release gives
+an identifier. For BUS-BRA we also reproduce the paper's own \textbf{ResNet-18 vs.\
+ResNet-50} comparison, on its official fold assignment. Neither BUSI nor
+BrEaST-Lesions USG reports its own classifier benchmark, so we add an
+\textbf{EfficientNet-B0} comparison there instead, the backbone most used
+in later work on these releases. We report accuracy, sensitivity,
+specificity, precision, F1, and AUC for every run, and compare each result
+to the source paper's own numbers where one exists.
+\end{abstract}
+
+\section{Datasets and Task}
+
+All six datasets are reduced to one binary task: benign vs.\ malignant. We
+drop modality-specific extras such as BI-RADS categories, normal-tissue
+classes, and segmentation masks used only for ROI cropping. Table
+\ref{tab:datasets} lists each dataset's size, modality, and split.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Dataset summary.}
+  \label{tab:datasets}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lL{3.4cm}rL{5cm}}
+    \toprule
+    Dataset & Modality & N & Split used \\
+    \midrule
+    BUS-BRA & Ultrasound & 1{,}875 imgs / 1{,}064 patients & Official case-level 5-fold (\texttt{K5B}) \\
+    BUSI & Ultrasound & 647 imgs (437 benign / 210 malignant) & Our stratified 5-fold, row-level \\
+    BUSC & Ultrasound & 250 imgs (100 / 150) & Our stratified 5-fold, row-level \\
+    BrEaST-Lesions USG & Ultrasound & 256 cases & Our stratified 5-fold, case-level (\texttt{CaseID}) \\
+    mini-MIAS & Mammography & 322 imgs, lesion patches & Our stratified 5-fold, patient-level \\
+    BreastDM & DCE-MRI (\texttt{img9Se}) & 1{,}319 arrays & Official train/val split \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table}
+
+\section{Results}
+
+\subsection{Training protocol}
+
+Every backbone is ImageNet-pretrained. We train with SGD (momentum $0.9$,
+learning rate $10^{-3}$) and class-weighted cross-entropy, for a fixed 100
+epochs with no early stopping. We keep the checkpoint with the lowest
+validation loss. We compute metrics on a held-out test fold that never
+appears in training or checkpoint selection. Reported values are mean $\pm$
+standard deviation across five folds. BreastDM is the exception: it uses
+the dataset's own official train/validation split, with no cross-validation.
+EfficientNet-B0 runs use the same optimizer, loss, and epoch budget as the
+ResNet runs. All inputs are $224\times224$ except BUSC, which is
+$128\times128$ to match the PDF-UNet release's stated resolution.
+
+\subsection{Preprocessing}
+\label{sec:preprocessing}
+
+Preprocessing depends on what annotation each release provides (Table
+\ref{tab:preprocessing}). BUS-BRA, BUSI, and BrEaST-Lesions USG each ship a
+per-image tumor mask, so they share one pipeline: grayscale, $3\times3$
+median filter, mask-guided ROI crop with a 5\% margin, train-time flips and
+rotation ($\pm10^\circ$) and scale-crop, resize, an optional 5th/95th-
+percentile contrast stretch, then replicate to 3 channels. We apply the
+contrast stretch here, matching \citet{gomezflores2024busbra}. BUSC and
+mini-MIAS skip it; their transform does not implement it. mini-MIAS instead
+crops a lesion-centered patch at $1.5\times$ the annotated radius, using
+the coordinates in \texttt{Info.txt}. BUSC's public release has no mask and
+no lesion coordinates, so we resize the full image with no crop.
+BreastDM's \texttt{img9Se} arrays are already derived by the dataset's own
+pipeline. We only rescale them to $[0,1]$ and bilinearly resize each of the
+nine slice channels. Augmentation there is flip-only, with no rotation, to
+avoid interpolating across slice boundaries.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Preprocessing pipeline by dataset.}
+  \label{tab:preprocessing}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lL{10cm}}
+    \toprule
+    Dataset & Preprocessing \\
+    \midrule
+    BUS-BRA, BUSI, BrEaST-Lesions USG &
+      Grayscale $\to$ $3\times3$ median filter $\to$ mask-guided ROI crop (5\% margin)
+      $\to$ resize $\to$ 5th/95th-percentile contrast stretch $\to$ 3-channel replicate.
+      Train-time: h/v flip, rotation $\pm10^\circ$, scale-crop $1.0$--$1.1\times$. \\
+    BUSC &
+      Grayscale $\to$ resize (no ROI crop: no mask or lesion coordinates in the release)
+      $\to$ 3-channel replicate. Train-time: h flip, rotation $\pm10^\circ$. \\
+    mini-MIAS &
+      Grayscale $\to$ lesion-centered crop at $1.5\times$ the annotated radius
+      (from \texttt{Info.txt} coordinates) $\to$ resize $\to$ 3-channel replicate.
+      Train-time: h flip, rotation $\pm10^\circ$. \\
+    BreastDM &
+      \texttt{img9Se} array (already dataset-derived) $\to$ rescale to $[0,1]$
+      $\to$ bilinear resize, 9 channels preserved. Train-time: h/v flip only. \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table}
+
+\subsection{Backbone comparison against the source paper}
+
+BUS-BRA is the only one of the six source papers with its own second-
+backbone comparison: ResNet-18 vs.\ ResNet-50, both on its own 5-fold split
+(Table 3 of \citealp{gomezflores2024busbra}). Table \ref{tab:busbra}
+reproduces that comparison on the same official folds.
+
+\begin{table}[htbp]
+  \centering
+  \caption{BUS-BRA: ResNet-18 vs.\ ResNet-50, our reproduction vs.\ the source paper \citep{gomezflores2024busbra}, official 5-fold CV (mean $\pm$ std).}
+  \label{tab:busbra}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{llcccccc}
+    \toprule
+    Backbone & Source & Acc. & Sens. & Spec. & Prec. & F1 & AUC \\
+    \midrule
+    \multirow{2}{*}{ResNet-18}
+      & Paper & $0.865 \pm 0.020$ & $0.859 \pm 0.075$ & $0.868 \pm 0.014$ & --- & --- & $0.931 \pm 0.025$ \\
+      & Ours  & $0.828 \pm 0.023$ & $0.822 \pm 0.044$ & $0.832 \pm 0.031$ & $0.702 \pm 0.034$ & $0.756 \pm 0.026$ & $0.903 \pm 0.018$ \\
+    \multirow{2}{*}{ResNet-50}
+      & Paper & $0.859$          & $0.808$          & $0.883$          & --- & --- & $0.920$ \\
+      & Ours  & $0.828 \pm 0.021$ & $0.809 \pm 0.088$ & $0.840 \pm 0.055$ & $0.713 \pm 0.066$ & $0.751 \pm 0.032$ & $0.912 \pm 0.021$ \\
+    \midrule
+    \multicolumn{2}{l}{Senior sonographer (paper, Table 4)} & $0.827$ & $0.932$ & $0.776$ & --- & --- & --- \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table}
+
+The paper finds \textbf{ResNet-18 slightly ahead of ResNet-50}: higher
+sensitivity and accuracy, lower specificity. It attributes this to
+ResNet-50's larger capacity overfitting a small, single-institution set.
+Our reproduction shows the \textbf{same sensitivity ordering}, ResNet-18 at
+\textbf{0.822} vs.\ ResNet-50 at \textbf{0.809}, though our gap is smaller.
+Both backbones land at the same accuracy, \textbf{0.828}. AUC is slightly
+higher for ResNet-50 in both the paper and our run.
+
+\subsection{Backbones without a paper-reported comparison}
+
+BUSI and BrEaST-Lesions USG are dataset-release papers. Neither reports its
+own classifier benchmark. Table \ref{tab:effnet} adds an EfficientNet-B0
+comparison for both instead, matching what later work on these releases
+typically evaluates. This comparison is literature-informed, not
+paper-reported.
+
+\begin{table}[htbp]
+  \centering
+  \caption{BUSI and BrEaST-Lesions USG: ResNet-18 vs.\ EfficientNet-B0, our 5-fold CV (mean $\pm$ std). Neither source paper reports its own classifier benchmark.}
+  \label{tab:effnet}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{llcccccc}
+    \toprule
+    Dataset & Backbone & Acc. & Sens. & Spec. & Prec. & F1 & AUC \\
+    \midrule
+    \multirow{2}{*}{BUSI \citep{aldhabyani2020busi}}
+      & ResNet-18       & $0.884 \pm 0.038$ & $0.833 \pm 0.066$ & $0.908 \pm 0.026$ & $0.814 \pm 0.055$ & $0.823 \pm 0.059$ & $0.945 \pm 0.017$ \\
+      & EfficientNet-B0 & $0.881 \pm 0.022$ & $0.871 \pm 0.032$ & $0.886 \pm 0.024$ & $0.787 \pm 0.039$ & $0.826 \pm 0.031$ & $0.938 \pm 0.016$ \\
+    \multirow{2}{*}{BrEaST-Lesions USG \citep{pawlowska2024breast}}
+      & ResNet-18       & $0.726 \pm 0.042$ & $0.728 \pm 0.201$ & $0.726 \pm 0.139$ & $0.654 \pm 0.101$ & $0.664 \pm 0.075$ & $0.836 \pm 0.079$ \\
+      & EfficientNet-B0 & $0.694 \pm 0.096$ & $0.757 \pm 0.128$ & $0.655 \pm 0.152$ & $0.604 \pm 0.127$ & $0.661 \pm 0.091$ & $0.781 \pm 0.108$ \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table}
+
+On BUSI, the two backbones are \textbf{within noise of each other} on every
+metric. ResNet-18 has higher specificity and AUC; EfficientNet-B0 has higher
+sensitivity and F1. Neither is a clear winner at this dataset size. On
+BrEaST-Lesions USG, ResNet-18 leads on accuracy, specificity, and AUC;
+EfficientNet-B0 has slightly higher sensitivity. Both backbones carry
+\textbf{high fold-to-fold variance} (ResNet-18 sensitivity std
+$=\mathbf{0.201}$; EfficientNet-B0 accuracy std $=0.096$, AUC std $=0.108$),
+from only about 51 test cases per fold. Read this ordering as
+\textbf{directional, not a reliable ranking} (Section~\ref{sec:limitations}).
+
+\subsection{Remaining datasets: ResNet-18 only}
+
+BUSC, mini-MIAS, and BreastDM use ResNet-18 only. BUSC's own paper
+\citep{iqbalsharif2023pdfunet} is a segmentation method with no
+classification benchmark. mini-MIAS predates deep learning
+\citep{suckling1994mias}; its paper reports no CNN result. BreastDM's paper
+proposes a custom fusion architecture, LG-CAFN, not a swappable backbone.
+Its 9-channel MRI input also only works with this codebase's ResNet family,
+since non-ResNet backbones skip first-layer channel adaptation. Table
+\ref{tab:resnet-only} reports these three against whatever comparison each
+source provides.
+
+\begin{table}[htbp]
+  \centering
+  \caption{BUSC, mini-MIAS, BreastDM: ResNet-18 only, vs.\ the source literature where a comparable number exists.}
+  \label{tab:resnet-only}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{llcccccc}
+    \toprule
+    Dataset & Source & Acc. & Sens. & Spec. & Prec. & F1 & AUC \\
+    \midrule
+    \multirow{2}{*}{BUSC \citep{busc2023mendeley}}
+      & Ours (5-fold) & $0.992 \pm 0.010$ & $1.000 \pm 0.000$ & $0.980 \pm 0.025$ & $0.987 \pm 0.016$ & $0.993 \pm 0.008$ & $0.9997 \pm 0.0007$ \\
+      & Paper & \multicolumn{6}{l}{No classification benchmark (segmentation-only paper \citep{iqbalsharif2023pdfunet})} \\
+    \multirow{2}{*}{mini-MIAS \citep{suckling1994mias}}
+      & Ours (5-fold, patient-level) & $0.599 \pm 0.096$ & $0.496 \pm 0.233$ & $0.675 \pm 0.098$ & $0.496 \pm 0.161$ & $0.486 \pm 0.205$ & $0.597 \pm 0.107$ \\
+      & Paper & \multicolumn{6}{l}{No CNN benchmark (1994, predates deep learning)} \\
+    \multirow{2}{*}{BreastDM \citep{zhao2023breastdm}}
+      & Ours (official split) & $0.880$ & $0.968$ & $0.542$ & $0.891$ & $0.928$ & $0.907$ \\
+      & Paper (LG-CAFN) & $0.882$ & --- & --- & --- & --- & $0.915$ \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table}
+
+BUSC's \textbf{near-perfect result}, across every metric and every fold, is
+\textbf{a flag, not a win}. Cross-validation rules out a single-split
+fluke. But 250 images with no patient identifier, at $128\times128$
+resolution, leave open whether benign and malignant images are trivially
+separable by something other than the lesion (Section~\ref{sec:limitations}).
+mini-MIAS's cross-validated result is \textbf{the honest number} for this
+task framing. A single earlier evaluation, on one ad-hoc split, showed
+90\% accuracy; cross-validation shows that was \textbf{a lucky split, not a
+stable result}. BreastDM's plain ResNet-18 lands within \textbf{0.002
+accuracy and 0.008 AUC} of the paper's own fusion architecture, LG-CAFN.
+Its specificity is much weaker, \textbf{0.542}: the model
+\textbf{over-calls malignant}.
+
+\section{Discussion: Is the Preprocessing Sufficient?}
+\label{sec:preprocessing-discussion}
+
+Section~\ref{sec:preprocessing} described two pipelines: a mask-guided ROI
+crop with contrast stretching (BUS-BRA, BUSI, BrEaST-Lesions USG), and a
+lighter pipeline with no crop or contrast stretch (BUSC, mini-MIAS, and
+BreastDM's already-derived arrays). Tables~\ref{tab:busbra}--\ref{tab:resnet-only}
+let us ask, per dataset, whether that choice was adequate or needs further
+investigation.
+
+\paragraph{Where preprocessing looks adequate.} BUS-BRA reproduces the
+paper's own 5-fold numbers within about \textbf{0.03--0.04 accuracy and
+AUC} (Table~\ref{tab:busbra}), using the mask-guided crop and contrast
+stretch. We can already explain the remaining gap: our pipeline replicates
+grayscale into 3 channels, while the paper encodes the mask into R/G/B
+channels (Section~\ref{sec:limitations}). \textbf{The crop and
+contrast-stretch steps are not the cause.} BUSI reaches the literature's
+commonly cited \textbf{90--96\%} accuracy range with the same pipeline,
+unchanged. BreastDM needs almost no preprocessing of its own, since the
+release's \texttt{img9Se} arrays are already derived, and still lands
+within \textbf{0.002 accuracy} of the paper's purpose-built fusion
+architecture. In these three cases, more preprocessing effort means results
+closer to the literature. \textbf{The numbers give no reason for further
+preprocessing work here.}
+
+\paragraph{Where preprocessing is a real suspect.} BUSC is the opposite
+signal. It has the \textbf{least preprocessing} of any dataset here: no ROI
+crop at all, since the release ships neither a mask nor lesion coordinates
+(Table~\ref{tab:preprocessing}). It also has the \textbf{best result by a
+wide margin}: \textbf{0.992--0.9997} across every metric and every fold
+(Table~\ref{tab:resnet-only}). This is the pattern we would expect if the
+model is keying on something other than the lesion, since there is no crop
+step to exclude background context. A device-specific border, an
+annotation artifact, or an acquisition setting could correlate with the
+class label in this 250-image release. \textbf{More cross-validation will
+not resolve this.} It needs a \textbf{Grad-CAM or saliency check} on the
+trained model. If a lesion boundary can be recovered by other means, such
+as manual annotation or a generic saliency-based ROI heuristic, a re-run
+with an actual crop would show whether accuracy drops toward the other
+ultrasound datasets' range. Until that check happens, \textbf{treat BUSC's
+number as unverified}, not as a working classifier.
+
+\paragraph{Where the picture is genuinely unclear.} mini-MIAS and
+BrEaST-Lesions USG both crop before classification: a radius-based lesion
+patch for mini-MIAS, a mask-guided ROI for BrEaST. Both still produce
+\textbf{weak or unstable results}. mini-MIAS gets \textbf{$0.599 \pm 0.096$}
+accuracy; BrEaST's sensitivity std reaches \textbf{0.201}. Both are also
+the \textbf{two smallest datasets} by patient or case count, so we cannot
+yet tell whether preprocessing (crop margin, patch size, missing contrast
+stretch) or sample size causes the weak results. Two follow-ups would
+separate these causes. First, apply the BUS-BRA-style contrast stretch to
+mini-MIAS, currently skipped (Table \ref{tab:preprocessing}); this is a
+one-line change in \texttt{MiasTransform}. Second, for mini-MIAS, compare
+the current lesion-patch framing against a full-breast-image baseline.
+\citet{suckling1994mias} does not require the patch framing, and
+\texttt{dataset\_reproduction\_plan} lists it as an open design choice.
+Until we run one of these, \textbf{we cannot rule preprocessing in or out
+as the bottleneck here}.
+
+\section{Mixed-Backbone Multimodal Fusion}
+\label{sec:mixed-fusion}
+
+All results so far are single-modality baselines. A separate follow-up
+study, \texttt{docs/mixed\_backbone\_results.md}, trains the repository's
+3-branch late-fusion model instead: \texttt{FusionLateModel}, with
+mammography from mini-MIAS, ultrasound from BUS-BRA, BUSI, BUSC, and
+BrEaST-Lesions USG, and MRI from BreastDM. It varies the ultrasound
+branch's backbone and initialization to separate three effects an earlier
+single run had confounded: ResNet-18 vs.\ ResNet-50, warm-starting from a
+converged single-dataset checkpoint, and RadImageNet vs.\ ImageNet
+pretraining. Mammography and MRI stay fixed across all three runs:
+ResNet-18, warm-started from \texttt{runs/run-1}'s single-dataset
+checkpoints. Only the ultrasound branch varies. All four runs share one
+combined validation set of 427 samples (10 mammography, 300 ultrasound, 117
+MRI) and use the default recipe, not \texttt{paper-match}: Adam, a 10-epoch
+budget, early-stopping patience 5. This is not the SGD/weighted-CE protocol
+used for the single-dataset results above.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Combined 3-branch fusion: varying only the ultrasound branch's backbone/initialization. Selection is by lowest validation loss, not by accuracy.}
+  \label{tab:mixed-fusion}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lllcccc}
+    \toprule
+    Run & Ultrasound backbone & Ultrasound init & Best epoch & Best val loss & Val acc. & Epochs run \\
+    \midrule
+    Baseline & ResNet-18 & ImageNet, trained from scratch & --- & $0.467$ & $0.741$ & 30 \\
+    A & ResNet-50 & Warm-started (converged BUS-BRA fold-1 model) & 4 & $0.421$ & $0.808$ & 9 (early-stopped) \\
+    B & ResNet-18 & Warm-started (converged BUS-BRA fold-1 model) & 10 & $\mathbf{0.395}$ & $\mathbf{0.836}$ & 10 (full budget) \\
+    C & ResNet-50 & RadImageNet init, trained in-loop & 2 & $0.428$ & $0.815$ & 7 (early-stopped) \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table}
+
+Holding the two warm-started branches fixed and varying only the ultrasound
+branch isolates three effects:
+
+\begin{enumerate}
+  \item \textbf{Warm-starting from a converged single-dataset model is the
+    main effect.} Both warm-started runs (A: \textbf{0.421}, B:
+    \textbf{0.395}) beat both non-warm-started runs (baseline:
+    \textbf{0.467}, C: \textbf{0.428}) by a similar margin. Backbone and
+    pretraining source do not change this.
+  \item \textbf{RadImageNet beats ImageNet when training in-loop.}
+    Comparing the two non-warm-started runs directly, baseline (ImageNet)
+    vs.\ Run C (RadImageNet), both trained from scratch inside the fusion
+    loop, RadImageNet initialization helps. This is the \textbf{clearest
+    evidence so far} that RadImageNet adds value on its own.
+  \item \textbf{ResNet-18 edges out ResNet-50 under the same warm-start
+    treatment} (Run B \textbf{0.395} vs.\ Run A \textbf{0.421}). This
+    matches the BUS-BRA paper's own finding (Table~\ref{tab:busbra}) and
+    this report's single-mode BUS-BRA 5-fold results. \textbf{The
+    ResNet-50 swap is not the source of improvement} over the baseline.
+    Under matched warm-start treatment, it is a slight drag compared to
+    ResNet-18.
+\end{enumerate}
+
+\paragraph{Caveats specific to this study.} The mammography branch's
+per-epoch accuracy comes from only \textbf{10 validation samples}. Read it
+as noise in every run. The ultrasound warm-start (Runs A/B) uses only
+\textbf{one of the five} BUS-BRA cross-validation folds, fold 1, not an
+aggregate. None of these four runs use the \texttt{paper-match} recipe from
+Section~\ref{sec:preprocessing-discussion} onward, so they are \textbf{not
+as rigorous} as this report's single-dataset numbers. Early stopping also
+cuts the three runs at different points: 9, 10, and 7 epochs. Run B hit the
+full 10-epoch budget still improving, so its true optimum may be higher.
+\textbf{This is a fusion-mechanism ablation, not a standalone benchmark
+result.}
+
+\section{Limitations}
+\label{sec:limitations}
+
+\begin{itemize}
+  \item \textbf{Split granularity.} BUS-BRA, BrEaST-Lesions USG, and
+    mini-MIAS use patient- or case-level folds, via \texttt{K5B},
+    \texttt{CaseID}, and \texttt{patient}. BUSI and BUSC have no patient
+    identifier in their public release, so we split them at the image
+    level. A fold boundary can still place near-duplicate crops of the
+    same lesion on both sides.
+  \item \textbf{BUS-BRA input encoding.} Our pipeline repeats the
+    grayscale, contrast-stretched, mask-cropped image into three identical
+    channels. The source paper instead encodes the lesion mask into
+    separate R/G/B channels. This likely explains part of the remaining
+    \textbf{0.03--0.04} accuracy/AUC gap in Table~\ref{tab:busbra}.
+  \item \textbf{Single seed per fold.} All reported std is across the 5
+    folds, not across repeated seeds within a fold. The paper's own
+    reported std for BUS-BRA is also a single-seed, 5-fold figure.
+  \item \textbf{Dataset scale.} mini-MIAS (about 130 lesion patches total)
+    and BrEaST-Lesions USG (256 cases) are small enough that 5-fold CV
+    still leaves high per-fold variance. Read results there as
+    directional.
+\end{itemize}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

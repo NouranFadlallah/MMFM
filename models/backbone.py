@@ -20,7 +20,20 @@ def _adapt_first_conv(model, name, input_channels):
     model.conv1 = replacement
 
 
-def create_backbone(name: str, pretrained: bool = True, remove_head: bool = True, input_channels: int = 3):
+def _load_local_weights(model, path):
+    """Best-effort load of a local state_dict checkpoint (e.g. RadImageNet weights)
+    onto a freshly constructed torchvision model, before any head/channel surgery."""
+    state = torch.load(path, map_location='cpu')
+    if isinstance(state, dict) and 'state_dict' in state:
+        state = state['state_dict']
+    state = {k.replace('module.', ''): v for k, v in state.items()}
+    missing, unexpected = model.load_state_dict(state, strict=False)
+    print(f'[create_backbone] loaded local weights from {path}: '
+          f'{len(missing)} missing, {len(unexpected)} unexpected keys')
+
+
+def create_backbone(name: str, pretrained: bool = True, remove_head: bool = True,
+                     input_channels: int = 3, pretrained_weights: str = None):
     """Create a backbone feature extractor. Returns (module, feature_dim).
 
     Tries torchvision first, then timm. If neither is available, returns a small
@@ -28,6 +41,10 @@ def create_backbone(name: str, pretrained: bool = True, remove_head: bool = True
     either a [B, C, H, W] feature map or a [B, D] feature vector. The feature_dim
     describes the final channel / vector dimension that can be consumed by a
     Linear projection.
+
+    pretrained_weights: optional path to a local state_dict checkpoint (e.g. a
+    RadImageNet checkpoint) to load in place of ImageNet weights. When set,
+    `pretrained` is ignored for the ImageNet-download path.
     """
     name = name.lower()
 
@@ -45,7 +62,10 @@ def create_backbone(name: str, pretrained: bool = True, remove_head: bool = True
     # Try torchvision models
     if tv_models is not None:
         if hasattr(tv_models, name):
-            m = getattr(tv_models, name)(pretrained=pretrained)
+            extra_kwargs = {'aux_logits': False} if name == 'googlenet' else {}
+            m = getattr(tv_models, name)(pretrained=pretrained and not pretrained_weights, **extra_kwargs)
+            if pretrained_weights:
+                _load_local_weights(m, pretrained_weights)
             # infer feature dim and try to remove classification head
             if name.startswith('resnet'):
                 feat_dim = m.fc.in_features
@@ -59,6 +79,14 @@ def create_backbone(name: str, pretrained: bool = True, remove_head: bool = True
                 feat_dim = m.classifier.in_features
                 if remove_head:
                     m.classifier = nn.Identity()
+            elif name.startswith('efficientnet'):
+                feat_dim = m.classifier[-1].in_features
+                if remove_head:
+                    m.classifier = nn.Identity()
+            elif name == 'googlenet':
+                feat_dim = m.fc.in_features
+                if remove_head:
+                    m.fc = nn.Identity()
             else:
                 # best-effort: try to inspect common attributes
                 feat_dim = getattr(m, 'num_features', None) or getattr(m, 'fc', None)
@@ -73,7 +101,10 @@ def create_backbone(name: str, pretrained: bool = True, remove_head: bool = True
     if timm is not None:
         try:
             # create_model with num_classes=0 often yields a feature vector
-            m = timm.create_model(name, pretrained=pretrained, num_classes=0)
+            m = timm.create_model(
+                name, pretrained=pretrained and not pretrained_weights, num_classes=0,
+                checkpoint_path=pretrained_weights or '',
+            )
             feat_dim = getattr(m, 'num_features', None) or getattr(m, 'embed_dim', None) or 512
             return m, feat_dim
         except Exception:

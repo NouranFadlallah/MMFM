@@ -15,10 +15,11 @@ MISSING_TOKEN = 'MISSING'
 
 class BusbraTransform:
     """Paper-inspired preprocessing for BUS-BRA grayscale images and masks."""
-    def __init__(self, size=224, augment=False, crop_margin=0.05):
+    def __init__(self, size=224, augment=False, crop_margin=0.05, contrast_stretch=False):
         self.size = (size, size)
         self.augment = augment
         self.crop_margin = crop_margin
+        self.contrast_stretch = contrast_stretch
 
     def __call__(self, image, mask=None):
         image = image.convert('L').filter(ImageFilter.MedianFilter(size=3))
@@ -55,7 +56,17 @@ class BusbraTransform:
             image = image.crop((left, top, left + crop_width, top + crop_height))
 
         image = image.resize(self.size, Image.Resampling.BILINEAR)
-        array = np.asarray(image, dtype=np.float32) / 255.0
+        array = np.asarray(image, dtype=np.float32)
+        if self.contrast_stretch:
+            # 5th/95th percentile min-max normalization, per Gomez-Flores et al. 2024
+            low, high = np.percentile(array, [5, 95])
+            if high > low:
+                array = np.clip((array - low) / (high - low), 0.0, 1.0)
+            else:
+                array = array / 255.0
+        else:
+            array = array / 255.0
+        array = array.astype(np.float32)
         return torch.from_numpy(array).unsqueeze(0).repeat(3, 1, 1)
 
 

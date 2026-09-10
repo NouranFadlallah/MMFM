@@ -12,20 +12,29 @@ class FusionLateModel(nn.Module):
                  num_classes=2,
                  fusion_mode='masked_scalar',
                  use_auxiliary=False,
-                 input_channels=(3, 3, 3)):
+                 input_channels=(3, 3, 3),
+                 pretrained_weights=None):
         """Late fusion model with three independent backbones.
 
         fusion_mode: 'masked_scalar' or 'gating' (gating not implemented here)
         input_channels: per-branch input channel count, e.g. (3, 3, 9) for a
             9-channel MRI branch.
+        pretrained_weights: optional local checkpoint path (e.g. RadImageNet),
+            or a 3-tuple of per-branch paths for mammography/ultrasound/mri.
         """
         super().__init__()
         assert len(backbone_names) == 3
+        if pretrained_weights is None or isinstance(pretrained_weights, str):
+            pretrained_weights = (pretrained_weights,) * 3
+        assert len(pretrained_weights) == 3
         self.num_branches = 3
         self.backbones = nn.ModuleList()
         self.feature_dims = []
-        for name, channels in zip(backbone_names, input_channels):
-            m, feat_dim = create_backbone(name, pretrained=pretrained, remove_head=True, input_channels=channels)
+        for name, channels, weights_path in zip(backbone_names, input_channels, pretrained_weights):
+            m, feat_dim = create_backbone(
+                name, pretrained=pretrained, remove_head=True,
+                input_channels=channels, pretrained_weights=weights_path,
+            )
             self.backbones.append(m)
             self.feature_dims.append(feat_dim)
 

@@ -194,6 +194,70 @@ modality dropout. The local smoke run resolved 1,202 training and 117 validation
 arrays. This is a 2D derived-array baseline; it is not yet the paper's full 3D
 segmentation reproduction.
 
+## 7. Combined multimodal fusion (`--dataset combined`)
+
+### What this run is (and isn't)
+
+This exercises the `FusionLateModel` three-branch pipeline end to end across all
+six locally reproduced datasets at once, using each dataset's own preprocessing
+transform from the sections above. It is a pipeline/integration sanity check for
+the fusion mechanism (branch construction, presence-mask weighting, the balanced
+branch/source/class sampler, warm-starting from single-modality checkpoints), not
+a paper reproduction: no published multimodal benchmark uses this dataset
+combination, real per-sample multimodality (all three views of the same patient)
+does not exist here, and mammography has only one source dataset.
+
+### Branch composition
+
+- Mammography branch: MIAS lesion patches (`_mias_frame`, `MiasTransform`).
+- Ultrasound branch: BUS-BRA + BUSI + BUSC + BrEaST concatenated (`--ultrasound-datasets`
+  defaults to all four), each with its own frame builder and transform
+  (`BusbraTransform` for BUS-BRA/BUSI/BrEaST, `MiasTransform` for BUSC).
+- MRI branch: BreaDM `img9Se` derived arrays (`BreaDMDataset`, `BreadmTransform`).
+
+Each underlying dataset is wrapped as a `SingleModalityBranchDataset` (only its
+own branch populated, the other two zeroed and marked absent in the presence
+mask), concatenated, and sampled with weights that balance branch -> source
+-within-branch -> class-within-source. Modality dropout is disabled because each
+sample already carries exactly one real modality.
+
+### Run configuration and result
+
+ResNet-18 backbones (ImageNet-pretrained), each branch warm-started from its
+single-mode checkpoint (`mias_single_resnet18_best.pth`,
+`busbra_single_resnet18_best.pth` for the ultrasound branch, and
+`breamdm_single_resnet18_best.pth`), batch size 8, lr 1e-4, up to 10 epochs with
+patience 5. Resolved 3,600 training and 378 validation samples across the six
+sources.
+
+Training early-stopped after 7 epochs (no validation-loss improvement for 5
+epochs past epoch 2). The saved checkpoint (`combined_fusion_resnet18_best.pth`,
+selected by lowest validation loss) is from epoch 2:
+
+| Metric | Value |
+| --- | --- |
+| Overall validation accuracy | 0.8228 |
+| Mammography-only samples accuracy | 0.7000 |
+| Ultrasound-only samples accuracy | 0.8446 |
+| MRI-only samples accuracy | 0.7863 |
+
+Per-epoch validation accuracy was noisy (0.59 -> 0.82 -> 0.69 -> 0.70 -> 0.71 ->
+0.76 -> 0.75), and the mammography branch stayed flat at 0.70 across nearly every
+epoch — consistent with MIAS being by far the smallest source (order of 100s of
+lesion patches) inside a sampler that already up-weights it to match the other
+branches; its gradient signal is easily dominated by noise from the larger
+ultrasound/MRI branches. Full metrics logged to the `mmfm-combined` W&B project.
+
+### Caveats before citing this result
+
+- Validation-loss-based early stopping picked an earlier, higher-variance epoch
+  over the (numerically similar) later epochs; run for more epochs or with a
+  larger patience before treating 0.82 as stable.
+- The ultrasound branch's warm start uses only the BUS-BRA single-mode
+  checkpoint, not a checkpoint reflecting all four ultrasound sources.
+- As with every single-dataset section above, per-source splits here are not
+  official paper splits, and BUSI is still the incomplete 163-image local subset.
+
 ## Execution Order
 
 1. Resolve BUSI completeness and recover BrEaST labels/metadata.

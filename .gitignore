@@ -1,6 +1,8 @@
 datasets/
 wandb/
+weights/
 *.pth
+*.log
 
 __pycache__/
 

@@ -1,0 +1,57 @@
+{
+  "mias": {
+    "metrics": {
+      "accuracy": 0.9,
+      "sensitivity": 0.5,
+      "specificity": 1.0,
+      "precision": 1.0,
+      "f1": 0.6666666666666666,
+      "auc": 1.0
+    },
+    "validation_samples": 10
+  },
+  "busi": {
+    "metrics": {
+      "accuracy": 0.8666666666666667,
+      "sensitivity": 0.8,
+      "specificity": 0.9,
+      "precision": 0.8,
+      "f1": 0.8,
+      "auc": 0.94
+    },
+    "validation_samples": 15
+  },
+  "busc": {
+    "metrics": {
+      "accuracy": 1.0,
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "auc": 1.0
+    },
+    "validation_samples": 25
+  },
+  "breast": {
+    "metrics": {
+      "accuracy": 0.84,
+      "sensitivity": 1.0,
+      "specificity": 0.8,
+      "precision": 0.5555555555555556,
+      "f1": 0.7142857142857143,
+      "auc": 0.89
+    },
+    "validation_samples": 25
+  },
+  "breamdm": {
+    "metrics": {
+      "accuracy": 0.8803418803418803,
+      "sensitivity": 0.967741935483871,
+      "specificity": 0.5416666666666666,
+      "precision": 0.8910891089108911,
+      "f1": 0.9278350515463918,
+      "auc": 0.9068100358422939
+    },
+    "validation_samples": 117
+  }
+}

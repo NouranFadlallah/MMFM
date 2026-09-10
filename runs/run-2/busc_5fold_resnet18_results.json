@@ -1,0 +1,70 @@
+{
+  "per_fold": [
+    {
+      "accuracy": 0.98,
+      "sensitivity": 1.0,
+      "specificity": 0.95,
+      "precision": 0.967741935483871,
+      "f1": 0.9836065573770492,
+      "auc": 1.0
+    },
+    {
+      "accuracy": 1.0,
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "auc": 1.0
+    },
+    {
+      "accuracy": 0.98,
+      "sensitivity": 1.0,
+      "specificity": 0.95,
+      "precision": 0.967741935483871,
+      "f1": 0.9836065573770492,
+      "auc": 0.9983333333333333
+    },
+    {
+      "accuracy": 1.0,
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "auc": 1.0
+    },
+    {
+      "accuracy": 1.0,
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "auc": 1.0
+    }
+  ],
+  "summary": {
+    "accuracy": {
+      "mean": 0.992,
+      "std": 0.009797958971132722
+    },
+    "sensitivity": {
+      "mean": 1.0,
+      "std": 0.0
+    },
+    "specificity": {
+      "mean": 0.9800000000000001,
+      "std": 0.024494897427831803
+    },
+    "precision": {
+      "mean": 0.9870967741935484,
+      "std": 0.0158031596308592
+    },
+    "f1": {
+      "mean": 0.9934426229508198,
+      "std": 0.008031113910764527
+    },
+    "auc": {
+      "mean": 0.9996666666666666,
+      "std": 0.000666666666666682
+    }
+  }
+}
