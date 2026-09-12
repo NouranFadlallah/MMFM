@@ -75,6 +75,68 @@ def _load_one_image(row, transform, dataset_name):
     return tensor
 
 
+CLASS_NAMES = ('benign', 'malignant')
+
+
+def visualize_fold(dataset, backbone, checkpoint, fold, num_folds=5, contrast_stretch=False,
+                    out_dir=None, num_per_class_correct=4, max_errors=None, model=None):
+    """Reconstruct one test fold, find misclassified examples, and save a
+    Grad-CAM heatmap overlay for each (capped at max_errors if given), plus
+    up to num_per_class_correct correctly classified examples per class.
+    Returns the list of (row, pred_class, true_label, probs) actually saved.
+    Pass a pre-loaded `model` to avoid reloading the checkpoint per call.
+    """
+    out_dir = out_dir or Path('docs/gradcam') / f'{dataset}_{backbone}_fold{fold}'
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    frame, transform = _test_frame(dataset, fold, num_folds, contrast_stretch)
+    if model is None:
+        model = _load_model(checkpoint, backbone)
+    target_layer = target_layer_for_backbone(model, backbone)
+    cam = GradCAM(model, target_layer)
+
+    all_rows = frame.to_dict('records')
+    with torch.no_grad():
+        preds = []
+        for row in all_rows:
+            tensor = _load_one_image(row, transform, dataset)
+            logits, _, _ = model(tensor.unsqueeze(0).to(DEVICE))
+            preds.append(int(logits.argmax(dim=1).item()))
+    errors = [row for row, pred in zip(all_rows, preds) if pred != row['label']]
+    correct = [row for row, pred in zip(all_rows, preds) if pred == row['label']]
+
+    if max_errors is not None:
+        errors = errors[:max_errors]
+    picked = list(errors)
+    for label in (0, 1):
+        rows = [r for r in correct if r['label'] == label]
+        picked.extend(rows[:num_per_class_correct])
+
+    print(f'{dataset}/{backbone} fold {fold}: {len(errors)} misclassified (of '
+          f'{sum(1 for p, r in zip(preds, all_rows) if p != r["label"])} total) visualized '
+          f'of {len(all_rows)} test examples -> {out_dir}')
+    saved = []
+    for row in picked:
+        tensor = _load_one_image(row, transform, dataset)
+        x1 = tensor.unsqueeze(0).to(DEVICE).requires_grad_(False)
+        cam_map, pred_class, probs = cam(x1)
+        cam_map, pred_class, probs = cam_map[0], int(pred_class[0]), probs[0]
+
+        true_label = int(row['label'])
+        overlay = overlay_heatmap(tensor.numpy(), cam_map)
+        outcome = 'correct' if pred_class == true_label else 'WRONG'
+        fname = (
+            f'fold{fold}_{CLASS_NAMES[true_label]}_pred-{CLASS_NAMES[pred_class]}_{outcome}_'
+            f'p{probs[1]:.2f}_{Path(str(row["image"])).stem}.png'
+        )
+        Image.fromarray(overlay).save(out_dir / fname)
+        saved.append((row, pred_class, true_label, probs))
+        print(f'  {fname}')
+
+    print(f'saved {len(saved)} images to {out_dir}')
+    return saved
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--dataset', default='busc', choices=list(DATASET_KFOLD_SPECS.keys()) + ['busbra'])
@@ -87,56 +149,10 @@ def main():
     parser.add_argument('--out-dir', type=Path, default=None)
     args = parser.parse_args()
 
-    out_dir = args.out_dir or Path('docs/gradcam') / f'{args.dataset}_{args.backbone}_fold{args.fold}'
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-    frame, transform = _test_frame(args.dataset, args.fold, args.num_folds, args.contrast_stretch)
-    model = _load_model(args.checkpoint, args.backbone)
-    target_layer = target_layer_for_backbone(model, args.backbone)
-    cam = GradCAM(model, target_layer)
-
-    class_names = ('benign', 'malignant')
-
-    # first pass (no grad): find which examples this checkpoint gets wrong,
-    # so misclassified cases are prioritized -- that's where a saliency check
-    # is most informative, not the easy correct majority.
-    all_rows = frame.to_dict('records')
-    with torch.no_grad():
-        preds = []
-        for row in all_rows:
-            tensor = _load_one_image(row, transform, args.dataset)
-            logits, _, _ = model(tensor.unsqueeze(0).to(DEVICE))
-            preds.append(int(logits.argmax(dim=1).item()))
-    errors = [row for row, pred in zip(all_rows, preds) if pred != row['label']]
-    correct = [row for row, pred in zip(all_rows, preds) if pred == row['label']]
-
-    picked = list(errors)  # visualize every misclassified example
-    for label in (0, 1):
-        rows = [r for r in correct if r['label'] == label]
-        picked.extend(rows[: args.num_per_class])
-
-    print(f'{args.dataset}/{args.backbone} fold {args.fold}: {len(errors)} misclassified '
-          f'of {len(all_rows)} test examples. Visualizing {len(picked)} '
-          f'({len(errors)} errors + up to {args.num_per_class}/class correct) -> {out_dir}')
-    saved = 0
-    for row in picked:
-        tensor = _load_one_image(row, transform, args.dataset)
-        x1 = tensor.unsqueeze(0).to(DEVICE).requires_grad_(False)
-        cam_map, pred_class, probs = cam(x1)
-        cam_map, pred_class, probs = cam_map[0], int(pred_class[0]), probs[0]
-
-        true_label = int(row['label'])
-        overlay = overlay_heatmap(tensor.numpy(), cam_map)
-        correct = 'correct' if pred_class == true_label else 'WRONG'
-        fname = (
-            f'{class_names[true_label]}_pred-{class_names[pred_class]}_{correct}_'
-            f'p{probs[1]:.2f}_{Path(str(row["image"])).stem}.png'
-        )
-        Image.fromarray(overlay).save(out_dir / fname)
-        saved += 1
-        print(f'  {fname}')
-
-    print(f'saved {saved} images to {out_dir}')
+    visualize_fold(
+        args.dataset, args.backbone, args.checkpoint, args.fold, args.num_folds,
+        args.contrast_stretch, args.out_dir, num_per_class_correct=args.num_per_class,
+    )
 
 
 if __name__ == '__main__':

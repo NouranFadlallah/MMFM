@@ -98,10 +98,51 @@ warrants the same follow-up already proposed there — recover lesion
 boundaries by another means and re-run with an actual crop — before trusting
 BUSC's 0.992 accuracy as a working classifier.
 
-Regenerate for any other checkpoint/fold with:
+### Failures across every trained model
+
+[scripts/gradcam_all_failures.py](../scripts/gradcam_all_failures.py) extends
+this to every checkpoint in `runs/` (all backbones, all 5 folds where
+applicable), saving heatmaps for up to 3 misclassified examples per fold —
+110 failure images total, in `docs/gradcam/<dataset>_<backbone>/`, manifest
+at `docs/gradcam_failures_manifest.json`. The pattern from the single BUSC
+run generalizes cleanly and splits models into two groups:
+
+- **Datasets with mask-guided ROI cropping (BUS-BRA, BUSI, BrEaST, BreastDM)
+  fail on focal, lesion-centered mistakes.** A representative BUSI false
+  positive (`busi_resnet18/fold1_benign_pred-malignant_WRONG_p0.91_benign (236).png`)
+  and a BreastDM false positive
+  (`breamdm_resnet18/benign_pred-malignant_WRONG_p0.95_p-031.png`) both show
+  a compact, well-localized hotspot on what is plausibly the actual lesion
+  or tumor region. These read as genuinely hard cases — a benign lesion or
+  benign tissue that looks malignant — not a shortcut or background
+  artifact. The crop preprocessing appears to be doing its job.
+- **BUSC (no crop, per the preprocessing discussion) and mini-MIAS (a tiny
+  radius-based patch) fail more diffusely.** Both of BUSC's 2 pooled errors
+  show a broad hot region reaching the image border rather than a focal
+  point (`busc_resnet18/fold1_benign_pred-malignant_WRONG_p0.57_us49.png`,
+  `busc_resnet18/fold3_benign_pred-malignant_WRONG_p0.75_us26.png`).
+  mini-MIAS's failures are visually noisier still — several show a blocky,
+  grid-like activation pattern with no clear center
+  (e.g. `mias_resnet18/fold1_malignant_pred-benign_WRONG_p0.05_mdb092.png`),
+  plausibly an artifact of Grad-CAM's coarse spatial resolution on an
+  already-small lesion-patch crop, not a meaningful signal either way.
+
+Net read: this strengthens rather than weakens the preprocessing
+discussion's BUSC concern (two independent examples now, same pattern), and
+adds a new, separate flag for mini-MIAS — its failures don't look
+interpretable at all, on top of the already-quantified 51% miss rate above.
+BUS-BRA, BUSI, and BreastDM's failures look like ordinary hard-case
+mistakes, not a preprocessing or shortcut-learning problem.
+
+Regenerate for one checkpoint/fold with:
 ```bash
 .venv/bin/python3 scripts/gradcam_visualize.py --dataset busi --backbone efficientnet_b0 \
     --checkpoint runs/run-2/extra-backbones/busi_single_efficientnet_b0_best_fold1.pth --fold 1
+```
+
+Regenerate the full failure sweep (all models, all folds) with:
+```bash
+.venv/bin/python3 scripts/gradcam_all_failures.py
 ```
 
 ## Reproducing this
