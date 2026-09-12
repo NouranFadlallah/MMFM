@@ -2,7 +2,9 @@
 
 This report summarizes the single-modality ResNet-18 training runs completed to date
 (all logged to Weights & Biases, projects `mmfm-<dataset>`) and compares the accuracy
-we obtained against results reported in each dataset's source literature.
+we obtained against results reported in each dataset's source literature. For a
+per-class (benign/malignant) breakdown and false-positive-vs-false-negative bias
+detection per model, see [per_class_results.md](per_class_results.md).
 
 **Two generations of checkpoints exist:** `runs/run-1/` is the original set (single
 ad-hoc train/val splits, `checkpoint_eval_results.json` for the final-epoch-vs-

@@ -137,10 +137,9 @@ def validate(model, loader, device, criterion=None):
     return total_loss / total, correct / total, branch_accuracy
 
 
-def evaluate_full_metrics(model, loader, device):
-    """Binary classification metrics (accuracy/sensitivity/specificity/precision/F1/AUC)
-    matching the indices in the BUS-BRA paper's Table 3/4, for a single-modality model.
-    """
+def collect_predictions(model, loader, device):
+    """Run a single-modality model over a loader and return (probs, targets)
+    tensors, for any downstream metric computation without retraining."""
     model.eval()
     all_probs, all_targets = [], []
     with torch.no_grad():
@@ -150,7 +149,15 @@ def evaluate_full_metrics(model, loader, device):
             fused, _, _ = model(x1, x2, x3, pres)
             all_probs.append(torch.softmax(fused, dim=1).cpu())
             all_targets.append(y)
-    return classification_metrics(torch.cat(all_probs), torch.cat(all_targets))
+    return torch.cat(all_probs), torch.cat(all_targets)
+
+
+def evaluate_full_metrics(model, loader, device):
+    """Binary classification metrics (accuracy/sensitivity/specificity/precision/F1/AUC)
+    matching the indices in the BUS-BRA paper's Table 3/4, for a single-modality model.
+    """
+    probs, targets = collect_predictions(model, loader, device)
+    return classification_metrics(probs, targets)
 
 
 def _set_seed(seed):
