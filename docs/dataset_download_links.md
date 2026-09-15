@@ -20,8 +20,8 @@ _Last run: 2026-09-07 13:40:24 UTC · max-size-gb=2.0_
 |---|---|---|---|---|---|
 | BCDR | [link](http://bcdr.ceta-ciemat.es) | manual | 🔒 Manual | 2026-09-07 10:55:06 | Request-based access; both known hosts were unreachable during research. |
 | CBIS-DDSM | [link](https://wiki.cancerimagingarchive.net/pages/viewpage.action?pageId=22516629) | manual | 🔒 Manual | 2026-09-07 10:55:06 | TCIA collection; requires NBIA Data Retriever. |
-| CDD-CESM | [link](https://wiki.cancerimagingarchive.net/pages/viewpage.action?pageId=109379611) | manual | 🔒 Manual | 2026-09-07 10:55:07 | TCIA collection; requires Aspera/Faspex. |
-| CMMD | [link](https://wiki.cancerimagingarchive.net/pages/viewpage.action?pageId=70230508) | manual | 🔒 Manual | 2026-09-07 10:55:07 | TCIA collection; requires NBIA Data Retriever. |
+| CDD-CESM | [link](https://wiki.cancerimagingarchive.net/pages/viewpage.action?pageId=109379611) | manual | ✅ Success | 2026-09-13 12:04:54 | Downloaded manually via TCIA (326 patients, 2006 low-energy + subtracted CESM images, MD5 checksums verified against CDD-CESM.sums); local copy at ~/Downloads/PKG - CDD-CESM/CDD-CESM. |
+| CMMD | [link](https://wiki.cancerimagingarchive.net/pages/viewpage.action?pageId=70230508) | manual | ✅ Success | 2026-09-14 12:59:26 | Downloaded manually via TCIA (1,775 patients, 5,194 DICOM images, 22GB); local copy at ~/Downloads/data for thesis/Mammography/cmmd. Joined against CMMD_clinicaldata_revision.xlsx (breast-level benign/malignant labels) and converted to 3,738 labeled PNGs for training. |
 | CSAW-CC | [link](https://researchdata.se/en/catalogue/dataset/2021-204-1) | manual | 🔒 Manual | 2026-09-07 10:55:08 | Metadata CSV is open; imaging files are available on request only. |
 | DDSM | [link](http://www.eng.usf.edu/cvprg/Mammography/Database.html) | manual | 🔒 Manual | 2026-09-07 10:55:08 | Original host largely defunct; use CBIS-DDSM instead. |
 | DMID | [link](https://figshare.com/articles/dataset/_b_Digital_mammography_Dataset_for_Breast_Cancer_Diagnosis_Research_DMID_b_DMID_rar/24522883) | figshare | ⏭️ Skipped | 2026-09-07 10:55:09 | total size 11.73 GB exceeds --max-size-gb 2.0 |

@@ -395,6 +395,115 @@ def _breast_frame(root, seed=42, validation_fraction=0.2):
     return metadata[~metadata.index.isin(validation_indices)], metadata[metadata.index.isin(validation_indices)]
 
 
+def _cdd_cesm_metadata(root, annotation_path):
+    """Load the CDD-CESM (Khaled et al. 2022) annotation table and pair each row
+    with its JPEG under `root`. Uses the recombined/subtracted "CESM" view as
+    the primary classification input (the dataset's stated diagnostic advantage
+    over plain digital mammography); "Normal" cases are dropped since this repo
+    trains binary benign-vs-malignant. The paired low-energy "DM" image for the
+    same patient/side/view is intentionally not included here to avoid double
+    counting one finding as two independent samples."""
+    root = Path(root)
+    annotations = pd.read_excel(annotation_path, sheet_name='all')
+    annotations = annotations[annotations['Type'] == 'CESM']
+    annotations = annotations[annotations['Pathology Classification/ Follow up'].isin(['Benign', 'Malignant'])]
+    label_map = {'Benign': 0, 'Malignant': 1}
+    rows = []
+    for _, row in annotations.iterrows():
+        image_path = root / 'Subtracted images of CDD-CESM' / f"{row['Image_name']}.jpg"
+        if not image_path.exists():
+            continue
+        rows.append({
+            'image': image_path,
+            'label': label_map[row['Pathology Classification/ Follow up']],
+            'patient': row['Patient_ID'],
+        })
+    metadata = pd.DataFrame(rows)
+    if metadata.empty:
+        raise ValueError(f'No annotated CDD-CESM images found under {root} matching {annotation_path}')
+    return metadata
+
+
+def _cdd_cesm_frame(root, annotation_path, seed=42, validation_fraction=0.2):
+    metadata = _cdd_cesm_metadata(root, annotation_path)
+    patients = metadata['patient'].drop_duplicates().to_numpy(copy=True)
+    rng = np.random.default_rng(seed)
+    rng.shuffle(patients)
+    validation_count = max(1, int(len(patients) * validation_fraction))
+    validation_patients = set(patients[-validation_count:])
+    return metadata[~metadata['patient'].isin(validation_patients)], metadata[metadata['patient'].isin(validation_patients)]
+
+
+def _dicom_to_png_cached(dicom_path, cache_dir):
+    """Convert one CMMD DICOM to an 8-bit grayscale PNG, cached by relative path
+    under cache_dir so repeated frame-building doesn't re-decode 5,000+ DICOMs."""
+    from PIL import Image
+
+    dicom_path = Path(dicom_path)
+    cache_dir = Path(cache_dir)
+    out_path = cache_dir / dicom_path.with_suffix('.png').name
+    if out_path.exists():
+        return out_path
+
+    import pydicom
+    from pydicom.pixel_data_handlers.util import apply_voi_lut
+
+    ds = pydicom.dcmread(dicom_path)
+    array = apply_voi_lut(ds.pixel_array, ds)
+    if getattr(ds, 'PhotometricInterpretation', '') == 'MONOCHROME1':
+        array = array.max() - array
+    array = array.astype(np.float32)
+    array_min, array_max = array.min(), array.max()
+    if array_max > array_min:
+        array = (array - array_min) / (array_max - array_min)
+    array = (array * 255.0).astype(np.uint8)
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    Image.fromarray(array).save(out_path)
+    return out_path
+
+
+def _cmmd_metadata(dicom_root, clinical_data_path, cache_dir):
+    """Join every CMMD DICOM to its breast-level benign/malignant label from the
+    clinical data spreadsheet (keyed on PatientID + ImageLaterality; the DICOM
+    headers alone carry no diagnosis). Converts each matched DICOM to a cached
+    PNG on first use, since this repo's image loading is PIL-based."""
+    dicom_root = Path(dicom_root)
+    clinical = pd.read_excel(clinical_data_path, sheet_name='Sheet1')
+    label_map = {'Benign': 0, 'Malignant': 1}
+    labels = {
+        (row['ID1'], row['LeftRight']): label_map[row['classification']]
+        for _, row in clinical.iterrows() if row['classification'] in label_map
+    }
+
+    import pydicom
+
+    rows = []
+    for dicom_path in sorted(dicom_root.rglob('*.dcm')):
+        ds = pydicom.dcmread(dicom_path, stop_before_pixels=True)
+        patient_id = getattr(ds, 'PatientID', None)
+        laterality = getattr(ds, 'ImageLaterality', None)
+        key = (patient_id, laterality)
+        if key not in labels:
+            continue
+        png_path = _dicom_to_png_cached(dicom_path, cache_dir)
+        rows.append({'image': png_path, 'label': labels[key], 'patient': patient_id})
+    metadata = pd.DataFrame(rows)
+    if metadata.empty:
+        raise ValueError(f'No labeled CMMD DICOMs found under {dicom_root} matching {clinical_data_path}')
+    return metadata
+
+
+def _cmmd_frame(dicom_root, clinical_data_path, cache_dir, seed=42, validation_fraction=0.2):
+    metadata = _cmmd_metadata(dicom_root, clinical_data_path, cache_dir)
+    patients = metadata['patient'].drop_duplicates().to_numpy(copy=True)
+    rng = np.random.default_rng(seed)
+    rng.shuffle(patients)
+    validation_count = max(1, int(len(patients) * validation_fraction))
+    validation_patients = set(patients[-validation_count:])
+    return metadata[~metadata['patient'].isin(validation_patients)], metadata[metadata['patient'].isin(validation_patients)]
+
+
 def _assign_stratified_group_folds(metadata, group_col, num_folds, seed):
     """Assign each group (or each row, if group_col is None) to one of num_folds
     folds, stratified by class label at the group level, with a fixed seed."""
@@ -557,7 +666,19 @@ def _warm_start_branch(model, branch_index, checkpoint_path):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Train the three-branch fusion model.')
-    parser.add_argument('--dataset', choices=['busbra', 'busi', 'busc', 'breast', 'mias', 'breamdm', 'combined'], default='busbra')
+    parser.add_argument('--dataset', choices=['busbra', 'busi', 'busc', 'breast', 'mias', 'cdd_cesm', 'cmmd', 'breamdm', 'combined'], default='busbra')
+    parser.add_argument(
+        '--cdd-cesm-annotations', type=Path, default=None,
+        help='Path to the CDD-CESM "Radiology-manual-annotations.xlsx" file (TCIA supporting documentation, not part of the image package).'
+    )
+    parser.add_argument(
+        '--cmmd-clinical-data', type=Path, default=None,
+        help='Path to the CMMD "CMMD_clinicaldata_revision.xlsx" file (TCIA supporting documentation; DICOM headers alone carry no diagnosis).'
+    )
+    parser.add_argument(
+        '--cmmd-png-cache', type=Path, default=None,
+        help='Directory to cache CMMD DICOM-to-PNG conversions in (converted once, reused across runs).'
+    )
     parser.add_argument('--dataset-root', type=Path, default=None)
     parser.add_argument('--backbone', default='resnet18')
     parser.add_argument(
@@ -665,6 +786,23 @@ def main(argv=None):
         )
         train_transform = BusbraTransform(size=args.image_size, augment=True)
         validation_transform = BusbraTransform(size=args.image_size, augment=False)
+    elif args.dataset == 'cdd_cesm':
+        dataset_root = args.dataset_root or Path('datasets/mammography/cdd_cesm')
+        annotation_path = args.cdd_cesm_annotations or Path('datasets/mammography/cdd_cesm_annotations.xlsx')
+        train_frame, validation_frame = _cdd_cesm_frame(
+            dataset_root, annotation_path, args.seed, args.validation_fraction
+        )
+        train_transform = MiasTransform(size=args.image_size, augment=True)
+        validation_transform = MiasTransform(size=args.image_size, augment=False)
+    elif args.dataset == 'cmmd':
+        dicom_root = args.dataset_root or Path('datasets/mammography/cmmd_dicom')
+        clinical_data_path = args.cmmd_clinical_data or Path('datasets/mammography/cmmd_clinicaldata.xlsx')
+        cache_dir = args.cmmd_png_cache or Path('datasets/mammography/cmmd_png')
+        train_frame, validation_frame = _cmmd_frame(
+            dicom_root, clinical_data_path, cache_dir, args.seed, args.validation_fraction
+        )
+        train_transform = MiasTransform(size=args.image_size, augment=True)
+        validation_transform = MiasTransform(size=args.image_size, augment=False)
     elif args.dataset == 'breamdm':
         dataset_root = args.dataset_root or Path('datasets/MRI/BreaDM/cls/img9Se')
         train_transform = BreadmTransform(size=args.image_size, augment=True)
@@ -702,7 +840,11 @@ def main(argv=None):
     val_loader = _make_loader(validation_dataset, args.batch_size, args.num_workers)
     print(f'dataset={args.dataset} device={device} train_samples={len(train_dataset)} validation_samples={len(validation_dataset)}')
 
-    class_weights = _class_weights(train_frame['label'], cfg.num_classes) if args.paper_match else None
+    # CMMD's benign/malignant split is a real-world ~30/70 imbalance (not an
+    # artifact of our splitting), so weight its loss unconditionally rather
+    # than gating that on --paper-match like the BUS-BRA-specific recipe.
+    use_class_weights = args.paper_match or args.dataset == 'cmmd'
+    class_weights = _class_weights(train_frame['label'], cfg.num_classes) if use_class_weights else None
     return _train_model(args, device, loader, val_loader, class_weights=class_weights)
 
 

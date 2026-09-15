@@ -13,6 +13,8 @@ split, target definition, preprocessing, and evaluation unit.
 - `datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023`: BrEaST-Lesions USG, 256 clinical cases in the release paper; the local folder contains image/mask PNGs plus some `other` images.
 - `datasets/mammography/mias`: mini-MIAS, 322 PGM images at 1024 x 1024 pixels, with labels and lesion coordinates in `Info.txt`.
 - `datasets/MRI/BreaDM`: BreastDM, a DCE-MRI dataset. The local copy contains derived classification arrays (`cls/img9Se`, `cls/img17Se`, `cls/GLCM`, `cls/LBP`) and 3D segmentation arrays (`seg3D`), with official train/val/test structure.
+- CDD-CESM (mammography, TCIA): image package fully downloaded to `~/Downloads/PKG - CDD-CESM/CDD-CESM` (326 patients, 2,006 JPEGs across low-energy and recombined/subtracted views), checksum-verified against `CDD-CESM.sums`. Not yet copied into `datasets/` or wired into `training/train.py`; see section 8 for the blocking label-file gap.
+- CMMD (mammography, TCIA): download in progress to `~/Downloads/data for thesis/Mammography/cmmd` (as of 2026-09-13, ~114 MB / 22 DICOM files of an expected 1,775-patient, 5,202-image, ~22.9 GB collection). Not usable for training until the transfer finishes; see section 9.
 
 The current training code is being used first as a single-dataset preprocessing
 and paper-reproduction harness. Segmentation metrics and 3D-volume results require
@@ -258,6 +260,181 @@ ultrasound/MRI branches. Full metrics logged to the `mmfm-combined` W&B project.
 - As with every single-dataset section above, per-source splits here are not
   official paper splits, and BUSI is still the incomplete 163-image local subset.
 
+## 8. CDD-CESM (Categorized Contrast-Enhanced Spectral Mammography)
+
+### Source papers
+
+- Dataset: [Categorized contrast enhanced mammography dataset for diagnostic and artificial intelligence research](https://doi.org/10.1038/s41597-022-01238-0), Khaled et al., Scientific Data, 2022.
+- Reference implementation: [omar-mohamed/CDD-CESM-Dataset](https://github.com/omar-mohamed/CDD-CESM-Dataset) (helper repo by the dataset authors' group for preprocessing, segmentation, and classification baselines).
+
+### Dataset shape
+
+2,006 images (average resolution 2355 x 1315) from 326 patients: low-energy and
+recombined/subtracted CESM views, with 751 normal images and the remainder split
+across mass, architectural distortion, asymmetry, calcification, mass/non-mass
+enhancement, and post-op/post-neoadjuvant findings (248 images have more than one
+finding). Pathology (benign/malignant/normal) and BI-RADS come from a separate
+per-image annotation table, not from the DICOM/JPEG package itself.
+
+### Reproduction plan
+
+1. Pair each `P<id>_<side>_<CM|DM>_<view>[_n].jpg` image with its row in the
+   TCIA "Radiology manual annotations" / "Radiology hand-drawn segmentations"
+   spreadsheet, keyed on patient id, side, and view, to get pathology
+   classification and (for lesion images) segmentation polygons.
+2. For classification, use the recombined/subtracted ("CM") image as the primary
+   input per the dataset paper's stated purpose (CESM's diagnostic value over
+   plain digital mammography); treat the paired low-energy ("DM") image as an
+   optional second channel/branch rather than a duplicate sample.
+3. Resize to the model input size (start at 224x224 to match the other
+   single-backbone baselines in this repo) and normalize per-image or with
+   ImageNet statistics if using a pretrained backbone.
+4. Collapse the multi-label finding categories to the binary benign/malignant
+   target this repo trains on: drop or hold out "normal" images as a separate
+   screening-negative class rather than silently merging them into "benign".
+5. Split at the patient level (a patient can contribute multiple views/sides);
+   do not let the same patient appear in both train and validation.
+6. Train the existing `SingleBackboneClassifier` path
+   (`training/train.py --dataset cdd_cesm --single-mode` once a dataset id and
+   frame builder exist) with a resnet* backbone so the first-conv channel
+   adaptation in `models/backbone.py` applies; grayscale-vs-RGB handling must
+   match how the JPEGs are stored (verify channel count before assuming
+   1-channel input).
+7. Report accuracy, sensitivity/specificity for malignant, F1, and ROC-AUC at
+   the image level and, separately, at the patient level (majority vote across
+   a patient's views) since the paper's clinical unit of interest is the patient.
+
+### Blocking check
+
+The locally downloaded package (`~/Downloads/PKG - CDD-CESM`) contains only the
+image files and an MD5 checksum manifest (`CDD-CESM.sums`) — it does **not**
+include the annotation/classification spreadsheet. TCIA hosts that separately
+under "Supporting documentation" on the [CDD-CESM collection page]
+(https://wiki.cancerimagingarchive.net/pages/viewpage.action?pageId=109379611)
+(the "Radiology manual annotations" and "Radiology hand-drawn segmentations"
+files). Without it there is no ground-truth benign/malignant label to train
+against. **Next step: download that spreadsheet from the TCIA page and place it
+alongside the image folder before writing the manifest builder.**
+
+### Local implementation status
+
+Wired into `training/train.py` as `--dataset cdd_cesm` (`_cdd_cesm_frame`),
+using the recombined/subtracted "CESM" image per patient/side/view as input
+(the paired low-energy "DM" image is dropped rather than counted as a second
+independent sample), `MiasTransform` for grayscale full-frame resize, and a
+patient-level train/validation split. `datasets/mammography/cdd_cesm` and
+`datasets/mammography/cdd_cesm_annotations.xlsx` are symlinks into the
+downloaded TCIA package and the annotation spreadsheet respectively (both
+outside the repo, consistent with the other gitignored dataset roots).
+
+A first smoke run (`--single-mode --backbone resnet18 --pretrained --epochs 15
+--patience 4`, 529 train / 57 validation images, patient-level split, seed 42)
+converged and early-stopped after 6 epochs: accuracy 0.614, sensitivity 0.833,
+specificity 0.370, F1 0.694, AUC 0.801 on the validation split (run logged at
+[wandb.ai/nouran-fadlallah-none/mmfm-cdd-cesm/runs/65961bwl](https://wandb.ai/nouran-fadlallah-none/mmfm-cdd-cesm/runs/65961bwl)).
+This confirms the pipeline is correct end-to-end, not a tuned reproduction:
+the low specificity and the fast train/val loss divergence point to
+overfitting on ~590 total labeled images with no augmentation search, class
+weighting, or hyperparameter sweep yet, and this run used only the CESM
+channel rather than the CM+DM two-input recipe the source repo's own
+classifier likely uses. Do not cite these numbers as a paper-comparable
+result.
+
+## 9. CMMD (Chinese Mammography Database)
+
+### Source papers
+
+- Dataset: Cui, C., Li, L., Cai, H., Fan, Z., Zhang, L., Dan, T., Li, J., Wang,
+  J. (2021). [The Chinese Mammography Database (CMMD): An online mammography
+  database with biopsy confirmed types for machine diagnosis of breast](https://doi.org/10.7937/tcia.eqde-4b16).
+  The Cancer Imaging Archive.
+- Reference implementation used for the preprocessing/model recipe below:
+  [CraigMyles/cggm-mammography-classification](https://github.com/CraigMyles/cggm-mammography-classification)
+  (InceptionResNetV2 classifier over CMMD).
+
+### Dataset shape
+
+1,775 patients, 3,728 studies, 5,202 mammography images (DICOM, GE Senographe
+DS unit), ~22.9 GB. Benign/malignant type is biopsy-confirmed; molecular
+subtype is additionally available for 749 patients (1,498 images). Benign/
+malignant labels and per-patient clinical fields ship as a separate clinical
+data spreadsheet on the TCIA page, not inside the DICOM headers or
+`metadata.csv` produced by the bulk downloader.
+
+### Reproduction plan
+
+1. Convert DICOM to a normalized array (windowing per the DICOM VOI LUT /
+   rescale slope-intercept, then min-max or percentile normalization) rather
+   than assuming 8-bit JPEGs like the other mammography sources in this repo.
+2. Join each `SeriesInstanceUID`/`PatientID` in `metadata.csv` against the
+   CMMD clinical data spreadsheet to attach the benign/malignant label.
+3. Extract the breast region (foreground/contour-based cropping to drop the
+   black background and any scanner annotations) and mirror all images to a
+   consistent laterality (e.g., always left-facing) before resizing — this
+   matches the preprocessing used in the reference InceptionResNetV2 pipeline
+   above and removes a spurious left/right shortcut feature.
+4. Resize to a fixed size (448x448 in the reference pipeline; 224x224 to stay
+   consistent with this repo's other single-backbone baselines — pick one and
+   report it) and apply CLAHE or histogram normalization if reproducing the
+   contrast-enhancement step some CMMD baselines use.
+5. Split by patient (not by study/image) into train/val/test; CMMD has no
+   official split, so a stratified patient-level split with a fixed seed must
+   be documented explicitly.
+6. Train `SingleBackboneClassifier` with a resnet* backbone (for the first-conv
+   grayscale adaptation) or reproduce the reference InceptionResNetV2 recipe
+   separately as a comparison point; either way, do not average left/right
+   images from the same study without checking whether the label is
+   study-level or breast-level (CMMD malignancy can be unilateral).
+7. Report accuracy, sensitivity/specificity for malignant, F1, and ROC-AUC at
+   the image level and at the patient/breast level.
+
+### Blocking check (resolved 2026-09-14)
+
+Both prior blockers are resolved: the DICOM transfer completed (5,194 files,
+22 GB, verified via `.dcm.tmp` absence and file count against the 1,775-patient
+manifest), and `CMMD_clinicaldata_revision.xlsx` (breast-level benign/malignant
+labels keyed on `PatientID` + `LeftRight`) was obtained from the TCIA page's
+supporting documentation.
+
+### Local implementation status
+
+Wired into `training/train.py` as `--dataset cmmd`. `_cmmd_metadata` walks
+every DICOM under `datasets/mammography/cmmd_dicom` (a symlink to the TCIA
+download), reads `PatientID`/`ImageLaterality` per file (`stop_before_pixels`,
+cheap), joins against `datasets/mammography/cmmd_clinicaldata.xlsx` on
+`(PatientID, LeftRight)` — DICOM headers alone carry no diagnosis — and drops
+any DICOM without a matching label row (5,194 DICOMs -> 3,738 labeled: 2,626
+malignant, 1,112 benign, matching the clinical spreadsheet's per-breast
+counts). `_dicom_to_png_cached` converts each matched DICOM once via
+`pydicom` + `apply_voi_lut` (inverting `MONOCHROME1`, then min-max normalizing
+to 8-bit) into `datasets/mammography/cmmd_png/`, cached by filename so re-runs
+don't re-decode; a spot-checked converted image renders as a normal-looking
+full mammogram. `_cmmd_frame` then does a patient-level train/validation
+split, and `MiasTransform` handles grayscale resize, matching the MIAS/
+CDD-CESM baselines. The full conversion pass took ~7.5 minutes once.
+
+Two smoke runs (`--single-mode --backbone resnet18 --pretrained --epochs 15
+--patience 4`, patient-level split, seed 42, 3,370 train / 368 validation
+images) confirmed the pipeline end-to-end and the predicted imbalance failure
+mode:
+
+- **Unweighted cross-entropy**: accuracy 0.739, sensitivity 0.996,
+  **specificity 0.010**, F1 0.850, AUC 0.804
+  ([run](https://wandb.ai/nouran-fadlallah-none/mmfm-cmmd/runs/m0zb1mue)).
+  The model collapsed to predicting malignant for almost everything, exploiting
+  the ~70/30 malignant/benign split; the 0.739 accuracy is barely above the
+  majority-class baseline and this run should not be cited as a result.
+- **Class-weighted cross-entropy** (added unconditionally for `--dataset cmmd`
+  in `training/train.py`, not gated behind `--paper-match` since the
+  imbalance is a property of the real label distribution, not a paper-specific
+  recipe choice): accuracy 0.758, sensitivity 0.824, **specificity 0.573**,
+  precision 0.845, F1 0.834, AUC 0.790
+  ([run](https://wandb.ai/nouran-fadlallah-none/mmfm-cmmd/runs/hi47k6tk)).
+  Specificity recovers substantially for a ~1-point AUC cost — still a
+  pipeline check, not a tuned reproduction (no augmentation search,
+  hyperparameter sweep, or breast-level/multi-view aggregation yet), but a
+  usable starting point.
+
 ## Execution Order
 
 1. Resolve BUSI completeness and recover BrEaST labels/metadata.
@@ -266,4 +443,7 @@ ultrasound/MRI branches. Full metrics logged to the `mmfm-combined` W&B project.
 4. Add BUSI and BUSC classification baselines, then BrEaST classification and segmentation tasks.
 5. Add MIAS lesion-patch classification with patient-level evaluation.
 6. Add BreaDM 2D classification from the official derived arrays, then the 3D segmentation path.
-7. Log every run to W&B with dataset, representation, split seed, preprocessing version, backbone, and checkpoint path. Keep modality dropout disabled for all single-dataset reproduction runs; introduce it only when the multimodal fusion experiment begins.
+7. ~~Download the CDD-CESM annotation spreadsheet and the CMMD clinical data spreadsheet from their respective TCIA pages, and wait for the CMMD DICOM transfer to finish.~~ Done 2026-09-14.
+8. ~~Add a DICOM loading path (`pydicom` + VOI LUT) for CMMD, and a `_cdd_cesm_frame`/`_cmmd_frame` builder each, following the pattern of the existing `_mias_frame`/`_busi_frame` builders.~~ Done 2026-09-14 (sections 8-9).
+9. Tune the CDD-CESM and CMMD single-backbone baselines beyond the current smoke-test checkpoints: augmentation search, a hyperparameter sweep, breast/patient-level multi-view aggregation for CMMD, and the CM+DM two-input variant for CDD-CESM. Then fold both in as new mammography sources for `--dataset combined` (alongside or in place of MIAS).
+10. Log every run to W&B with dataset, representation, split seed, preprocessing version, backbone, and checkpoint path. Keep modality dropout disabled for all single-dataset reproduction runs; introduce it only when the multimodal fusion experiment begins.
