@@ -33,7 +33,15 @@ BrEaST-Lesions USG reports its own classifier benchmark, so we add an
 \textbf{EfficientNet-B0} comparison there instead, the backbone most used
 in later work on these releases. We report accuracy, sensitivity,
 specificity, precision, F1, and AUC for every run, and compare each result
-to the source paper's own numbers where one exists.
+to the source paper's own numbers where one exists. Beyond aggregate
+accuracy, we break every model down by \textbf{false-positive vs.\
+false-negative bias} and add a \textbf{Grad-CAM qualitative analysis} that
+checks whether each model attends to the lesion or to background/framing
+cues, directly probing a preprocessing concern raised by the aggregate
+results. We also report \textbf{preliminary smoke-test results} on two
+newly wired-in mammography sources, CDD-CESM \citep{khaled2022cddcesm} and
+CMMD \citep{cui2021cmmd}, which confirm the pipeline end to end but are not
+yet tuned reproductions.
 \end{abstract}
 
 \section{Datasets and Task}
@@ -248,6 +256,59 @@ accuracy and 0.008 AUC} of the paper's own fusion architecture, LG-CAFN.
 Its specificity is much weaker, \textbf{0.542}: the model
 \textbf{over-calls malignant}.
 
+\subsection{Per-class bias: false positives vs.\ false negatives}
+\label{sec:bias}
+
+Aggregate accuracy hides which direction a model errs in, which matters
+clinically: a false positive (predicting malignant on a benign case) costs
+an unnecessary follow-up, while a false negative (predicting benign on a
+malignant case) is a missed cancer. Table~\ref{tab:bias} pools confusion
+counts across all 5 test folds per model (BreastDM's single 117-sample
+split) and reports the resulting false-positive rate ($1-\text{specificity}$),
+false-negative rate ($1-\text{sensitivity}$), and a pooled bias verdict.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Per-class bias, pooled across all test folds. FP rate
+  $=1-\text{specificity}$; FN rate $=1-\text{sensitivity}$.}
+  \label{tab:bias}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{llrrrrrrl}
+    \toprule
+    Dataset & Backbone & $n$ & TN & FP & FN & TP & FP rate & FN rate & Bias \\
+    \midrule
+    BUS-BRA & ResNet-18 & 1875 & 1055 & 213 & 109 & 498 & 0.168 & 0.180 & FN-leaning (weak) \\
+    BUS-BRA & ResNet-50 & 1875 & 1065 & 203 & 119 & 488 & 0.160 & 0.196 & FN-leaning (weak) \\
+    BUSI & ResNet-18 & 647 & 397 & 40 & 35 & 175 & 0.092 & 0.167 & \textbf{FN-leaning (5/5 folds)} \\
+    BUSI & EfficientNet-B0 & 647 & 387 & 50 & 27 & 183 & 0.114 & 0.129 & FN-leaning (weak) \\
+    BUSC & ResNet-18 & 250 & 98 & 2 & 0 & 150 & 0.020 & 0.000 & FP-leaning, but tiny (2 errors) \\
+    BrEaST-Lesions USG & ResNet-18 & 252 & 112 & 42 & 27 & 71 & 0.273 & 0.276 & Balanced \\
+    BrEaST-Lesions USG & EfficientNet-B0 & 252 & 101 & 53 & 24 & 74 & 0.344 & 0.245 & FP-leaning \\
+    mini-MIAS & ResNet-18 & 119 & 46 & 22 & 26 & 25 & 0.324 & 0.510 & \textbf{FN-leaning (4/5, severe)} \\
+    BreastDM & ResNet-18 & 117 & 13 & 11 & 3 & 90 & 0.458 & 0.032 & \textbf{FP-leaning (severe)} \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table}
+
+\textbf{mini-MIAS is the most clinically concerning model here}: it misses
+just over half of actual malignant cases (FN rate \textbf{0.510}), and this
+direction holds in 4 of its 5 folds, not a coin flip. Combined with its
+already-flagged small-sample caveat, it should not be treated as usable for
+screening in its current form. \textbf{BUSI leans false-negative
+consistently}, 5/5 folds for ResNet-18: despite a respectable 0.884
+aggregate accuracy, it misses malignant cases about twice as often as it
+false-alarms on benign ones. \textbf{BreastDM leans false-positive
+severely}, over-calling malignant on 46\% of benign cases while almost
+never missing a real malignant case (FN rate 0.032) — the safer failure
+direction clinically, but still a heavy false-alarm burden. BUSC's 2
+pooled errors are too few to call a direction; the near-perfect result
+still needs the saliency check below, not a bias read. BUS-BRA and
+BrEaST-Lesions USG's pooled verdicts hide real fold-to-fold flips (BUS-BRA
+ResNet-18 is FP-leaning in 3/5 folds and FN-leaning in 2; BrEaST ResNet-18
+flips 3 times across its 5 folds), so treat those two as a weak aggregate
+tendency, not a stable property of the model.
+
 \section{Discussion: Is the Preprocessing Sufficient?}
 \label{sec:preprocessing-discussion}
 
@@ -306,6 +367,75 @@ the current lesion-patch framing against a full-breast-image baseline.
 \texttt{dataset\_reproduction\_plan} lists it as an open design choice.
 Until we run one of these, \textbf{we cannot rule preprocessing in or out
 as the bottleneck here}.
+
+\subsection{Grad-CAM qualitative analysis}
+\label{sec:gradcam}
+
+Section~\ref{sec:preprocessing-discussion} above flagged BUSC specifically
+for a saliency check, since it has the least preprocessing of any dataset
+here (no ROI crop at all) and the best result. We ran Grad-CAM
+\citep{selvaraju2017gradcam} on every trained checkpoint, examining both
+correctly and incorrectly classified examples, using
+\texttt{utils/gradcam.py}. Figure~\ref{fig:gradcam} shows representative
+examples.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.32\textwidth]{gradcam/busc_correct_benign.png}
+  \includegraphics[width=0.32\textwidth]{gradcam/busc_correct_malignant.png}
+  \includegraphics[width=0.32\textwidth]{gradcam/busc_wrong.png}\\
+  \includegraphics[width=0.32\textwidth]{gradcam/mias_wrong_diffuse.png}
+  \includegraphics[width=0.32\textwidth]{gradcam/busi_wrong_localized.png}
+  \includegraphics[width=0.32\textwidth]{gradcam/breastdm_wrong_localized.png}
+  \caption{Grad-CAM overlays, ResNet-18. Top row, BUSC: a correctly
+  classified benign case (left) shows a broad, diffuse hotspot with no
+  focal center, unlike the correctly classified malignant case (middle),
+  which is compact and centrally localized; the one misclassified BUSC
+  example (right, benign predicted malignant at $p=0.57$) is again diffuse
+  and reaches the image border. Bottom row: a misclassified mini-MIAS case
+  (left) shows a blocky, uninterpretable activation pattern; misclassified
+  BUSI (middle) and BreastDM (right) cases both show a compact,
+  lesion-plausible hotspot despite being wrong.}
+  \label{fig:gradcam}
+\end{figure}
+
+\textbf{BUSC (no ROI crop).} The correctly classified malignant example
+has a compact, centrally-localized hotspot consistent with attention on an
+actual mass, but the correctly classified benign example's heatmap covers
+a broad diffuse region rather than a focal point, and the one misclassified
+example again has a large, non-lesion-specific hot region reaching the
+image border. Extending this to every misclassified BUSC example (2
+pooled errors across all folds) shows the same pattern both times. With
+only 250 total images and no ROI crop, this is consistent with, though
+does not prove, the concern raised above: the model may be partly using
+broad image texture or device-specific framing rather than a localized
+lesion signal. \textbf{Treat BUSC's 0.992 accuracy as unverified}, not as a
+working classifier, until lesion boundaries can be recovered by another
+means and a crop re-run shows whether accuracy drops toward the other
+ultrasound datasets' range.
+
+\textbf{Datasets with mask-guided ROI cropping (BUS-BRA, BUSI, BrEaST,
+BreastDM) fail on focal, lesion-centered mistakes instead.} A
+representative BUSI false positive and a BreastDM false positive both show
+a compact, well-localized hotspot on what is plausibly the actual lesion
+or tumor region. These read as genuinely hard cases, not a shortcut or
+background artifact: \textbf{the crop preprocessing appears to be doing
+its job for these four datasets.}
+
+\textbf{mini-MIAS fails diffusely too, but differently from BUSC.} Its
+failures show a blocky, grid-like activation pattern with no clear center,
+plausibly an artifact of Grad-CAM's coarse spatial resolution on an
+already-small lesion-patch crop rather than a meaningful shortcut signal.
+This is a separate flag from BUSC's, on top of the already-quantified 51\%
+miss rate in Table~\ref{tab:bias}: mini-MIAS's failures are not
+interpretable either way, so Grad-CAM cannot confirm or rule out a
+preprocessing cause here.
+
+Net read: extending the single-example BUSC check to every trained model
+\textbf{strengthens rather than weakens} the preprocessing discussion's
+BUSC concern, and adds a new, independent flag for mini-MIAS. BUS-BRA,
+BUSI, and BreastDM's failures look like ordinary hard-case mistakes, not a
+preprocessing or shortcut-learning problem.
 
 \section{Mixed-Backbone Multimodal Fusion}
 \label{sec:mixed-fusion}
@@ -379,6 +509,71 @@ full 10-epoch budget still improving, so its true optimum may be higher.
 \textbf{This is a fusion-mechanism ablation, not a standalone benchmark
 result.}
 
+\section{Preliminary Extensions: CDD-CESM and CMMD Mammography}
+\label{sec:new-datasets}
+
+Two additional mammography sources, CDD-CESM \citep{khaled2022cddcesm} and
+CMMD \citep{cui2021cmmd}, were wired into \texttt{training/train.py} as
+\texttt{--dataset cdd\_cesm} and \texttt{--dataset cmmd} after the
+six-dataset results above. Both required a nontrivial data path the other
+mammography source (mini-MIAS) does not: CDD-CESM needed joining images
+against a separate TCIA annotation spreadsheet by patient/side/view, and
+CMMD needed DICOM-to-array conversion (\texttt{pydicom} plus VOI-LUT
+windowing) joined against a separate clinical-data spreadsheet by
+\texttt{(PatientID, LeftRight)}, since CMMD's DICOM headers alone carry no
+diagnosis. Both use a patient-level train/validation split and
+\texttt{MiasTransform} for grayscale resize, matching the mini-MIAS
+baseline above. \textbf{These are single-split smoke runs, not
+cross-validated reproductions} — no augmentation search, hyperparameter
+sweep, or (for CDD-CESM) the paper's own CM+DM two-input recipe. Table
+\ref{tab:new-datasets} reports them for completeness; do not compare them
+directly to the 5-fold numbers in Tables~\ref{tab:busbra}--\ref{tab:resnet-only}.
+
+\begin{table}[htbp]
+  \centering
+  \caption{CDD-CESM and CMMD: preliminary single-split smoke-test results, ResNet-18.}
+  \label{tab:new-datasets}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{llcccccc}
+    \toprule
+    Dataset & Run & Acc. & Sens. & Spec. & Precision & F1 & AUC \\
+    \midrule
+    CDD-CESM \citep{khaled2022cddcesm} & Unweighted CE & $0.614$ & $0.833$ & $0.370$ & --- & $0.694$ & $0.801$ \\
+    \multirow{2}{*}{CMMD \citep{cui2021cmmd}}
+      & Unweighted CE & $0.739$ & $0.996$ & $\mathbf{0.010}$ & --- & $0.850$ & $0.804$ \\
+      & Class-weighted CE & $0.758$ & $0.824$ & $0.573$ & $0.845$ & $0.834$ & $0.790$ \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table}
+
+\textbf{CDD-CESM} (326 patients; 529 train / 57 validation images,
+patient-level split, seed 42, early-stopped after 6 of 15 epochs) uses only
+the recombined/subtracted CESM channel, dropping the paired low-energy
+image rather than treating it as a second input. Specificity is weak
+(\textbf{0.370}) and train/val loss diverged quickly, consistent with
+overfitting on roughly 590 total labeled images with no augmentation or
+class weighting yet.
+
+\textbf{CMMD} (3,370 train / 368 validation images, patient-level split,
+seed 42) demonstrates the class-imbalance failure mode directly: with
+unweighted cross-entropy the model \textbf{collapses to predicting
+malignant for almost everything} (specificity \textbf{0.010}), exploiting
+the dataset's roughly 70/30 malignant/benign split — its 0.739 accuracy is
+barely above the majority-class baseline and should not be read as a
+result. Class-weighted cross-entropy (now applied unconditionally for
+\texttt{--dataset cmmd}, since the imbalance is a property of the real
+label distribution rather than a paper-specific recipe choice) recovers
+specificity to \textbf{0.573} for about one point of AUC, a usable starting
+point but still not a tuned reproduction.
+
+Both runs confirm their respective pipelines are correct end to end. The
+next steps before either is comparable to
+Tables~\ref{tab:busbra}--\ref{tab:resnet-only} are the same as elsewhere in
+this report: cross-validation, an augmentation/hyperparameter search, and,
+for CMMD, breast-level multi-view aggregation rather than per-image
+predictions.
+
 \section{Limitations}
 \label{sec:limitations}
 
@@ -401,6 +596,17 @@ result.}
     and BrEaST-Lesions USG (256 cases) are small enough that 5-fold CV
     still leaves high per-fold variance. Read results there as
     directional.
+  \item \textbf{CDD-CESM and CMMD (Section~\ref{sec:new-datasets}) are
+    single-split smoke tests, not cross-validated reproductions.} No
+    augmentation search, hyperparameter sweep, or class-weighting tuning
+    has been done for CDD-CESM, and CMMD's per-image predictions have not
+    yet been aggregated to breast level. Neither should be compared
+    directly to the 5-fold numbers elsewhere in this report.
+  \item \textbf{Grad-CAM is a qualitative, not quantitative, check}
+    (Section~\ref{sec:gradcam}). It is read on a handful of examples per
+    model and cannot itself confirm or rule out shortcut learning; it
+    motivates, rather than replaces, the re-crop experiment proposed for
+    BUSC in Section~\ref{sec:preprocessing-discussion}.
 \end{itemize}
 
 \bibliographystyle{plainnat}
