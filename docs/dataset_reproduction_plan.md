@@ -15,6 +15,7 @@ split, target definition, preprocessing, and evaluation unit.
 - `datasets/MRI/BreaDM`: BreastDM, a DCE-MRI dataset. The local copy contains derived classification arrays (`cls/img9Se`, `cls/img17Se`, `cls/GLCM`, `cls/LBP`) and 3D segmentation arrays (`seg3D`), with official train/val/test structure.
 - CDD-CESM (mammography, TCIA): image package fully downloaded to `~/Downloads/PKG - CDD-CESM/CDD-CESM` (326 patients, 2,006 JPEGs across low-energy and recombined/subtracted views), checksum-verified against `CDD-CESM.sums`. Not yet copied into `datasets/` or wired into `training/train.py`; see section 8 for the blocking label-file gap.
 - CMMD (mammography, TCIA): download in progress to `~/Downloads/data for thesis/Mammography/cmmd` (as of 2026-09-13, ~114 MB / 22 DICOM files of an expected 1,775-patient, 5,202-image, ~22.9 GB collection). Not usable for training until the transfer finishes; see section 9.
+- UC Davis Breast Phantom Dataset: downloaded, inspected, and **deleted** (2026-09-18) — tissue-class-segmentation labels only, no benign/malignant diagnosis, so it cannot supervise this repo's classification task as-is. See section 10 for the full decision record.
 
 The current training code is being used first as a single-dataset preprocessing
 and paper-reproduction harness. Segmentation metrics and 3D-volume results require
@@ -434,6 +435,44 @@ mode:
   pipeline check, not a tuned reproduction (no augmentation search,
   hyperparameter sweep, or breast-level/multi-view aggregation yet), but a
   usable starting point.
+
+## 10. UC Davis Breast Phantom Dataset — decision: not used
+
+### What it is
+
+150 voxelized computational breast phantoms (Sarno et al., *Medical Physics*,
+2021, PubMed [33683711](https://pubmed.ncbi.nlm.nih.gov/33683711/)), derived
+from clinical dedicated breast-CT scans and released for virtual-clinical-trial
+and CT-dose/reconstruction-algorithm simulation. Downloaded locally to
+`datasets/raw/uc_davis_phantom` (2026-09-07, via `scripts/download_datasets.py`).
+
+### Decision: skip and delete (2026-09-18)
+
+Inspected the DICOM payload directly: each `512x512` slice's pixel values are
+not CT intensities but **discrete tissue-class labels, `{0, 1, 2, 3}`** only
+(background/skin/adipose/fibroglandular-type classes), and there is no
+diagnosis field anywhere in the DICOM headers (`PatientID` is just a numeric
+phantom id). This matches the gap already recorded in
+[breast_cancer_datasets.md](breast_cancer_datasets.md#dedicated-breast-ct-incl-photon-counting):
+*"tissue-class labels only (no cancer diagnosis)"*.
+
+This repo's entire pipeline (`training/train.py`, every `_*_frame` builder)
+supervises on a benign/malignant label. This dataset ships no such label and
+the source paper's own contribution isn't a classification benchmark either —
+it's a phantom-generation method, so there is no paper-reported accuracy/AUC
+to reproduce the way BUS-BRA's Table 3 works. Making it useful for this
+repo's binary classification task would require either (a) training a
+4-class tissue-segmentation model instead of a diagnosis classifier — a
+different task needing a new dataset adapter and model head — or (b)
+building a synthetic-lesion-insertion step to create a diagnosis label that
+doesn't exist in the source data. Both are new-research-direction scope, not
+a "wire it in" job.
+
+**Deleted the local copy** (`datasets/raw/uc_davis_phantom`, 30 GB) rather
+than keep it around unused; disk was at 456 MB free at the time. Re-download
+from [Zenodo](https://zenodo.org/records/4529852) (95.7 GB full release,
+0.26 GB was actually pulled locally per `dataset_download_links.md`) if the
+segmentation or lesion-insertion direction is picked up later.
 
 ## Execution Order
 

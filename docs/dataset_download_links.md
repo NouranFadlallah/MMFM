@@ -61,7 +61,7 @@ _Last run: 2026-09-07 13:40:24 UTC · max-size-gb=2.0_
 
 | Dataset | Link | Access | Status | Last Attempt (UTC) | Notes |
 |---|---|---|---|---|---|
-| UC Davis Breast Phantom Dataset | [link](https://zenodo.org/records/4529852) | zenodo | ✅ Success | 2026-09-07 10:59:11 | downloaded 0.26 GB to datasets/raw/uc_davis_phantom |
+| UC Davis Breast Phantom Dataset | [link](https://zenodo.org/records/4529852) | zenodo | 🗑️ Deleted | 2026-09-18 | downloaded 0.26 GB to datasets/raw/uc_davis_phantom, then deleted — tissue-class labels only, no benign/malignant diagnosis; see dataset_reproduction_plan.md section 10 |
 | AAPM DL-Spectral CT Challenge (simulated) | [link](https://www.aapm.org/GrandChallenge/DL-spectral-CT/) | manual | 🔒 Manual | 2026-09-07 10:59:11 | Challenge page; no confirmed stable direct-download URL. |
 | DMR-IR (thermography) | [link](https://visual.ic.uff.br/dmi) | manual | 🔒 Manual | 2026-09-07 10:59:12 | Free registration required. Unofficial mirror: huggingface.co/datasets/SemilleroCV/DMR-IR. |
 | UM-BMID (microwave) | [link](https://ieee-dataport.org/open-access/university-manitoba-breast-microwave-imaging-dataset-um-bmid) | manual | 🔒 Manual | 2026-09-07 10:59:12 | IEEE DataPort; requires a free account login. |

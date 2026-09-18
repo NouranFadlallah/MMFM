@@ -549,6 +549,13 @@ No dataset of real clinical dedicated-breast-CT images with disease labels for C
 - Citation: Sarno, A. et al., *Medical Physics* (2021). PubMed: [33683711](https://pubmed.ncbi.nlm.nih.gov/33683711/)
 - Access: [Zenodo](https://zenodo.org/records/4529852), DICOM, 95.7 GB
 - License: CC BY 4.0
+- **Local decision (2026-09-18): downloaded, inspected, and deleted** — confirmed
+  no benign/malignant label exists anywhere in the DICOM payload (pixel values
+  are discrete tissue classes `{0,1,2,3}`, not CT intensities or a diagnosis
+  field), so it cannot supervise this repo's classification task without a new
+  segmentation task or a synthetic-lesion-insertion step. See
+  [dataset_reproduction_plan.md](dataset_reproduction_plan.md#10-uc-davis-breast-phantom-dataset--decision-not-used)
+  for the full record.
 
 **BREAST-DIAGNOSIS (TCIA)** — see full entry in [Section 3](#3-mri); includes a CT series alongside MR/PT/mammography, not a dedicated breast-CT protocol.
 
