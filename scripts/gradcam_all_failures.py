@@ -20,8 +20,9 @@ from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from data.dataset import BreaDMDataset, BreadmTransform
-from scripts.gradcam_visualize import _load_model, visualize_fold
+from data.dataset import BreaDMDataset, BreadmTransform, MiasTransform
+from scripts.gradcam_visualize import _load_model, _load_one_image, visualize_fold
+from training.train import _dbt_frame
 from utils.gradcam import GradCAM, overlay_heatmap, target_layer_for_backbone
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -91,6 +92,47 @@ def breamdm_failures(max_errors=MAX_ERRORS_PER_FOLD):
     return saved
 
 
+def bcsdbt_failures(max_errors=MAX_ERRORS_PER_FOLD):
+    """BCS-DBT's false-positive-only sweep (scripts/gradcam_false_positives.py)
+    found zero false positives -- its one validation-set error is a false
+    negative, which that sweep doesn't capture by design. This visualizes
+    every error regardless of direction, the same as every other dataset
+    here, so the gap isn't just an empty table cell."""
+    class_names = ('benign', 'malignant')
+    out_dir = Path('docs/gradcam/bcsdbt_resnet18')
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    _, validation_frame = _dbt_frame(
+        Path('datasets/mammography/bcsdbt_dicom'), Path('datasets/mammography/bcsdbt_labels.csv'),
+        Path('datasets/mammography/bcsdbt_file_paths.csv'), Path('datasets/mammography/bcsdbt_boxes.csv'),
+        Path('datasets/mammography/bcsdbt_png'), seed=42, validation_fraction=0.2,
+    )
+    transform = MiasTransform(size=224, augment=False)
+    model = _load_model(Path('bcsdbt_single_resnet18_best.pth'), 'resnet18')
+    target_layer = target_layer_for_backbone(model, 'resnet18')
+    cam = GradCAM(model, target_layer)
+
+    saved = []
+    for row in validation_frame.to_dict('records'):
+        true_label = int(row['label'])
+        tensor = _load_one_image(row, transform, 'bcsdbt')
+        x1 = tensor.unsqueeze(0).to(DEVICE)
+        cam_map, pred_class, probs = cam(x1)
+        cam_map, pred_class, probs = cam_map[0], int(pred_class[0]), probs[0]
+        if pred_class == true_label:
+            continue
+        overlay = overlay_heatmap(tensor.numpy(), cam_map)
+        fname = f'{class_names[true_label]}_pred-{class_names[pred_class]}_WRONG_p{probs[1]:.2f}_{Path(str(row["image"])).stem}.png'
+        Image.fromarray(overlay).save(out_dir / fname)
+        saved.append({'image': str(row['image']), 'true_label': class_names[true_label],
+                       'pred_label': class_names[pred_class], 'p_malignant': float(probs[1])})
+        print(f'  {fname}')
+        if len(saved) >= max_errors:
+            break
+    print(f'bcsdbt_resnet18: {len(saved)} misclassified examples visualized -> {out_dir}')
+    return saved
+
+
 def _summarize(row, pred_class, true_label, probs):
     class_names = ('benign', 'malignant')
     return {
@@ -120,6 +162,8 @@ if __name__ == '__main__':
             manifest[key].extend(_summarize(*s) for s in saved)
 
     manifest['breamdm_resnet18'] = breamdm_failures()
+    if Path('bcsdbt_single_resnet18_best.pth').exists():
+        manifest['bcsdbt_resnet18'] = bcsdbt_failures()
 
     out_path = Path('docs/gradcam_failures_manifest.json')
     out_path.write_text(json.dumps(manifest, indent=2))

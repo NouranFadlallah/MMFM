@@ -1,0 +1,1130 @@
+{
+  "baseline": {
+    "mias": [
+      {
+        "source": "mias",
+        "branch": "mammography",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.5184872150421143,
+        "file": "docs/gradcam_fusion/baseline/mias/mammography_benign_pred-malignant_p0.52_idx2.png"
+      },
+      {
+        "source": "mias",
+        "branch": "mammography",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.010289236903190613,
+        "file": "docs/gradcam_fusion/baseline/mias/mammography_malignant_pred-benign_p0.01_idx3.png"
+      },
+      {
+        "source": "mias",
+        "branch": "mammography",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.9576734900474548,
+        "file": "docs/gradcam_fusion/baseline/mias/mammography_benign_pred-malignant_p0.96_idx7.png"
+      }
+    ],
+    "busbra": [
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.4317561388015747,
+        "file": "docs/gradcam_fusion/baseline/busbra/ultrasound_malignant_pred-benign_p0.43_idx8.png"
+      },
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.10004891455173492,
+        "file": "docs/gradcam_fusion/baseline/busbra/ultrasound_malignant_pred-benign_p0.10_idx9.png"
+      },
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.058707721531391144,
+        "file": "docs/gradcam_fusion/baseline/busbra/ultrasound_malignant_pred-benign_p0.06_idx10.png"
+      },
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.30496564507484436,
+        "file": "docs/gradcam_fusion/baseline/busbra/ultrasound_malignant_pred-benign_p0.30_idx25.png"
+      },
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.5793728232383728,
+        "file": "docs/gradcam_fusion/baseline/busbra/ultrasound_benign_pred-malignant_p0.58_idx26.png"
+      }
+    ],
+    "busi": [
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.25054916739463806,
+        "file": "docs/gradcam_fusion/baseline/busi/ultrasound_malignant_pred-benign_p0.25_idx1.png"
+      },
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.29267269372940063,
+        "file": "docs/gradcam_fusion/baseline/busi/ultrasound_malignant_pred-benign_p0.29_idx3.png"
+      },
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.6895390152931213,
+        "file": "docs/gradcam_fusion/baseline/busi/ultrasound_benign_pred-malignant_p0.69_idx12.png"
+      },
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.44230571389198303,
+        "file": "docs/gradcam_fusion/baseline/busi/ultrasound_malignant_pred-benign_p0.44_idx15.png"
+      },
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.4269607961177826,
+        "file": "docs/gradcam_fusion/baseline/busi/ultrasound_malignant_pred-benign_p0.43_idx18.png"
+      }
+    ],
+    "busc": [
+      {
+        "source": "busc",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.611056387424469,
+        "file": "docs/gradcam_fusion/baseline/busc/ultrasound_benign_pred-malignant_p0.61_idx9.png"
+      },
+      {
+        "source": "busc",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.6173138618469238,
+        "file": "docs/gradcam_fusion/baseline/busc/ultrasound_benign_pred-malignant_p0.62_idx20.png"
+      },
+      {
+        "source": "busc",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.5606439113616943,
+        "file": "docs/gradcam_fusion/baseline/busc/ultrasound_benign_pred-malignant_p0.56_idx24.png"
+      }
+    ],
+    "breast": [
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.7334960103034973,
+        "file": "docs/gradcam_fusion/baseline/breast/ultrasound_benign_pred-malignant_p0.73_idx4.png"
+      },
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.9368263483047485,
+        "file": "docs/gradcam_fusion/baseline/breast/ultrasound_benign_pred-malignant_p0.94_idx8.png"
+      },
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.8790154457092285,
+        "file": "docs/gradcam_fusion/baseline/breast/ultrasound_benign_pred-malignant_p0.88_idx14.png"
+      },
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.8569644093513489,
+        "file": "docs/gradcam_fusion/baseline/breast/ultrasound_benign_pred-malignant_p0.86_idx16.png"
+      },
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.7960626482963562,
+        "file": "docs/gradcam_fusion/baseline/breast/ultrasound_benign_pred-malignant_p0.80_idx23.png"
+      }
+    ],
+    "breamdm": [
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.5847325921058655,
+        "file": "docs/gradcam_fusion/baseline/breamdm/mri_benign_pred-malignant_p0.58_idx5.png"
+      },
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.5028337836265564,
+        "file": "docs/gradcam_fusion/baseline/breamdm/mri_benign_pred-malignant_p0.50_idx7.png"
+      },
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.28320562839508057,
+        "file": "docs/gradcam_fusion/baseline/breamdm/mri_malignant_pred-benign_p0.28_idx31.png"
+      },
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.1783180981874466,
+        "file": "docs/gradcam_fusion/baseline/breamdm/mri_malignant_pred-benign_p0.18_idx51.png"
+      },
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.37095731496810913,
+        "file": "docs/gradcam_fusion/baseline/breamdm/mri_malignant_pred-benign_p0.37_idx52.png"
+      }
+    ]
+  },
+  "run_a_mixed": {
+    "mias": [
+      {
+        "source": "mias",
+        "branch": "mammography",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.06325023621320724,
+        "file": "docs/gradcam_fusion/run_a_mixed/mias/mammography_malignant_pred-benign_p0.06_idx3.png"
+      },
+      {
+        "source": "mias",
+        "branch": "mammography",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.9342488050460815,
+        "file": "docs/gradcam_fusion/run_a_mixed/mias/mammography_benign_pred-malignant_p0.93_idx8.png"
+      },
+      {
+        "source": "mias",
+        "branch": "mammography",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.15344002842903137,
+        "file": "docs/gradcam_fusion/run_a_mixed/mias/mammography_malignant_pred-benign_p0.15_idx9.png"
+      }
+    ],
+    "busbra": [
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.4011252522468567,
+        "file": "docs/gradcam_fusion/run_a_mixed/busbra/ultrasound_malignant_pred-benign_p0.40_idx8.png"
+      },
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.2648305296897888,
+        "file": "docs/gradcam_fusion/run_a_mixed/busbra/ultrasound_malignant_pred-benign_p0.26_idx9.png"
+      },
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.2771759629249573,
+        "file": "docs/gradcam_fusion/run_a_mixed/busbra/ultrasound_malignant_pred-benign_p0.28_idx10.png"
+      },
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.3990076780319214,
+        "file": "docs/gradcam_fusion/run_a_mixed/busbra/ultrasound_malignant_pred-benign_p0.40_idx25.png"
+      },
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.6039792895317078,
+        "file": "docs/gradcam_fusion/run_a_mixed/busbra/ultrasound_benign_pred-malignant_p0.60_idx26.png"
+      }
+    ],
+    "busi": [
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.2815466821193695,
+        "file": "docs/gradcam_fusion/run_a_mixed/busi/ultrasound_malignant_pred-benign_p0.28_idx0.png"
+      },
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.41504234075546265,
+        "file": "docs/gradcam_fusion/run_a_mixed/busi/ultrasound_malignant_pred-benign_p0.42_idx1.png"
+      },
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.4199119210243225,
+        "file": "docs/gradcam_fusion/run_a_mixed/busi/ultrasound_malignant_pred-benign_p0.42_idx3.png"
+      },
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.5925766825675964,
+        "file": "docs/gradcam_fusion/run_a_mixed/busi/ultrasound_benign_pred-malignant_p0.59_idx12.png"
+      },
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.19437576830387115,
+        "file": "docs/gradcam_fusion/run_a_mixed/busi/ultrasound_malignant_pred-benign_p0.19_idx15.png"
+      }
+    ],
+    "busc": [
+      {
+        "source": "busc",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.717633068561554,
+        "file": "docs/gradcam_fusion/run_a_mixed/busc/ultrasound_benign_pred-malignant_p0.72_idx9.png"
+      },
+      {
+        "source": "busc",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.4944811761379242,
+        "file": "docs/gradcam_fusion/run_a_mixed/busc/ultrasound_malignant_pred-benign_p0.49_idx19.png"
+      },
+      {
+        "source": "busc",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.6699551939964294,
+        "file": "docs/gradcam_fusion/run_a_mixed/busc/ultrasound_benign_pred-malignant_p0.67_idx20.png"
+      },
+      {
+        "source": "busc",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.8917466402053833,
+        "file": "docs/gradcam_fusion/run_a_mixed/busc/ultrasound_benign_pred-malignant_p0.89_idx24.png"
+      }
+    ],
+    "breast": [
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.8780602216720581,
+        "file": "docs/gradcam_fusion/run_a_mixed/breast/ultrasound_benign_pred-malignant_p0.88_idx8.png"
+      },
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.5895416140556335,
+        "file": "docs/gradcam_fusion/run_a_mixed/breast/ultrasound_benign_pred-malignant_p0.59_idx14.png"
+      },
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.5930271744728088,
+        "file": "docs/gradcam_fusion/run_a_mixed/breast/ultrasound_benign_pred-malignant_p0.59_idx16.png"
+      }
+    ],
+    "breamdm": [
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.6028010249137878,
+        "file": "docs/gradcam_fusion/run_a_mixed/breamdm/mri_benign_pred-malignant_p0.60_idx6.png"
+      },
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.6919220685958862,
+        "file": "docs/gradcam_fusion/run_a_mixed/breamdm/mri_benign_pred-malignant_p0.69_idx7.png"
+      },
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.3341001272201538,
+        "file": "docs/gradcam_fusion/run_a_mixed/breamdm/mri_malignant_pred-benign_p0.33_idx26.png"
+      },
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.4534292221069336,
+        "file": "docs/gradcam_fusion/run_a_mixed/breamdm/mri_malignant_pred-benign_p0.45_idx30.png"
+      },
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.3140365183353424,
+        "file": "docs/gradcam_fusion/run_a_mixed/breamdm/mri_malignant_pred-benign_p0.31_idx31.png"
+      }
+    ]
+  },
+  "run_b_resnet18_control": {
+    "mias": [
+      {
+        "source": "mias",
+        "branch": "mammography",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.9294622540473938,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/mias/mammography_benign_pred-malignant_p0.93_idx4.png"
+      },
+      {
+        "source": "mias",
+        "branch": "mammography",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.7589360475540161,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/mias/mammography_benign_pred-malignant_p0.76_idx5.png"
+      },
+      {
+        "source": "mias",
+        "branch": "mammography",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.9987667798995972,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/mias/mammography_benign_pred-malignant_p1.00_idx8.png"
+      },
+      {
+        "source": "mias",
+        "branch": "mammography",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.00016722183499950916,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/mias/mammography_malignant_pred-benign_p0.00_idx9.png"
+      }
+    ],
+    "busbra": [
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.6361650228500366,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/busbra/ultrasound_benign_pred-malignant_p0.64_idx4.png"
+      },
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.5481969118118286,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/busbra/ultrasound_benign_pred-malignant_p0.55_idx5.png"
+      },
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.6257107853889465,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/busbra/ultrasound_benign_pred-malignant_p0.63_idx7.png"
+      },
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.42129191756248474,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/busbra/ultrasound_malignant_pred-benign_p0.42_idx9.png"
+      },
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.2536987066268921,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/busbra/ultrasound_malignant_pred-benign_p0.25_idx10.png"
+      }
+    ],
+    "busi": [
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.4925192892551422,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/busi/ultrasound_malignant_pred-benign_p0.49_idx0.png"
+      },
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.48014354705810547,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/busi/ultrasound_malignant_pred-benign_p0.48_idx3.png"
+      },
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.7418894171714783,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/busi/ultrasound_benign_pred-malignant_p0.74_idx12.png"
+      },
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.30825895071029663,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/busi/ultrasound_malignant_pred-benign_p0.31_idx15.png"
+      },
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.5481452345848083,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/busi/ultrasound_benign_pred-malignant_p0.55_idx21.png"
+      }
+    ],
+    "busc": [],
+    "breast": [
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.7556081414222717,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/breast/ultrasound_benign_pred-malignant_p0.76_idx1.png"
+      },
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.5892507433891296,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/breast/ultrasound_benign_pred-malignant_p0.59_idx4.png"
+      },
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.5798888802528381,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/breast/ultrasound_benign_pred-malignant_p0.58_idx5.png"
+      },
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.8198383450508118,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/breast/ultrasound_benign_pred-malignant_p0.82_idx8.png"
+      },
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.8577109575271606,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/breast/ultrasound_benign_pred-malignant_p0.86_idx14.png"
+      }
+    ],
+    "breamdm": [
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.7779548168182373,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/breamdm/mri_benign_pred-malignant_p0.78_idx5.png"
+      },
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.9950822591781616,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/breamdm/mri_benign_pred-malignant_p1.00_idx6.png"
+      },
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.9958512783050537,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/breamdm/mri_benign_pred-malignant_p1.00_idx7.png"
+      },
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.5177697539329529,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/breamdm/mri_benign_pred-malignant_p0.52_idx14.png"
+      },
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.2867143750190735,
+        "file": "docs/gradcam_fusion/run_b_resnet18_control/breamdm/mri_malignant_pred-benign_p0.29_idx51.png"
+      }
+    ]
+  },
+  "run_c_radimagenet": {
+    "mias": [
+      {
+        "source": "mias",
+        "branch": "mammography",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.5856062173843384,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/mias/mammography_benign_pred-malignant_p0.59_idx2.png"
+      },
+      {
+        "source": "mias",
+        "branch": "mammography",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.08576570451259613,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/mias/mammography_malignant_pred-benign_p0.09_idx3.png"
+      },
+      {
+        "source": "mias",
+        "branch": "mammography",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.1570662409067154,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/mias/mammography_malignant_pred-benign_p0.16_idx9.png"
+      }
+    ],
+    "busbra": [
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.7240052223205566,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/busbra/ultrasound_benign_pred-malignant_p0.72_idx4.png"
+      },
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.4889988899230957,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/busbra/ultrasound_malignant_pred-benign_p0.49_idx9.png"
+      },
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.22787941992282867,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/busbra/ultrasound_malignant_pred-benign_p0.23_idx10.png"
+      },
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.64287930727005,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/busbra/ultrasound_benign_pred-malignant_p0.64_idx18.png"
+      },
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.5212003588676453,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/busbra/ultrasound_benign_pred-malignant_p0.52_idx26.png"
+      }
+    ],
+    "busi": [
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.6745055317878723,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/busi/ultrasound_benign_pred-malignant_p0.67_idx8.png"
+      },
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.6910515427589417,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/busi/ultrasound_benign_pred-malignant_p0.69_idx12.png"
+      },
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.10469412058591843,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/busi/ultrasound_malignant_pred-benign_p0.10_idx15.png"
+      },
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.46692970395088196,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/busi/ultrasound_malignant_pred-benign_p0.47_idx18.png"
+      },
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.23541294038295746,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/busi/ultrasound_malignant_pred-benign_p0.24_idx39.png"
+      }
+    ],
+    "busc": [
+      {
+        "source": "busc",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.6729159355163574,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/busc/ultrasound_benign_pred-malignant_p0.67_idx0.png"
+      },
+      {
+        "source": "busc",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.35822924971580505,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/busc/ultrasound_malignant_pred-benign_p0.36_idx19.png"
+      },
+      {
+        "source": "busc",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.6635370850563049,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/busc/ultrasound_benign_pred-malignant_p0.66_idx24.png"
+      }
+    ],
+    "breast": [
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.6951475143432617,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/breast/ultrasound_benign_pred-malignant_p0.70_idx1.png"
+      },
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.5624359846115112,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/breast/ultrasound_benign_pred-malignant_p0.56_idx4.png"
+      },
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.7497739195823669,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/breast/ultrasound_benign_pred-malignant_p0.75_idx8.png"
+      },
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.7539970874786377,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/breast/ultrasound_benign_pred-malignant_p0.75_idx14.png"
+      },
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.8042569160461426,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/breast/ultrasound_benign_pred-malignant_p0.80_idx16.png"
+      }
+    ],
+    "breamdm": [
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.5857057571411133,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/breamdm/mri_benign_pred-malignant_p0.59_idx20.png"
+      },
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.7956346273422241,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/breamdm/mri_benign_pred-malignant_p0.80_idx21.png"
+      },
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.7045790553092957,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/breamdm/mri_benign_pred-malignant_p0.70_idx22.png"
+      },
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.4898046553134918,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/breamdm/mri_malignant_pred-benign_p0.49_idx24.png"
+      },
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.16671879589557648,
+        "file": "docs/gradcam_fusion/run_c_radimagenet/breamdm/mri_malignant_pred-benign_p0.17_idx54.png"
+      }
+    ]
+  },
+  "run_e_ispy2_bcsdbt": {
+    "mias": [
+      {
+        "source": "mias",
+        "branch": "mammography",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.9990780353546143,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/mias/mammography_benign_pred-malignant_p1.00_idx7.png"
+      },
+      {
+        "source": "mias",
+        "branch": "mammography",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.0008458972442895174,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/mias/mammography_malignant_pred-benign_p0.00_idx9.png"
+      }
+    ],
+    "bcsdbt": [
+      {
+        "source": "bcsdbt",
+        "branch": "mammography",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.00011421481030993164,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/bcsdbt/mammography_malignant_pred-benign_p0.00_idx3.png"
+      },
+      {
+        "source": "bcsdbt",
+        "branch": "mammography",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.3415490388870239,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/bcsdbt/mammography_malignant_pred-benign_p0.34_idx5.png"
+      },
+      {
+        "source": "bcsdbt",
+        "branch": "mammography",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.9990554451942444,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/bcsdbt/mammography_benign_pred-malignant_p1.00_idx6.png"
+      },
+      {
+        "source": "bcsdbt",
+        "branch": "mammography",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.9464719295501709,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/bcsdbt/mammography_benign_pred-malignant_p0.95_idx7.png"
+      }
+    ],
+    "busbra": [
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.3890872895717621,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/busbra/ultrasound_malignant_pred-benign_p0.39_idx9.png"
+      },
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.18132872879505157,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/busbra/ultrasound_malignant_pred-benign_p0.18_idx10.png"
+      },
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.8136760592460632,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/busbra/ultrasound_benign_pred-malignant_p0.81_idx26.png"
+      },
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.6727365255355835,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/busbra/ultrasound_benign_pred-malignant_p0.67_idx33.png"
+      },
+      {
+        "source": "busbra",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.6031636595726013,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/busbra/ultrasound_benign_pred-malignant_p0.60_idx36.png"
+      }
+    ],
+    "busi": [
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.2675972580909729,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/busi/ultrasound_malignant_pred-benign_p0.27_idx0.png"
+      },
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.3247155547142029,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/busi/ultrasound_malignant_pred-benign_p0.32_idx1.png"
+      },
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.30657580494880676,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/busi/ultrasound_malignant_pred-benign_p0.31_idx3.png"
+      },
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.6904807090759277,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/busi/ultrasound_benign_pred-malignant_p0.69_idx4.png"
+      },
+      {
+        "source": "busi",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.9821969270706177,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/busi/ultrasound_benign_pred-malignant_p0.98_idx8.png"
+      }
+    ],
+    "busc": [],
+    "breast": [
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.8536465764045715,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/breast/ultrasound_benign_pred-malignant_p0.85_idx1.png"
+      },
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.8378965258598328,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/breast/ultrasound_benign_pred-malignant_p0.84_idx4.png"
+      },
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.9931979179382324,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/breast/ultrasound_benign_pred-malignant_p0.99_idx8.png"
+      },
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.9829398393630981,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/breast/ultrasound_benign_pred-malignant_p0.98_idx14.png"
+      },
+      {
+        "source": "breast",
+        "branch": "ultrasound",
+        "true_label": "benign",
+        "pred_label": "malignant",
+        "p_malignant": 0.9737505912780762,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/breast/ultrasound_benign_pred-malignant_p0.97_idx16.png"
+      }
+    ],
+    "breamdm": [
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.3530155420303345,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/breamdm/mri_malignant_pred-benign_p0.35_idx24.png"
+      },
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.14152991771697998,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/breamdm/mri_malignant_pred-benign_p0.14_idx26.png"
+      },
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.2991141378879547,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/breamdm/mri_malignant_pred-benign_p0.30_idx27.png"
+      },
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.45521101355552673,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/breamdm/mri_malignant_pred-benign_p0.46_idx30.png"
+      },
+      {
+        "source": "breamdm",
+        "branch": "mri",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.034671004861593246,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/breamdm/mri_malignant_pred-benign_p0.03_idx31.png"
+      }
+    ],
+    "ispy2": [
+      {
+        "source": "ispy2",
+        "branch": "mri",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.17607586085796356,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/ispy2/mri_malignant_pred-benign_p0.18_idx49.png"
+      },
+      {
+        "source": "ispy2",
+        "branch": "mri",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.38359928131103516,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/ispy2/mri_malignant_pred-benign_p0.38_idx401.png"
+      },
+      {
+        "source": "ispy2",
+        "branch": "mri",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.12098927795886993,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/ispy2/mri_malignant_pred-benign_p0.12_idx568.png"
+      },
+      {
+        "source": "ispy2",
+        "branch": "mri",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.18425604701042175,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/ispy2/mri_malignant_pred-benign_p0.18_idx570.png"
+      },
+      {
+        "source": "ispy2",
+        "branch": "mri",
+        "true_label": "malignant",
+        "pred_label": "benign",
+        "p_malignant": 0.4787055552005768,
+        "file": "docs/gradcam_fusion/run_e_ispy2_bcsdbt/ispy2/mri_malignant_pred-benign_p0.48_idx584.png"
+      }
+    ]
+  }
+}

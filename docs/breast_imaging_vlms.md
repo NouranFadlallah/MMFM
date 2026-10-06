@@ -101,6 +101,223 @@ HuatuoGPT-Vision, Lingshu, and the pathology models PRISM, CONCH, TITAN, and
 UNI. Likewise, breast-ultrasound studies that only test a generic VLM measure
 transfer performance rather than provide breast-specific pretraining.
 
+## MMFM Fine-Tuning Attempt (2026-09-28)
+
+The user asked to actually try training MedGemma or another relevant VLM on this
+repo's local data, and to write a full plan for whatever couldn't be attempted
+directly. Both happened; this section records what was checked, what ran, and
+what's next.
+
+### Access check: MedGemma and MedSigLIP were gated, now unblocked
+
+Checked via the Hugging Face Hub API (account `noe95`, 2026-09-28):
+
+| Model | Params | License | Gated | This account's access (2026-09-28) |
+| --- | --- | --- | --- | --- |
+| `google/medgemma-4b-it` | 4.3B | other (Health AI Developer Foundations) | Yes | File listing works; `config.json`/weights download is `HF_FS_ACCESS_DENIED` — access not yet granted |
+| `google/medsiglip-448` | 878M | other | Yes | Same — access not yet granted |
+| `google/paligemma2-3b-pt-224` | 3.0B | gemma | Yes | Not checked further, same license family as MedGemma |
+
+**Update (2026-10-06):** the user accepted the Health AI Developer Foundations
+terms; re-checked via the Hub API and both `google/medgemma-4b-it` and
+`google/medsiglip-448` now download `config.json` successfully (no more
+`HF_FS_ACCESS_DENIED`). Installed `peft` and `bitsandbytes` (added to
+`requirements.txt`) and proceeded directly to the MedGemma LoRA plan below.
+
+### What actually ran tonight: BiomedCLIP fine-tune
+
+`microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224` (MIT license, not
+gated, ViT-B/16 image tower + PubMedBERT text tower, 196M params total / 86M in
+the image tower) was fine-tuned as a flat benign/malignant classifier —
+`scripts/finetune_biomedclip.py`. Unlike `FusionLateModel`, this is not a
+three-branch model: BiomedCLIP's image tower takes one ordinary 3-channel
+224x224 image, so every locally reproduced dataset is flattened into a single
+manifest (`build_manifest`), reusing each dataset's own frame builder and
+already-patient-safe split from `training/train.py`:
+
+- Mammography: MIAS (its own lesion `crop_box` applied), CDD-CESM, CMMD, BCS-DBT
+- Ultrasound: BUS-BRA, BUSI, BUSC, BrEaST
+- MRI: BreaDM + BreastDCEDL-ISPY2 `img9Se` patches, collapsed from 9 DCE-phase
+  channels to 1 representative channel (index 4) replicated to RGB, since
+  BiomedCLIP has no multi-phase-DCE convention
+
+Combined manifest: 41,476 train / 4,565 val rows across the 10 sources above.
+ISPY2 alone is 33,475 of those (80.7%, all malignant) — a flat classifier
+trained on raw example counts would mostly learn "MRI-patch texture ->
+malignant" rather than a real benign/malignant signal. `sample_weights()`
+applies the same modality -> source-within-modality -> class-within-source
+balancing `training/train.py`'s `_build_combined_datasets` already uses for the
+fusion model, verified empirically to spread draws roughly evenly across all 10
+sources (~150-380 draws each per 2,000 samples) rather than being ISPY2-dominated.
+
+Training: AdamW, encoder lr 1e-5 / fresh linear-head lr 1e-3, batch size 32,
+up to 20 epochs with patience 5, logged to W&B project `mmfm-vlm`. Launched
+2026-09-28 22:34, running concurrently with the `combined_resnet18_ispy2_bcsdbt`
+ResNet run (GPU headroom was ample — 2.2/12GB used).
+
+**Result:** early-stopped after 6 epochs; the saved checkpoint
+(`biomedclip_combined_best.pth`) is epoch 1 (lowest val loss, 0.1441 — val loss
+got monotonically worse every epoch after that while train accuracy climbed to
+0.994, i.e. epochs 2-6 were pure overfitting)
+([run](https://wandb.ai/nouran-fadlallah-none/mmfm-vlm/runs/0u9gr8tr)). Overall
+val accuracy on that checkpoint: **0.9433** (4,565 samples) — but per-source
+breakdown shows this number is exactly as misleading as the ResNet
+`mri_accuracy` caveat above warned it would be:
+
+| Source | n | Benign | Malignant | Accuracy |
+| --- | --- | --- | --- | --- |
+| ispy2 | 3,705 | 0 | 3,705 | 0.9987 |
+| busc | 25 | 10 | 15 | 1.0000 |
+| breamdm | 117 | 24 | 93 | 0.8718 |
+| busi | 64 | 43 | 21 | 0.8594 |
+| breast | 25 | 20 | 5 | 0.8400 |
+| busbra | 186 | 132 | 54 | 0.8172 |
+| cmmd | 368 | 96 | 272 | 0.5707 |
+| cdd_cesm | 57 | 27 | 30 | 0.5614 |
+| bcsdbt | 8 | 2 | 6 | 0.5000 |
+| mias | 10 | 8 | 2 | 0.5000 |
+
+ISPY2 alone is 81% of the validation set and sits at 99.87% (it's
+malignant-only, so this is close to the trivial ceiling, same as the ResNet
+run). Weighted accuracy over the other 9 sources only: **0.705** — a much more
+honest number. Ultrasound sources (busbra/busi/busc/breast, 81-100%) and
+BreaDM MRI (87%) show real signal; every DICOM-derived mammography source
+(cmmd, cdd_cesm, bcsdbt, mias — the four *hardest-won* datasets in this repo,
+each needing an external label file) sits at or barely above chance. Read this
+as: **BiomedCLIP's frozen-ish, briefly fine-tuned image tower has not learned
+mammography discrimination here** — plausibly because mammography is the
+smallest, most source-fragmented modality in the manifest (571 total samples
+across 4 sources vs. ultrasound's 2,127 and MRI's 38,382), and because a single
+epoch of encoder fine-tuning at lr 1e-5 may simply not be enough signal for the
+harder, lower-contrast mammography domain before the ISPY2-dominated gradient
+direction (even with balanced sampling, ISPY2's sheer size means more distinct
+images per epoch) pulls the shared visual encoder toward MRI/ultrasound
+features. Next steps if this is picked up again: report per-source accuracy by
+default (not just overall) for any future VLM run, try a longer frozen-encoder
+linear-probe-first warmup before unfreezing, and/or a lower ISPY2 sampling
+weight so more distinct mammography images are seen per epoch relative to the
+huge ISPY2 pool.
+
+### MedGemma QLoRA fine-tune (2026-10-06)
+
+`scripts/finetune_medgemma.py` implements the plan above: reuses
+`scripts/finetune_biomedclip.py`'s `build_manifest()`/`sample_weights()` as-is
+for the image/label pairs and balanced sampling, loads `google/medgemma-4b-it`
+4-bit (NF4, bnb), freezes `model.model.vision_tower` entirely, and LoRA-adapts
+only the Gemma3 language model's attention/MLP projections (`r=16, alpha=32`,
+target modules restricted via a regex anchored on `language_model` — the
+vision tower's SigLIP attention reuses the same `q_proj`/`k_proj`/`v_proj`
+names, so an unanchored target list would have put LoRA there too). Each
+example is a single chat turn: the image + a fixed prompt ("Is this breast
+imaging finding benign or malignant? Answer with one word...") per MedGemma's
+own `chat_template.jinja`, with loss masked to only the assistant's one-word
+answer tokens (5-6 tokens; everything else, including the 256 image soft
+tokens, is `-100`).
+
+**Two environment issues hit and fixed, in case they recur:**
+- This box has no `python3-dev` (no `Python.h`) and no passwordless `sudo`, so
+  PyTorch's JIT-compiled Triton override of `aten::bmm` for the
+  outer-product case (used by Gemma3's rotary embeddings) failed to build.
+  Fixed without installing anything by calling
+  `torch._native.registry.deregister_op_overrides(disable_dsl_names='aten', disable_op_symbols='bmm', disable_dispatch_keys='CUDA')`
+  at import time, which falls `bmm` back to the standard (non-Triton) kernel.
+- The vision tower lives at `model.model.vision_tower`, not `model.vision_tower`
+  — `Gemma3ForConditionalGeneration` wraps an inner `Gemma3Model`.
+
+**Evaluation is unbatched generation (~1.7s/sample on this GPU)**, so
+`evaluate()` takes two different sampling modes: `max_samples` (flat random
+subset, for quick progress checks during training) and `max_per_source` (caps
+each source independently, used for the final report) — the flat mode would
+otherwise let ISPY2's 3,705 validation rows dominate wall-clock the same way
+they'd dominate accuracy if read naively.
+
+Launched 2026-10-06: `python3 scripts/finetune_medgemma.py --max-steps 250
+--grad-accum-steps 8 --eval-every 50 --eval-samples 150
+--final-eval-per-source 40`. Timing measured directly (a 3-step/16-accum
+dry run): ~6.6s per forward+backward micro-step, so grad-accum 8 gives ~53s/
+logical step — 250 steps is roughly a 4-hour run (2,000 training examples
+seen, evenly balanced by modality/source/class, out of the 41,476-row
+manifest). Logged to W&B project `mmfm-vlm`, run `medgemma_combined_lora`;
+LoRA adapter checkpoints saved to `medgemma_combined_lora/step<N>/`.
+
+**Result:** completed all 250 steps (~4h12m wall clock, 16:59-21:11). Train
+loss fell smoothly and monotonically throughout (0.1534 at step 110 -> 0.0926
+at step 250), but that alone doesn't mean generalization improved — same
+caveat as the BiomedCLIP run. Final adapter: `medgemma_combined_lora/step250`
+([run](https://wandb.ai/nouran-fadlallah-none/mmfm-vlm/runs/ng1ry7d5)).
+
+Final eval, capped at 40 samples/source (mias and bcsdbt have fewer than 40
+validation rows total, so those two are the full validation set; every other
+source below is a 40-sample *subset* of a larger validation pool, for
+wall-clock reasons given unbatched ~1.7s/sample generation):
+
+| Source | n | Accuracy | BiomedCLIP accuracy (full val set) |
+| --- | --- | --- | --- |
+| busi | 40 | 0.9000 | 0.8594 |
+| mias | 10 (full) | 0.9000 | 0.5000 |
+| busc | 25 (full) | 0.8400 | 1.0000 |
+| breast | 25 (full) | 0.8000 | 0.8400 |
+| busbra | 40 | 0.7750 | 0.8172 |
+| ispy2 | 40 | 0.9000 | 0.9987 |
+| cdd_cesm | 40 | 0.6000 | 0.5614 |
+| cmmd | 40 | 0.5250 | 0.5707 |
+| breamdm | 40 | 0.3500 | 0.8718 |
+| bcsdbt | 8 (full) | 0.2500 | 0.5000 |
+| **overall** | 308 | **0.6948** | 0.705 (non-ispy2-weighted) |
+
+**Read this carefully — the sample sizes above are too small to call most of
+these a win or a loss for MedGemma over BiomedCLIP:**
+
+- **MIAS jumped from chance (0.50, n=10) to 0.90 (n=10, same full set)** —
+  this is the single comparison here with equal, full sample sizes on both
+  sides, so it's the most trustworthy signal in this table. Worth noting since
+  MIAS is the smallest, historically noisiest branch in every ResNet run too.
+- **BreaDM MRI dropped from 0.87 (n=117, full set) to 0.35 (n=40, a subset)**
+  — this is a real concern, not just the smaller sample: 0.35 is *below*
+  chance, meaning the model is systematically getting BreaDM wrong in a
+  specific direction (plausibly confusing it with ISPY2's all-malignant
+  signal, given both are MRI and ISPY2 is 80% of the training manifest).
+  Should be re-measured on the full 117-row BreaDM val set before trusting
+  this, but it's the most actionable finding here if this gets picked up
+  again.
+- CMMD and BCS-DBT are still at or below chance, same as BiomedCLIP's result
+  — the DICOM-derived mammography sources remain the weak point across both
+  VLM attempts, not something specific to one model.
+- Intermediate evals during training (the flat, ISPY2-dominated 150-sample
+  quick checks at steps 100/150/200/250) swung between 0.64 and 0.95 overall
+  — training at this scale (250 steps x grad-accum 8 = 2,000 examples seen,
+  out of 41,476) is noisy run-to-run, consistent with how little data a LoRA
+  adapter this size has actually been shown.
+
+**Bottom line:** MedGemma-LoRA and BiomedCLIP land at a similar *overall*
+accuracy (~0.69-0.70) by two different routes — MedGemma recovers MIAS,
+BiomedCLIP is far stronger on BreaDM — neither VLM attempt should be reported
+as beating the other or beating the ResNet `FusionLateModel` baselines in
+`docs/dataset_reproduction_plan.md` without a same-size, same-split,
+multi-seed comparison. If this is picked up again: re-run the final eval on
+full (not 40-capped) validation sets per source now that the one-time cost is
+known (~9 minutes for the 40-cap version; the full 4,565-row val set would be
+~2+ hours per checkpoint, so batch `model.generate()` calls rather than
+looping one-by-one before doing that), and investigate the BreaDM regression
+specifically (try excluding ISPY2 from the sampler, or down-weighting it
+further, and see if BreaDM recovers). `google/paligemma2-3b-pt-224` (also
+gated, same unblock path) and `Qwen/Qwen2-VL-2B-Instruct` (Apache-2.0, **not
+gated**, 2.2B params) remain reasonable fallback/comparison generative VLMs
+using the same recipe.
+
+### Ungated generative-VLM alternative not yet attempted: LLaVA-Med
+
+`microsoft/llava-med-v1.5-mistral-7b` (Apache-2.0, **not gated**, verified via
+the Hub API) is a genuine medical-domain instruction-tuned VLM (biomedical
+figures + PubMed captions, not breast-specialized — see the Generic Models
+section above) that could be QLoRA fine-tuned tonight's way without waiting on
+any access grant. It was not attempted in this session to avoid a third
+concurrent GPU job (7B params even at 4-bit, plus the two runs already going,
+risked destabilizing all three on a single 12GB card) and because the prompt
+formatting/QLoRA setup is materially more engineering than BiomedCLIP's
+classifier head. It's the next concrete candidate if MedGemma access is still
+pending next time this repo is worked on.
+
 ## Recommended MMFM Evaluation Order
 
 1. Establish existing single-modality classifier/segmenter baselines with the

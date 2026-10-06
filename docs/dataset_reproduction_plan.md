@@ -216,7 +216,8 @@ does not exist here, and mammography has only one source dataset.
 - Ultrasound branch: BUS-BRA + BUSI + BUSC + BrEaST concatenated (`--ultrasound-datasets`
   defaults to all four), each with its own frame builder and transform
   (`BusbraTransform` for BUS-BRA/BUSI/BrEaST, `MiasTransform` for BUSC).
-- MRI branch: BreaDM `img9Se` derived arrays (`BreaDMDataset`, `BreadmTransform`).
+- MRI branch: BreaDM `img9Se` derived arrays (`BreaDMDataset`, `BreadmTransform`),
+  plus BreastDCEDL-ISPY2 (see below) as a second, Malignant-only source.
 
 Each underlying dataset is wrapped as a `SingleModalityBranchDataset` (only its
 own branch populated, the other two zeroed and marked absent in the presence
@@ -260,6 +261,92 @@ ultrasound/MRI branches. Full metrics logged to the `mmfm-combined` W&B project.
   checkpoint, not a checkpoint reflecting all four ultrasound sources.
 - As with every single-dataset section above, per-source splits here are not
   official paper splits, and BUSI is still the incomplete 163-image local subset.
+
+### BreastDCEDL-ISPY2 addition (malignant-only MRI source)
+
+`/mnt/data/mmfm_datasets/MRI` holds the BreastDCEDL-ISPY2 release (982 patients,
+8,021 NIfTI DCE-MRI series + binary tumor masks, ~55 GB; [arXiv:2506.12190](https://arxiv.org/abs/2506.12190)).
+I-SPY2 is a pre-treatment neoadjuvant-chemotherapy trial cohort: every case is
+already biopsy-confirmed malignant, so there is no benign class to pair it with,
+and the imaging-only download carries no label file at all (the clinical
+metadata the paper harmonizes — pCR, HR/HER2 status — ships separately and is
+used in the literature for treatment-response prediction, not benign/malignant
+diagnosis; not fetched here).
+
+Given that, this is wired in as a **malignant-only augmentation** of the
+existing MRI branch, not a new labeled benchmark:
+
+1. `scripts/preprocess_ispy2_mri.py` converts each patient's DCE-MRI + tumor
+   mask into BreaDM's own on-disk format: per tumor-bearing axial slice, crop
+   a small patch to the mask's bounding box (6px margin) across 9 evenly
+   sampled DCE phases (`np.linspace` over however many phases that patient
+   has, so it naturally pads/subsamples to 9), intensity-normalize per patient
+   to uint8 via 1st/99th percentile clipping of the pre-contrast volume, and
+   write to `datasets/MRI/ISPY2/cls/img9Se/{train,val}/Malignant/<patient>/p-*.npy`
+   (patient-level 90/10 split, seeded). No `Benign` folder is ever written.
+2. `_build_combined_sources` in `training/train.py` loads this directory with
+   the same `BreaDMDataset`/`BreadmTransform` pair as BreaDM, as a second,
+   independent source in the MRI branch — gated on the directory existing, so
+   `--dataset combined` still works without it. The branch/source/class
+   balanced sampler already treats each source's class distribution
+   separately, so an all-malignant source just contributes its share of
+   malignant samples without needing a synthetic benign counterpart.
+
+Caveats: this does not reproduce any published I-SPY2 classification result
+(there isn't one for benign/malignant); it only rebalances/enlarges the MRI
+branch's malignant class for the fusion sanity-check run above. The bounding
+box + percentile normalization are this repo's own choices, not from the
+BreastDCEDL paper's preprocessing.
+
+Ran (2026-09-28): `python3 training/train.py --dataset combined --device cuda
+--wandb-project mmfm-combined --wandb-run-name combined_resnet18_ispy2`, no
+warm-start checkpoints, 10 epochs, batch size 8 — no early stop (val loss kept
+improving through epoch 10). Resolved 37,510 training / 4,132 validation
+samples. Result (`combined_fusion_resnet18_best.pth`, epoch 10):
+
+| Metric | Value |
+| --- | --- |
+| Overall validation accuracy | 0.9743 |
+| Mammography-only samples accuracy | 0.6000 |
+| Ultrasound-only samples accuracy | 0.8467 |
+| MRI-only samples accuracy | 0.9853 |
+
+**Don't read `mri_accuracy` as benign/malignant discrimination anymore.**
+Adding ISPY2 made the MRI branch's validation pool 3,705 malignant-only samples
+plus BreaDM's 117 (24 benign/93 malignant) — 96.9% of MRI validation is now
+label-trivial (always-predict-malignant already scores ~99.4% on this pool).
+0.9853 mostly reflects how often the model predicts malignant, not whether it
+can tell benign from malignant on MRI. To judge that, evaluate the BreaDM
+`val` split alone rather than trusting the pooled `mri_accuracy` metric.
+Mammography accuracy (0.60) is unchanged in kind from the prior run — MIAS is
+still the smallest, noisiest branch.
+
+### Re-run with BCS-DBT added as a second mammography source (2026-09-28)
+
+After wiring in BCS-DBT (section 11), re-ran the same command as
+`combined_resnet18_ispy2_bcsdbt`. Early-stopped after epoch 9; the lowest
+validation loss (0.0942) was at epoch 4, so the saved checkpoint
+(`combined_fusion_resnet18_best.pth`, overwriting the ISPY2-only run's) is
+epoch 4 (corrected from W&B history; an earlier version of this section
+reported epoch 9's last-epoch metrics instead):
+
+| Metric | Value |
+| --- | --- |
+| Overall validation accuracy | 0.9717 |
+| Mammography-only samples accuracy | 0.6667 |
+| Ultrasound-only samples accuracy | 0.8333 |
+| MRI-only samples accuracy | 0.9840 |
+
+Mammography accuracy ranged 0.39-0.72 across epochs, on only 18 pooled
+samples (MIAS's 10 + BCS-DBT's 8). This is not evidence BCS-DBT hurts the
+branch — with branch/source/class-balanced sampling and two tiny sources (109
+and 67 training images respectively) feeding one ResNet-18 mammography branch
+that also has to share gradient signal with the much larger ultrasound/MRI
+branches, an 18-sample validation pool swinging by a couple of predictions
+moves this number by double-digit points. Don't treat 0.50 vs 0.60 as a
+regression without a validation set large enough to tell noise from signal —
+same caveat this doc already gives the MRI branch's `mri_accuracy` above.
+([run](https://wandb.ai/nouran-fadlallah-none/mmfm-combined/runs/di2ae1h7))
 
 ## 8. CDD-CESM (Categorized Contrast-Enhanced Spectral Mammography)
 
@@ -473,6 +560,70 @@ than keep it around unused; disk was at 456 MB free at the time. Re-download
 from [Zenodo](https://zenodo.org/records/4529852) (95.7 GB full release,
 0.26 GB was actually pulled locally per `dataset_download_links.md`) if the
 segmentation or lesion-insertion direction is picked up later.
+
+## 11. BCS-DBT (Breast Cancer Screening – Digital Breast Tomosynthesis)
+
+### What it is
+
+Duke/TCIA's 3D digital breast tomosynthesis screening collection (Buda et al.,
+*JAMA Network Open* 4(8), 2021, DOI [10.1001/jamanetworkopen.2021.19100](https://doi.org/10.1001/jamanetworkopen.2021.19100)),
+5,060 participants/22,032 volumes in the full release; 280 patients (~79 GB)
+downloaded locally to `/mnt/data/mmfm_datasets/mammography/breast_cancer_screening_dbt`
+via Imaging Data Commons. Each study has up to 4 views (LCC/LMLO/RCC/RMLO), each
+view a multi-frame JPEG2000 DICOM tomosynthesis volume (pydicom decodes these
+fine with the packages already in `requirements.txt`).
+
+### The label gap and how it was closed
+
+Like CDD-CESM/CMMD before it, the DICOM headers and TCIA's own series-level
+`metadata.csv` carry no diagnosis — BCS-DBT's Normal/Actionable/Benign/Cancer
+label lives in a separate CSV the imaging download doesn't include. Fetched
+from TCIA's public wiki page (`wiki.cancerimagingarchive.net`, same CC BY-NC 4.0
+source as the imaging data): `BCS-DBT-labels-validation-PHASE-2-Jan-2024.csv`,
+`BCS-DBT-file-paths-validation-v2.csv`, and `BCS-DBT-boxes-validation-v2-PHASE-2-Jan-2024.csv`
+(the *validation*-partition files — BCS-DBT's train-partition labels are not
+publicly released; the validation partition happens to be exactly the 280
+patients downloaded locally). Symlinked into `datasets/mammography/bcsdbt_*`.
+
+Only **Benign** and **Cancer** rows are used (biopsy-confirmed), matching this
+repo's pathological-confirmation bar for every other dataset here (the same
+bar that got the UC Davis phantom dataset deleted in section 10). **Normal**
+and **Actionable** rows (screened/recalled but not biopsied) are dropped. Of
+280 local patients: 928 Normal / 160 Actionable / 38 Benign / 37 Cancer view-rows,
+covering 20 Benign-only + 20 Cancer-only patients (no patient has both). Every
+one of those 75 Benign/Cancer view-rows happens to carry a lesion bounding box
+in the boxes CSV, so each sample is a box-cropped 2D slice (6px margin, VOI-LUT
++ min-max normalized to uint8, `_dbt_slice_to_png_cached`) from the annotated
+frame of that view's tomosynthesis volume, rather than a full 3D volume or an
+arbitrary central slice.
+
+The file-paths CSV's `descriptive_path` uses TCIA/NBIA-style folder names that
+don't match our IDC-sourced local folders directly (different date format,
+different collection-root casing), but both name series-level folders
+`<SeriesNumber>-<shortUID>` (mod the `.000000` in the CSV's version), so
+`_dbt_resolve_dicom` joins on that component alone rather than trying to
+reconcile the two naming schemes end to end.
+
+### Local implementation status
+
+`--dataset bcsdbt --single-mode` and `--dataset bcsdbt` (fusion sanity-check)
+both work via `_dbt_frame`/`_dbt_metadata` in `training/train.py`, using
+`MiasTransform` like the other DICOM-derived mammography sources. It's also
+wired into `--dataset combined` as a second mammography-branch source
+alongside MIAS (gated on `datasets/mammography/bcsdbt_labels.csv` existing,
+so `combined` still runs without it).
+
+### Results
+
+Ran (2026-09-28): `python3 training/train.py --dataset bcsdbt --single-mode
+--device cuda --wandb-project mmfm-bcsdbt --wandb-run-name bcsdbt_single_resnet18`.
+67 train / 8 validation samples (36 benign/31 malignant train; 2 benign/6
+malignant val). Ran the full 10 epochs; the best-val-loss checkpoint is
+epoch 8: **val accuracy 0.75** (sensitivity 0.667, specificity 1.0, AUC 1.0;
+0.875 was epoch 9's peak per-epoch accuracy, not the saved checkpoint)
+([run](https://wandb.ai/nouran-fadlallah-none/mmfm-bcsdbt/runs/mwho9nzh)).
+With only 8 validation samples this is barely more than a sanity check — don't
+read it as a stable estimate.
 
 ## Execution Order
 

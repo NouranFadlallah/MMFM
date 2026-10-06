@@ -8,3 +8,6 @@ scikit-learn>=1.0.0
 pydicom>=2.4.0
 nibabel>=5.0.0
 wandb>=0.17.0
+open_clip_torch>=3.0.0
+transformers>=4.40.0
+accelerate>=0.30.0
