@@ -1,0 +1,173 @@
+[
+  {
+    "model": "biomedclip",
+    "source": "mias",
+    "path": "datasets/mammography/mias/all-mias/mdb032.pgm",
+    "true_label": "benign",
+    "predicted_label": "malignant",
+    "original": "docs/gradcam_vlm/biomedclip/mias/mdb032_original.png",
+    "cam": "docs/gradcam_vlm/biomedclip/mias/mdb032_cam.png"
+  },
+  {
+    "model": "biomedclip",
+    "source": "mias",
+    "path": "datasets/mammography/mias/all-mias/mdb058.pgm",
+    "true_label": "malignant",
+    "predicted_label": "benign",
+    "original": "docs/gradcam_vlm/biomedclip/mias/mdb058_original.png",
+    "cam": "docs/gradcam_vlm/biomedclip/mias/mdb058_cam.png"
+  },
+  {
+    "model": "biomedclip",
+    "source": "cdd_cesm",
+    "path": "datasets/mammography/cdd_cesm/Subtracted images of CDD-CESM/P19_L_CM_CC.jpg",
+    "true_label": "benign",
+    "predicted_label": "malignant",
+    "original": "docs/gradcam_vlm/biomedclip/cdd_cesm/P19_L_CM_CC_original.png",
+    "cam": "docs/gradcam_vlm/biomedclip/cdd_cesm/P19_L_CM_CC_cam.png"
+  },
+  {
+    "model": "biomedclip",
+    "source": "cdd_cesm",
+    "path": "datasets/mammography/cdd_cesm/Subtracted images of CDD-CESM/P27_L_CM_CC.jpg",
+    "true_label": "malignant",
+    "predicted_label": "benign",
+    "original": "docs/gradcam_vlm/biomedclip/cdd_cesm/P27_L_CM_CC_original.png",
+    "cam": "docs/gradcam_vlm/biomedclip/cdd_cesm/P27_L_CM_CC_cam.png"
+  },
+  {
+    "model": "biomedclip",
+    "source": "cmmd",
+    "path": "datasets/mammography/cmmd_png/257295b7-a5e5-457d-a0a1-cd78fa1ab4df.png",
+    "true_label": "malignant",
+    "predicted_label": "benign",
+    "original": "docs/gradcam_vlm/biomedclip/cmmd/257295b7-a5e5-457d-a0a1-cd78fa1ab4df_original.png",
+    "cam": "docs/gradcam_vlm/biomedclip/cmmd/257295b7-a5e5-457d-a0a1-cd78fa1ab4df_cam.png"
+  },
+  {
+    "model": "biomedclip",
+    "source": "cmmd",
+    "path": "datasets/mammography/cmmd_png/3a648574-19e0-48bd-8e65-9be33f06047e.png",
+    "true_label": "malignant",
+    "predicted_label": "benign",
+    "original": "docs/gradcam_vlm/biomedclip/cmmd/3a648574-19e0-48bd-8e65-9be33f06047e_original.png",
+    "cam": "docs/gradcam_vlm/biomedclip/cmmd/3a648574-19e0-48bd-8e65-9be33f06047e_cam.png"
+  },
+  {
+    "model": "biomedclip",
+    "source": "cmmd",
+    "path": "datasets/mammography/cmmd_png/2b26668f-262f-473d-b89b-69d66b6b5114.png",
+    "true_label": "malignant",
+    "predicted_label": "benign",
+    "original": "docs/gradcam_vlm/biomedclip/cmmd/2b26668f-262f-473d-b89b-69d66b6b5114_original.png",
+    "cam": "docs/gradcam_vlm/biomedclip/cmmd/2b26668f-262f-473d-b89b-69d66b6b5114_cam.png"
+  },
+  {
+    "model": "biomedclip",
+    "source": "bcsdbt",
+    "path": "datasets/mammography/bcsdbt_png/246-51294_s033.png",
+    "true_label": "malignant",
+    "predicted_label": "benign",
+    "original": "docs/gradcam_vlm/biomedclip/bcsdbt/246-51294_s033_original.png",
+    "cam": "docs/gradcam_vlm/biomedclip/bcsdbt/246-51294_s033_cam.png"
+  },
+  {
+    "model": "biomedclip",
+    "source": "bcsdbt",
+    "path": "datasets/mammography/bcsdbt_png/245-90809_s043.png",
+    "true_label": "malignant",
+    "predicted_label": "benign",
+    "original": "docs/gradcam_vlm/biomedclip/bcsdbt/245-90809_s043_original.png",
+    "cam": "docs/gradcam_vlm/biomedclip/bcsdbt/245-90809_s043_cam.png"
+  },
+  {
+    "model": "biomedclip",
+    "source": "breamdm",
+    "path": "datasets/MRI/BreaDM/cls/img9Se/val/Benign/BreaDM-Be-1802/p-040.npy",
+    "true_label": "benign",
+    "predicted_label": "malignant",
+    "original": "docs/gradcam_vlm/biomedclip/breamdm/p-040_original.png",
+    "cam": "docs/gradcam_vlm/biomedclip/breamdm/p-040_cam.png"
+  },
+  {
+    "model": "biomedclip",
+    "source": "breamdm",
+    "path": "datasets/MRI/BreaDM/cls/img9Se/val/Benign/BreaDM-Be-1815/p-046.npy",
+    "true_label": "benign",
+    "predicted_label": "malignant",
+    "original": "docs/gradcam_vlm/biomedclip/breamdm/p-046_original.png",
+    "cam": "docs/gradcam_vlm/biomedclip/breamdm/p-046_cam.png"
+  },
+  {
+    "model": "medgemma",
+    "source": "mias",
+    "path": "datasets/mammography/mias/all-mias/mdb058.pgm",
+    "true_label": "malignant",
+    "predicted_label": "benign",
+    "original": "docs/gradcam_vlm/medgemma/mias/mdb058_original.png",
+    "cam": "docs/gradcam_vlm/medgemma/mias/mdb058_cam.png"
+  },
+  {
+    "model": "medgemma",
+    "source": "cmmd",
+    "path": "datasets/mammography/cmmd_png/257295b7-a5e5-457d-a0a1-cd78fa1ab4df.png",
+    "true_label": "malignant",
+    "predicted_label": "benign",
+    "original": "docs/gradcam_vlm/medgemma/cmmd/257295b7-a5e5-457d-a0a1-cd78fa1ab4df_original.png",
+    "cam": "docs/gradcam_vlm/medgemma/cmmd/257295b7-a5e5-457d-a0a1-cd78fa1ab4df_cam.png"
+  },
+  {
+    "model": "medgemma",
+    "source": "cmmd",
+    "path": "datasets/mammography/cmmd_png/3a648574-19e0-48bd-8e65-9be33f06047e.png",
+    "true_label": "malignant",
+    "predicted_label": "benign",
+    "original": "docs/gradcam_vlm/medgemma/cmmd/3a648574-19e0-48bd-8e65-9be33f06047e_original.png",
+    "cam": "docs/gradcam_vlm/medgemma/cmmd/3a648574-19e0-48bd-8e65-9be33f06047e_cam.png"
+  },
+  {
+    "model": "medgemma",
+    "source": "bcsdbt",
+    "path": "datasets/mammography/bcsdbt_png/246-51294_s033.png",
+    "true_label": "malignant",
+    "predicted_label": "benign",
+    "original": "docs/gradcam_vlm/medgemma/bcsdbt/246-51294_s033_original.png",
+    "cam": "docs/gradcam_vlm/medgemma/bcsdbt/246-51294_s033_cam.png"
+  },
+  {
+    "model": "medgemma",
+    "source": "bcsdbt",
+    "path": "datasets/mammography/bcsdbt_png/245-90809_s043.png",
+    "true_label": "malignant",
+    "predicted_label": "benign",
+    "original": "docs/gradcam_vlm/medgemma/bcsdbt/245-90809_s043_original.png",
+    "cam": "docs/gradcam_vlm/medgemma/bcsdbt/245-90809_s043_cam.png"
+  },
+  {
+    "model": "medgemma",
+    "source": "breamdm",
+    "path": "datasets/MRI/BreaDM/cls/img9Se/val/Malignant/BreaDM-Ma-1805/p-032.npy",
+    "true_label": "malignant",
+    "predicted_label": "benign",
+    "original": "docs/gradcam_vlm/medgemma/breamdm/p-032_original.png",
+    "cam": "docs/gradcam_vlm/medgemma/breamdm/p-032_cam.png"
+  },
+  {
+    "model": "medgemma",
+    "source": "breamdm",
+    "path": "datasets/MRI/BreaDM/cls/img9Se/val/Malignant/BreaDM-Ma-1805/p-033.npy",
+    "true_label": "malignant",
+    "predicted_label": "benign",
+    "original": "docs/gradcam_vlm/medgemma/breamdm/p-033_original.png",
+    "cam": "docs/gradcam_vlm/medgemma/breamdm/p-033_cam.png"
+  },
+  {
+    "model": "medgemma",
+    "source": "breamdm",
+    "path": "datasets/MRI/BreaDM/cls/img9Se/val/Malignant/BreaDM-Ma-1805/p-034.npy",
+    "true_label": "malignant",
+    "predicted_label": "benign",
+    "original": "docs/gradcam_vlm/medgemma/breamdm/p-034_original.png",
+    "cam": "docs/gradcam_vlm/medgemma/breamdm/p-034_cam.png"
+  }
+]

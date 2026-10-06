@@ -4,8 +4,10 @@ import torch.nn as nn
 import torch.optim as optim
 from tqdm import tqdm
 import argparse
+import csv
 import json
 import random
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -504,6 +506,122 @@ def _cmmd_frame(dicom_root, clinical_data_path, cache_dir, seed=42, validation_f
     return metadata[~metadata['patient'].isin(validation_patients)], metadata[metadata['patient'].isin(validation_patients)]
 
 
+_DBT_SERIES_RE = re.compile(r'^(\d+)\.\d+-(.+)$')
+
+
+def _dbt_resolve_dicom(dicom_root, patient_id, descriptive_path):
+    """Map a BCS-DBT file-paths CSV row's descriptive_path (TCIA/NBIA-style
+    folder names) to the actual local DICOM file. Our local copy was pulled via
+    Imaging Data Commons, which uses different top-level/date folder naming than
+    the CSV, but the same 'SeriesNumber.000000-<shortUID>' series-folder name
+    (modulo the '.000000'), so that component is what we match on."""
+    match = _DBT_SERIES_RE.match(Path(descriptive_path).parts[-2])
+    if not match:
+        return None
+    series_dirname = f'{match.group(1)}-{match.group(2)}'
+    matches = list(Path(dicom_root, patient_id).glob(f'*/{series_dirname}'))
+    if not matches:
+        return None
+    dcms = list(matches[0].glob('*.dcm'))
+    return dcms[0] if dcms else None
+
+
+def _dbt_slice_to_png_cached(dicom_path, box, cache_dir):
+    """Extract one frame from a BCS-DBT multi-frame tomosynthesis DICOM, crop it
+    to the lesion bounding box (with margin) from BCS-DBT-boxes-*.csv, normalize
+    to 8-bit, and cache as a PNG keyed by dicom path + slice index."""
+    from PIL import Image
+
+    cache_dir = Path(cache_dir)
+    slice_index = int(box['Slice'])
+    out_path = cache_dir / f'{dicom_path.parent.name}_s{slice_index:03d}.png'
+    if out_path.exists():
+        return out_path
+
+    import pydicom
+    from pydicom.pixel_data_handlers.util import apply_voi_lut
+
+    ds = pydicom.dcmread(dicom_path)
+    volume = ds.pixel_array
+    frame = volume[slice_index] if volume.ndim == 3 else volume
+    frame = apply_voi_lut(frame, ds)
+    if getattr(ds, 'PhotometricInterpretation', '') == 'MONOCHROME1':
+        frame = frame.max() - frame
+
+    margin = 24
+    height, width = frame.shape
+    x, y = int(box['X']), int(box['Y'])
+    w, h = int(box['Width']), int(box['Height'])
+    x0, y0 = max(x - margin, 0), max(y - margin, 0)
+    x1, y1 = min(x + w + margin, width), min(y + h + margin, height)
+    frame = frame[y0:y1, x0:x1]
+
+    frame = frame.astype(np.float32)
+    frame_min, frame_max = frame.min(), frame.max()
+    if frame_max > frame_min:
+        frame = (frame - frame_min) / (frame_max - frame_min)
+    frame = (frame * 255.0).astype(np.uint8)
+
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    Image.fromarray(frame).save(out_path)
+    return out_path
+
+
+def _dbt_metadata(dicom_root, labels_path, file_paths_path, boxes_path, cache_dir):
+    """Join BCS-DBT's labels/file-paths/boxes CSVs into a benign/malignant frame.
+
+    BCS-DBT ships Normal/Actionable/Benign/Cancer per patient-study-view, not a
+    benign/malignant diagnosis directly; only Benign and Cancer are biopsy
+    (pathologically) confirmed, so Normal and Actionable rows are dropped here,
+    matching this repo's pathological-confirmation bar for every other dataset
+    (see docs/dataset_reproduction_plan.md). Every locally-present Benign/Cancer
+    row in the validation-partition release happens to carry a lesion bounding
+    box, so each sample is a box-cropped 2D slice rather than a full DBT volume.
+    """
+    label_map = {'Benign': 0, 'Cancer': 1}
+    with open(file_paths_path, newline='') as f:
+        file_paths = {
+            (row['PatientID'], row['StudyUID'], row['View']): row['descriptive_path']
+            for row in csv.DictReader(f)
+        }
+    with open(boxes_path, newline='') as f:
+        boxes = {
+            (row['PatientID'], row['StudyUID'], row['View']): row
+            for row in csv.DictReader(f)
+        }
+
+    rows = []
+    with open(labels_path, newline='') as f:
+        for row in csv.DictReader(f):
+            label = next((label_map[k] for k in label_map if row.get(k) == '1'), None)
+            if label is None:
+                continue
+            key = (row['PatientID'], row['StudyUID'], row['View'])
+            descriptive_path = file_paths.get(key)
+            box = boxes.get(key)
+            if descriptive_path is None or box is None:
+                continue
+            dicom_path = _dbt_resolve_dicom(dicom_root, row['PatientID'], descriptive_path)
+            if dicom_path is None:
+                continue
+            png_path = _dbt_slice_to_png_cached(dicom_path, box, cache_dir)
+            rows.append({'image': png_path, 'label': label, 'patient': row['PatientID']})
+    metadata = pd.DataFrame(rows)
+    if metadata.empty:
+        raise ValueError(f'No labeled BCS-DBT DICOMs found under {dicom_root} matching {labels_path}')
+    return metadata
+
+
+def _dbt_frame(dicom_root, labels_path, file_paths_path, boxes_path, cache_dir, seed=42, validation_fraction=0.2):
+    metadata = _dbt_metadata(dicom_root, labels_path, file_paths_path, boxes_path, cache_dir)
+    patients = metadata['patient'].drop_duplicates().to_numpy(copy=True)
+    rng = np.random.default_rng(seed)
+    rng.shuffle(patients)
+    validation_count = max(1, int(len(patients) * validation_fraction))
+    validation_patients = set(patients[-validation_count:])
+    return metadata[~metadata['patient'].isin(validation_patients)], metadata[metadata['patient'].isin(validation_patients)]
+
+
 def _assign_stratified_group_folds(metadata, group_col, num_folds, seed):
     """Assign each group (or each row, if group_col is None) to one of num_folds
     folds, stratified by class label at the group level, with a fixed seed."""
@@ -591,6 +709,27 @@ def _build_combined_sources(args):
         _branch_dataset_source(train_ds, val_ds, train_frame['label'], MAMMOGRAPHY_BRANCH)
     )
 
+    # mammography branch: BCS-DBT (box-cropped Benign/Cancer slices; optional,
+    # skipped if the labels/file-paths/boxes CSVs haven't been placed under
+    # datasets/mammography/bcsdbt_*).
+    dbt_labels_path = Path('datasets/mammography/bcsdbt_labels.csv')
+    if dbt_labels_path.exists():
+        dbt_train_frame, dbt_validation_frame = _dbt_frame(
+            Path('datasets/mammography/bcsdbt_dicom'),
+            dbt_labels_path,
+            Path('datasets/mammography/bcsdbt_file_paths.csv'),
+            Path('datasets/mammography/bcsdbt_boxes.csv'),
+            Path('datasets/mammography/bcsdbt_png'),
+            args.seed, args.validation_fraction,
+        )
+        dbt_train_transform = MiasTransform(size=args.image_size, augment=True)
+        dbt_validation_transform = MiasTransform(size=args.image_size, augment=False)
+        dbt_train_ds = _make_dataset(dbt_train_frame, dbt_train_transform)
+        dbt_val_ds = _make_dataset(dbt_validation_frame, dbt_validation_transform)
+        sources_by_branch[MAMMOGRAPHY_BRANCH].append(
+            _branch_dataset_source(dbt_train_ds, dbt_val_ds, dbt_train_frame['label'], MAMMOGRAPHY_BRANCH)
+        )
+
     # ultrasound branch: one or more of busbra/busi/busc/breast, concatenated
     for name in args.ultrasound_datasets:
         train_frame, validation_frame, train_transform, validation_transform = _ultrasound_frame(name, args)
@@ -610,6 +749,20 @@ def _build_combined_sources(args):
     sources_by_branch[MRI_BRANCH].append(
         _branch_dataset_source(train_ds, val_ds, labels, MRI_BRANCH)
     )
+
+    # MRI branch: BreastDCEDL-ISPY2 (malignant-only augmentation; I-SPY2 is a
+    # pre-treatment neoadjuvant-trial cohort with no benign cases and ships no
+    # benign/malignant label file, so it is converted straight into BreaDM's
+    # img9Se layout under the Malignant class only, via
+    # scripts/preprocess_ispy2_mri.py). Optional: skipped if not preprocessed.
+    ispy2_root = Path('datasets/MRI/ISPY2/cls/img9Se')
+    if (ispy2_root / 'train').exists():
+        ispy2_train_ds = BreaDMDataset(ispy2_root, 'train', train_transform)
+        ispy2_val_ds = BreaDMDataset(ispy2_root, 'val', validation_transform)
+        ispy2_labels = [label for _, label in ispy2_train_ds.samples]
+        sources_by_branch[MRI_BRANCH].append(
+            _branch_dataset_source(ispy2_train_ds, ispy2_val_ds, ispy2_labels, MRI_BRANCH)
+        )
     return sources_by_branch
 
 
@@ -666,7 +819,7 @@ def _warm_start_branch(model, branch_index, checkpoint_path):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Train the three-branch fusion model.')
-    parser.add_argument('--dataset', choices=['busbra', 'busi', 'busc', 'breast', 'mias', 'cdd_cesm', 'cmmd', 'breamdm', 'combined'], default='busbra')
+    parser.add_argument('--dataset', choices=['busbra', 'busi', 'busc', 'breast', 'mias', 'cdd_cesm', 'cmmd', 'bcsdbt', 'breamdm', 'combined'], default='busbra')
     parser.add_argument(
         '--cdd-cesm-annotations', type=Path, default=None,
         help='Path to the CDD-CESM "Radiology-manual-annotations.xlsx" file (TCIA supporting documentation, not part of the image package).'
@@ -678,6 +831,22 @@ def main(argv=None):
     parser.add_argument(
         '--cmmd-png-cache', type=Path, default=None,
         help='Directory to cache CMMD DICOM-to-PNG conversions in (converted once, reused across runs).'
+    )
+    parser.add_argument(
+        '--dbt-labels', type=Path, default=None,
+        help='Path to a BCS-DBT labels-<split>.csv (TCIA supporting documentation; Normal/Actionable/Benign/Cancer one-hot per patient/study/view).'
+    )
+    parser.add_argument(
+        '--dbt-file-paths', type=Path, default=None,
+        help='Path to the matching BCS-DBT file-paths-<split>.csv (maps patient/study/view to its DICOM folder).'
+    )
+    parser.add_argument(
+        '--dbt-boxes', type=Path, default=None,
+        help='Path to the matching BCS-DBT boxes-<split>.csv (lesion bounding boxes; only Benign/Cancer rows with a box are usable here).'
+    )
+    parser.add_argument(
+        '--dbt-png-cache', type=Path, default=None,
+        help='Directory to cache BCS-DBT box-cropped slice-to-PNG conversions in (converted once, reused across runs).'
     )
     parser.add_argument('--dataset-root', type=Path, default=None)
     parser.add_argument('--backbone', default='resnet18')
@@ -800,6 +969,17 @@ def main(argv=None):
         cache_dir = args.cmmd_png_cache or Path('datasets/mammography/cmmd_png')
         train_frame, validation_frame = _cmmd_frame(
             dicom_root, clinical_data_path, cache_dir, args.seed, args.validation_fraction
+        )
+        train_transform = MiasTransform(size=args.image_size, augment=True)
+        validation_transform = MiasTransform(size=args.image_size, augment=False)
+    elif args.dataset == 'bcsdbt':
+        dicom_root = args.dataset_root or Path('datasets/mammography/bcsdbt_dicom')
+        labels_path = args.dbt_labels or Path('datasets/mammography/bcsdbt_labels.csv')
+        file_paths_path = args.dbt_file_paths or Path('datasets/mammography/bcsdbt_file_paths.csv')
+        boxes_path = args.dbt_boxes or Path('datasets/mammography/bcsdbt_boxes.csv')
+        cache_dir = args.dbt_png_cache or Path('datasets/mammography/bcsdbt_png')
+        train_frame, validation_frame = _dbt_frame(
+            dicom_root, labels_path, file_paths_path, boxes_path, cache_dir, args.seed, args.validation_fraction
         )
         train_transform = MiasTransform(size=args.image_size, augment=True)
         validation_transform = MiasTransform(size=args.image_size, augment=False)

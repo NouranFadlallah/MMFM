@@ -11,6 +11,22 @@
 
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 
+% \confmat{title}{TN}{FP}{FN}{TP}: a small 2x2 confusion matrix (rows =
+% actual class, columns = predicted class), used for the per-model grid in
+% Figure~\ref{fig:confmat}.
+\newcommand{\confmat}[5]{%
+  \begin{tabular}[t]{@{}c@{}}
+    \textbf{#1}\\[2pt]
+    \begin{tabular}{@{}ll|cc@{}}
+      & & \multicolumn{2}{c}{Predicted} \\
+      & & Benign & Malignant \\
+      \hline
+      \multirow{2}{*}{Actual} & Benign & #2 & #3 \\
+      & Malignant & #4 & #5 \\
+    \end{tabular}
+  \end{tabular}%
+}
+
 \title{ResNet-18 Baseline Reproductions on Six Public\\Breast-Imaging Datasets: A Results Comparison}
 \author{Nouran Fadlallah}
 \date{}
@@ -41,7 +57,26 @@ cues, directly probing a preprocessing concern raised by the aggregate
 results. We also report \textbf{preliminary smoke-test results} on two
 newly wired-in mammography sources, CDD-CESM \citep{khaled2022cddcesm} and
 CMMD \citep{cui2021cmmd}, which confirm the pipeline end to end but are not
-yet tuned reproductions.
+yet tuned reproductions, plus a third, BCS-DBT \citep{buda2021bcsdbt},
+whose 8-image validation split makes it a pipeline check only. We report two \textbf{combined 3-branch fusion runs} that add I-SPY2
+DCE-MRI \citep{fridman2025breastdcedl} as a malignant-only MRI source, and
+a \textbf{BiomedCLIP} \citep{zhang2023biomedclip} fine-tuning baseline over
+all ten sources. In both, the headline accuracy is inflated by the
+malignant-only I-SPY2 data, so we also give per-modality and
+per-source breakdowns. Finally, we LoRA fine-tune
+\textbf{MedGemma-4B-it} \citep{sellergren2025medgemma}, a generative
+vision-language model, on the same manifest, and run \textbf{Grad-CAM on
+both VLMs' misclassified examples} using a ViT-adapted Grad-CAM we add to
+\texttt{utils/gradcam.py}. The two VLMs fail on the same specific images
+in their three smallest mammography sources, and MedGemma's Grad-CAM maps
+show a grid artifact not present in BiomedCLIP's, which we read as a
+methodological finding about Grad-CAM on quantized generative VLMs rather
+than as reliable localization. We also extend Grad-CAM to every
+remaining trained model that lacked it: BCS-DBT's single-modality
+checkpoint, and -- for the first time in this report -- all five
+\textbf{\texttt{FusionLateModel}} checkpoints, via a new
+\textbf{\texttt{FusionBranchGradCAM}} that hooks all three branches at
+once and reads out whichever one a given sample populates.
 \end{abstract}
 
 \section{Datasets and Task}
@@ -273,7 +308,7 @@ false-negative rate ($1-\text{sensitivity}$), and a pooled bias verdict.
   $=1-\text{specificity}$; FN rate $=1-\text{sensitivity}$.}
   \label{tab:bias}
   \resizebox{\textwidth}{!}{%
-  \begin{tabular}{llrrrrrrl}
+  \begin{tabular}{llrrrrrrrl}
     \toprule
     Dataset & Backbone & $n$ & TN & FP & FN & TP & FP rate & FN rate & Bias \\
     \midrule
@@ -308,6 +343,37 @@ BrEaST-Lesions USG's pooled verdicts hide real fold-to-fold flips (BUS-BRA
 ResNet-18 is FP-leaning in 3/5 folds and FN-leaning in 2; BrEaST ResNet-18
 flips 3 times across its 5 folds), so treat those two as a weak aggregate
 tendency, not a stable property of the model.
+
+Figure~\ref{fig:confmat} lays out the same pooled counts as explicit 2x2
+confusion matrices per model, for a more direct visual read of each
+model's error pattern than Table~\ref{tab:bias}'s flat rate columns.
+
+\begin{figure}[htbp]
+  \centering
+  \setlength{\tabcolsep}{4pt}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{ccc}
+    \confmat{BUS-BRA, ResNet-18}{1055}{213}{109}{498} &
+    \confmat{BUS-BRA, ResNet-50}{1065}{203}{119}{488} &
+    \confmat{BUSI, ResNet-18}{397}{40}{35}{175} \\[8pt]
+    \confmat{BUSI, EfficientNet-B0}{387}{50}{27}{183} &
+    \confmat{BUSC, ResNet-18}{98}{2}{0}{150} &
+    \confmat{BrEaST, ResNet-18}{112}{42}{27}{71} \\[8pt]
+    \confmat{BrEaST, EfficientNet-B0}{101}{53}{24}{74} &
+    \confmat{mini-MIAS, ResNet-18}{46}{22}{26}{25} &
+    \confmat{BreastDM, ResNet-18}{13}{11}{3}{90} \\
+  \end{tabular}%
+  }
+  \caption{Pooled confusion matrices per model (counts summed across all 5
+  test folds; BreastDM is its single 117-sample official validation split).
+  Rows are the actual class, columns the predicted class. mini-MIAS's near-even
+  split of errors across both off-diagonal cells (22 FP, 26 FN out of only
+  119 total) visually confirms it has no reliable signal in either
+  direction, not just a low aggregate accuracy; BUSC's matrix is
+  overwhelmingly diagonal (2 errors out of 250); BreastDM's asymmetry (11 FP
+  vs.\ 3 FN) makes its over-calls-malignant behavior immediately visible.}
+  \label{fig:confmat}
+\end{figure}
 
 \section{Discussion: Is the Preprocessing Sufficient?}
 \label{sec:preprocessing-discussion}
@@ -381,21 +447,31 @@ examples.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.32\textwidth]{gradcam/busc_correct_benign.png}
-  \includegraphics[width=0.32\textwidth]{gradcam/busc_correct_malignant.png}
-  \includegraphics[width=0.32\textwidth]{gradcam/busc_wrong.png}\\
-  \includegraphics[width=0.32\textwidth]{gradcam/mias_wrong_diffuse.png}
-  \includegraphics[width=0.32\textwidth]{gradcam/busi_wrong_localized.png}
-  \includegraphics[width=0.32\textwidth]{gradcam/breastdm_wrong_localized.png}
-  \caption{Grad-CAM overlays, ResNet-18. Top row, BUSC: a correctly
-  classified benign case (left) shows a broad, diffuse hotspot with no
-  focal center, unlike the correctly classified malignant case (middle),
-  which is compact and centrally localized; the one misclassified BUSC
-  example (right, benign predicted malignant at $p=0.57$) is again diffuse
-  and reaches the image border. Bottom row: a misclassified mini-MIAS case
-  (left) shows a blocky, uninterpretable activation pattern; misclassified
-  BUSI (middle) and BreastDM (right) cases both show a compact,
-  lesion-plausible hotspot despite being wrong.}
+  % Row 1: BUSC correctly-classified benign, then correctly-classified malignant. Each pair is (original | Grad-CAM).
+  \includegraphics[width=0.23\textwidth]{gradcam/busc_correct_benign_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/busc_correct_benign.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/busc_correct_malignant_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/busc_correct_malignant.png}\\
+  % Row 2: BUSC misclassified, then mini-MIAS misclassified.
+  \includegraphics[width=0.23\textwidth]{gradcam/busc_wrong_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/busc_wrong.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/mias_wrong_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/mias_wrong_diffuse.png}\\
+  % Row 3: BUSI misclassified, then BreastDM misclassified.
+  \includegraphics[width=0.23\textwidth]{gradcam/busi_wrong_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/busi_wrong_localized.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/breastdm_wrong_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/breastdm_wrong_localized.png}
+  \caption{Original preprocessed image vs.\ Grad-CAM overlay (each pair:
+  original, then overlay), ResNet-18. Row 1, BUSC: a correctly classified
+  benign case (left pair) shows a broad, diffuse hotspot with no focal
+  center, unlike the correctly classified malignant case (right pair),
+  which is compact and centrally localized. Row 2: the one misclassified
+  BUSC example (left pair, benign predicted malignant at $p=0.57$) is again
+  diffuse and reaches the image border; a misclassified mini-MIAS case
+  (right pair) shows a blocky, uninterpretable activation pattern. Row 3:
+  misclassified BUSI (left pair) and BreastDM (right pair) cases both show
+  a compact, lesion-plausible hotspot despite being wrong.}
   \label{fig:gradcam}
 \end{figure}
 
@@ -436,6 +512,152 @@ Net read: extending the single-example BUSC check to every trained model
 BUSC concern, and adds a new, independent flag for mini-MIAS. BUS-BRA,
 BUSI, and BreastDM's failures look like ordinary hard-case mistakes, not a
 preprocessing or shortcut-learning problem.
+
+\subsection{False-positive sweep across every trained model}
+\label{sec:gradcam-fp}
+
+The analysis above pools false positives and false negatives together and
+caps at a handful of examples per fold. Since Table~\ref{tab:bias} shows
+several datasets lean specifically false-positive (over-calling benign
+cases as malignant), we re-ran Grad-CAM restricted to false positives only
+(true label benign, predicted malignant), with no cap, via
+\texttt{scripts/gradcam\_false\_positives.py}, across all twelve trained
+single-modality checkpoints -- the eight above plus BreastDM, and the three
+newly wired-in mammography sources from
+Section~\ref{sec:new-datasets}, CDD-CESM, CMMD, and BCS-DBT. This found
+\textbf{695 false positives total} (Table~\ref{tab:gradcam-fp-counts}),
+saved to \texttt{docs/gradcam\_fp/} with a manifest at
+\texttt{docs/gradcam\_fp\_manifest.json}. Figures~\ref{fig:gradcam-fp-us}
+and~\ref{fig:gradcam-fp-mammo} show the single highest-confidence false
+positive for each model.
+
+\begin{table}[htbp]
+  \centering
+  \caption{False positives found per model (no cap, pooled across all folds or the single validation split).}
+  \label{tab:gradcam-fp-counts}
+  \begin{tabular}{lr}
+    \toprule
+    Model & False positives \\
+    \midrule
+    BUS-BRA, ResNet-18 & 213 \\
+    BUS-BRA, ResNet-50 & 203 \\
+    BUSI, ResNet-18 & 41 \\
+    BUSI, EfficientNet-B0 & 50 \\
+    BUSC, ResNet-18 & 2 \\
+    BrEaST-Lesions USG, ResNet-18 & 42 \\
+    BrEaST-Lesions USG, EfficientNet-B0 & 53 \\
+    mini-MIAS, ResNet-18 & 22 \\
+    BreastDM, ResNet-18 & 11 \\
+    CDD-CESM, ResNet-18 & 17 \\
+    CMMD, ResNet-18 & 41 \\
+    BCS-DBT, ResNet-18 & 0 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  % Each pair is (original | Grad-CAM), highest-confidence false positive per model.
+  \includegraphics[width=0.23\textwidth]{gradcam/busbra_resnet18_fp_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/busbra_resnet18_fp.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/busbra_resnet50_fp_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/busbra_resnet50_fp.png}\\
+  \includegraphics[width=0.23\textwidth]{gradcam/busi_resnet18_fp_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/busi_resnet18_fp.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/busi_efficientnet_b0_fp_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/busi_efficientnet_b0_fp.png}\\
+  \includegraphics[width=0.23\textwidth]{gradcam/busc_resnet18_fp_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/busc_resnet18_fp.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/breast_resnet18_fp_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/breast_resnet18_fp.png}
+  \caption{Highest-confidence ultrasound false positive per model
+  (original, then Grad-CAM overlay), ResNet-18 unless labeled otherwise.
+  Row 1, BUS-BRA: both backbones' worst false positives ($p{=}0.99$) sit on
+  a diffuse, shadowed hypoechoic region rather than a discrete mass. Row 2,
+  BUSI: ResNet-18 spreads over a dark irregular area; EfficientNet-B0 is
+  tightly localized on a rounded hypoechoic structure. Row 3: BUSC's false
+  positive centers on an actual round hypoechoic lesion but bleeds past it
+  toward the top edge, echoing Section~\ref{sec:gradcam}'s single-example
+  finding at scale; BrEaST-Lesions USG (ResNet-18) centers on a plausible
+  dark lesion region.}
+  \label{fig:gradcam-fp-us}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  % Each pair is (original | Grad-CAM), highest-confidence false positive per model.
+  \includegraphics[width=0.23\textwidth]{gradcam/breast_efficientnet_b0_fp_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/breast_efficientnet_b0_fp.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/mias_resnet18_fp_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/mias_resnet18_fp.png}\\
+  \includegraphics[width=0.23\textwidth]{gradcam/breamdm_resnet18_fp_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/breamdm_resnet18_fp.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/cdd_cesm_resnet18_fp_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/cdd_cesm_resnet18_fp.png}\\
+  \includegraphics[width=0.23\textwidth]{gradcam/cmmd_resnet18_fp_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/cmmd_resnet18_fp.png}\\
+  \includegraphics[width=0.23\textwidth]{gradcam/bcsdbt_resnet18_fn_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/bcsdbt_resnet18_fn.png}
+  \caption{Highest-confidence false positive per model, mammography/MRI
+  plus the BrEaST-Lesions USG EfficientNet-B0 run (original, then Grad-CAM
+  overlay), ResNet-18 unless labeled otherwise. Row 1: BrEaST-Lesions USG
+  (EfficientNet-B0) activates diffusely along several tissue-boundary edges
+  with no single focus; \textbf{mini-MIAS's heatmap sits exactly on the
+  black-background / breast-tissue boundary line, not on tissue at all} --
+  the clearest confirmation yet that its failures key on a padding artifact
+  rather than any lesion signal. Row 2: BreastDM is a compact,
+  lesion-plausible hotspot; CDD-CESM centers on a small hyperdense focus
+  right at the skin line -- plausibly a genuine finding, but adjacent to
+  the breast contour. Row 3: \textbf{CMMD's heatmap covers nearly the
+  entire breast silhouette, including background outside the tissue}, the
+  starkest border/background cue in this sweep. Row 4: BCS-DBT has zero
+  false positives (Table~\ref{tab:gradcam-fp-counts}), so this is instead
+  its highest-confidence false negative (malignant predicted benign,
+  $p{=}0.26$) from \texttt{scripts/gradcam\_all\_failures.py}'s general
+  sweep -- a compact, lesion-plausible hotspot on the box-cropped region
+  itself, not a border artifact.}
+  \label{fig:gradcam-fp-mammo}
+\end{figure}
+
+Read across all eleven models, the false-positive-only sweep confirms and
+sharpens two of the concerns already raised. \textbf{mini-MIAS} moves from
+``blocky, uninterpretable'' (Section~\ref{sec:gradcam}) to a specific,
+falsifiable claim: on its highest-confidence false positive, the model is
+provably attending to the crop boundary between real tissue and padded
+background, not lesion tissue. \textbf{BUSC} keeps failing the same way at
+scale (2/2 pooled false positives reach the image border), reinforcing that
+its 0.992 accuracy should stay unverified pending a re-crop. The sweep also
+extends this scrutiny to the two datasets added in
+Section~\ref{sec:new-datasets}, which -- like BUSC and mini-MIAS -- have
+comparatively little preprocessing (no lesion-mask ROI crop, just a
+grayscale resize): \textbf{CMMD's worst false positive attends to the
+breast/background boundary far more than to any internal structure},
+the single clearest border-artifact heatmap in the whole sweep, while
+CDD-CESM's is more ambiguous (centered on a real hyperdense focus, but one
+that happens to sit at the skin line). Since CMMD and CDD-CESM are already
+flagged in Section~\ref{sec:limitations} as unvalidated single-split smoke
+tests, this Grad-CAM finding is an additional, independent reason not to
+trust their reported specificity yet, and argues for the same fix path
+already proposed for BUSC and mini-MIAS: recover or approximate a
+lesion-region crop and re-run before drawing conclusions from these numbers.
+\textbf{BCS-DBT (added after this sweep was first run, now included) is the
+opposite case}: zero false positives, and its one real error type (a false
+negative, Figure~\ref{fig:gradcam-fp-mammo} row 4) is a compact hotspot on
+the box-cropped lesion region itself. This is consistent with BCS-DBT's
+preprocessing (Section~\ref{sec:new-datasets}: a lesion-bounding-box crop,
+not just a grayscale resize like CDD-CESM/CMMD/mini-MIAS) doing the same job
+the mask-guided ROI crop does for BUS-BRA/BUSI/BrEaST/BreastDM above --
+though with only 8 validation images and 2 errors total, this is far too
+little evidence to call BCS-DBT's pipeline clean, only to say its errors
+don't show the same border-artifact signature as the other three
+mammography sources.
+
+Beyond the border-artifact concerns above, BUS-BRA, BUSI, and
+BrEaST-Lesions USG's worst false positives
+mostly stay lesion-plausible (with one exception, BrEaST's
+EfficientNet-B0 run, which diffuses across tissue boundaries instead),
+consistent with Section~\ref{sec:gradcam}'s read that their mask-guided
+crop is doing its job.
 
 \section{Mixed-Backbone Multimodal Fusion}
 \label{sec:mixed-fusion}
@@ -509,7 +731,7 @@ full 10-epoch budget still improving, so its true optimum may be higher.
 \textbf{This is a fusion-mechanism ablation, not a standalone benchmark
 result.}
 
-\section{Preliminary Extensions: CDD-CESM and CMMD Mammography}
+\section{Preliminary Extensions: CDD-CESM, CMMD, and BCS-DBT Mammography}
 \label{sec:new-datasets}
 
 Two additional mammography sources, CDD-CESM \citep{khaled2022cddcesm} and
@@ -531,7 +753,7 @@ directly to the 5-fold numbers in Tables~\ref{tab:busbra}--\ref{tab:resnet-only}
 
 \begin{table}[htbp]
   \centering
-  \caption{CDD-CESM and CMMD: preliminary single-split smoke-test results, ResNet-18.}
+  \caption{CDD-CESM, CMMD, and BCS-DBT: preliminary single-split smoke-test results, ResNet-18.}
   \label{tab:new-datasets}
   \resizebox{\textwidth}{!}{%
   \begin{tabular}{llcccccc}
@@ -542,6 +764,7 @@ directly to the 5-fold numbers in Tables~\ref{tab:busbra}--\ref{tab:resnet-only}
     \multirow{2}{*}{CMMD \citep{cui2021cmmd}}
       & Unweighted CE & $0.739$ & $0.996$ & $\mathbf{0.010}$ & --- & $0.850$ & $0.804$ \\
       & Class-weighted CE & $0.758$ & $0.824$ & $0.573$ & $0.845$ & $0.834$ & $0.790$ \\
+    BCS-DBT \citep{buda2021bcsdbt} & Default & $0.750$ & $0.667$ & $1.000$ & $1.000$ & $0.800$ & $1.000$ \\
     \bottomrule
   \end{tabular}%
   }
@@ -567,12 +790,435 @@ label distribution rather than a paper-specific recipe choice) recovers
 specificity to \textbf{0.573} for about one point of AUC, a usable starting
 point but still not a tuned reproduction.
 
-Both runs confirm their respective pipelines are correct end to end. The
+\textbf{BCS-DBT} \citep{buda2021bcsdbt}, Duke's digital breast
+tomosynthesis screening collection, was added as a third DICOM-derived
+mammography source. Its DICOM headers carry no diagnosis, so labels come
+from TCIA's separate validation-partition label, file-path, and
+bounding-box CSVs; the train-partition labels are not public. The 280
+locally downloaded patients are exactly that validation partition. We keep
+only biopsy-confirmed \textbf{Benign} and \textbf{Cancer} view-rows (38 and
+37), dropping Normal and Actionable. Every one of these 75 view-rows has a
+lesion box, so each sample is a box-cropped 2D slice (6\,px margin, VOI-LUT
+and min-max normalized) from the annotated frame of the tomosynthesis
+volume, not a full 3D volume. A patient-level split gives \textbf{67
+training / 8 validation} images (40 patients, none with both labels); the
+validation split is 2 benign / 6 malignant. The run used the default
+recipe for 10 epochs; the checkpoint with the lowest validation loss is
+epoch 8. At that checkpoint the model gets both benign cases right and
+misses 2 of 6 malignant ones (accuracy $0.750$). Per-epoch validation
+accuracy moved between $0.50$ and $0.875$, a swing of three predictions.
+\textbf{With 8 validation images, the perfect specificity and AUC in
+Table~\ref{tab:new-datasets} are not estimates of anything}; this run only
+confirms that the label join and DICOM slice extraction work.
+
+All three runs confirm their respective pipelines are correct end to end. The
 next steps before either is comparable to
 Tables~\ref{tab:busbra}--\ref{tab:resnet-only} are the same as elsewhere in
 this report: cross-validation, an augmentation/hyperparameter search, and,
 for CMMD, breast-level multi-view aggregation rather than per-image
-predictions.
+predictions. BCS-DBT additionally needs more labeled data than the public
+validation partition provides before any of its numbers can be trusted.
+
+\section{Combined Fusion with I-SPY2 MRI and BCS-DBT}
+\label{sec:combined-ispy2}
+
+Section~\ref{sec:mixed-fusion}'s fusion runs use a 427-sample combined
+validation set. Two later \texttt{--dataset combined} runs add two new
+sources, so their validation set is different and their numbers are
+\textbf{not comparable} to Table~\ref{tab:mixed-fusion}.
+
+\paragraph{I-SPY2 as a malignant-only MRI source.} The BreastDCEDL release
+\citep{fridman2025breastdcedl} supplies I-SPY2 DCE-MRI volumes with tumor
+masks for 982 patients. I-SPY2 is a neoadjuvant-chemotherapy trial cohort,
+so every case is biopsy-confirmed malignant and there is no benign class.
+We convert each tumor-bearing axial slice into a BreastDM-style
+\texttt{img9Se} patch: crop to the mask's bounding box with a 6\,px margin,
+resample to 9 DCE phases, and normalize per patient to uint8 by
+1st/99th-percentile clipping of the pre-contrast volume. A patient-level
+90/10 split is used. The MRI branch loads these patches as a second source
+next to BreastDM. The sampler balances branch, then source within branch,
+then class within source, so an all-malignant source adds malignant
+examples without needing a benign counterpart. \textbf{This is data
+augmentation for the MRI branch, not a new benchmark}; no published I-SPY2
+benign-vs-malignant result exists to reproduce.
+
+\paragraph{Runs.} Both runs use three ImageNet-pretrained ResNet-18
+branches with no warm-start, the default Adam recipe, batch size 8, a
+10-epoch budget, and early-stopping patience 5. Run D adds I-SPY2 (37{,}510
+training / 4{,}132 validation samples). Run E then also adds BCS-DBT as a
+second mammography source next to mini-MIAS (4{,}140 validation samples).
+Table~\ref{tab:combined-ispy2} reports the checkpoint with the lowest
+validation loss.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Combined 3-branch fusion with I-SPY2 (Run D) and with I-SPY2 plus BCS-DBT (Run E). Validation sample counts per branch in parentheses. Selection is by lowest validation loss.}
+  \label{tab:combined-ispy2}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lccccccc}
+    \toprule
+    Run & Best epoch & Epochs run & Best val loss & Overall acc. & Mammography acc. & Ultrasound acc. & MRI acc. \\
+    \midrule
+    D: + I-SPY2 & 10 & 10 (full budget) & $0.0775$ & $0.974$ ($4{,}132$) & $0.600$ ($10$) & $0.847$ ($300$) & $0.985$ ($3{,}822$) \\
+    E: + I-SPY2 + BCS-DBT & 4 & 9 (early-stopped) & $0.0942$ & $0.972$ ($4{,}140$) & $0.667$ ($18$) & $0.833$ ($300$) & $0.984$ ($3{,}822$) \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table}
+
+\paragraph{The MRI and overall accuracies are not benign-vs-malignant
+accuracies.} I-SPY2 contributes 3{,}705 of the 3{,}822 MRI validation
+samples, all malignant. Together with BreastDM's 117 (24 benign / 93
+malignant), \textbf{96.9\% of MRI validation is malignant}, and always
+predicting malignant already scores about $0.994$ on this pool. Since MRI
+is 92.5\% of the whole validation set, the overall accuracy inherits the
+same problem. To measure MRI discrimination, evaluate on BreastDM's
+validation split alone; neither run has done this yet.
+
+\paragraph{Mammography and ultrasound.} The mammography branch is judged
+on 10 (Run D) or 18 (Run E) validation images, so a change of one or two
+predictions moves its accuracy by 6--10 points. Per-epoch mammography
+accuracy in Run E ranged from $0.39$ to $0.72$. The difference between
+$0.600$ and $0.667$ is noise, not evidence that BCS-DBT helps or hurts.
+Ultrasound uses the same 300 validation images as
+Section~\ref{sec:mixed-fusion} and stays in the same range (about
+$0.83$--$0.85$), as expected, since neither run changes the ultrasound
+sources. The checkpoint saved as
+\texttt{combined\_fusion\_resnet18\_best.pth} is Run E's epoch 4; Run D's
+checkpoint was overwritten.
+
+\subsection{Grad-CAM on the fusion-model checkpoints}
+\label{sec:gradcam-fusion}
+
+Every Grad-CAM result so far is for a \texttt{SingleBackboneClassifier}.
+\nolinkurl{utils/gradcam.py}'s \texttt{GradCAM.\_\_call\_\_} already accepts
+$(x_1, x_2, x_3, \text{presence\_mask})$, matching
+\texttt{FusionLateModel.forward} exactly, but no script had ever exercised
+it on a fusion checkpoint until now.
+\nolinkurl{scripts/gradcam_fusion_failures.py} closes that gap for all five
+\texttt{FusionLateModel} checkpoints: the
+mixed-backbone study's Baseline/A/B/C (Section~\ref{sec:mixed-fusion}) and
+Run E (Section~\ref{sec:combined-ispy2}, Run D's checkpoint was overwritten
+so is not recoverable). Since a fused forward pass always runs all three
+backbones even on a zero-filled absent branch, we added
+\texttt{FusionBranchGradCAM}, which hooks all three branches' last conv
+layer at once and reads out whichever branch a given sample actually
+populates.
+
+Baseline/A/B/C share the original 427-sample validation set (mini-MIAS +
+BUS-BRA/BUSI/BUSC/BrEaST + BreastDM, no I-SPY2/BCS-DBT, since those sources
+did not exist when those checkpoints were trained); Run E uses the current
+4{,}140-sample set. Rebuilding the old composition by hand, rather than
+calling \nolinkurl{training/train.py}'s own \texttt{\_build\_combined\_sources}
+(which now includes I-SPY2/BCS-DBT unconditionally whenever those
+directories exist locally), was necessary to avoid silently evaluating the
+older checkpoints against a validation set they were never trained for; we
+verified the reconstructed counts match exactly (427 and 4{,}140) before
+running Grad-CAM. Up to 5 wrong cases per source per checkpoint were saved,
+132 heatmaps total across all five checkpoints and every branch, to
+\nolinkurl{docs/gradcam_fusion/} with a manifest at
+\nolinkurl{docs/gradcam_fusion_manifest.json}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.23\textwidth]{gradcam/fusion_mias_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/fusion_mias_cam.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/fusion_busbra_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/fusion_busbra_cam.png}\\
+  \includegraphics[width=0.23\textwidth]{gradcam/fusion_breamdm_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/fusion_breamdm_cam.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/fusion_ispy2_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/fusion_ispy2_cam.png}
+  \caption{Fusion-model wrong cases, one branch per pair (original, then
+  Grad-CAM overlay). Left to right: mini-MIAS mammography branch (Baseline
+  run, benign predicted malignant) -- the hotspot sits in the bottom-right
+  \emph{corner} of the patch, away from any visible tissue structure,
+  echoing the single-modality mini-MIAS boundary-artifact finding above;
+  BUS-BRA ultrasound branch (Baseline run, malignant predicted benign) --
+  a compact, lesion-plausible hotspot; BreastDM {MRI} branch (Baseline run,
+  malignant predicted benign) -- compact and lesion-plausible; {I-SPY2}
+  {MRI} branch (Run E, malignant predicted benign) -- also compact and
+  lesion-plausible, on a source that did not exist for the other four
+  checkpoints.}
+  \label{fig:gradcam-fusion}
+\end{figure}
+
+\textbf{The mammography branch's artifact-proneness carries over from the
+single-modality model into the fusion model, but not uniformly.} Of
+Baseline's 3 mini-MIAS wrong cases, one shows the corner/boundary pattern in
+Figure~\ref{fig:gradcam-fusion}; the other two show ordinary compact,
+roughly central hotspots instead -- a mix, not a repeat of the single-model
+sweep's single clean example. mini-MIAS's small size (10 validation images)
+means this mix is itself low-confidence evidence either way. In Run E,
+BCS-DBT's mammography-branch errors (4 of them, Table~\ref{tab:combined-ispy2}'s
+18-sample mammography pool) show a mix of a compact bottom-of-frame hotspot
+and a horizontal-striping artifact plausibly from tomosynthesis
+reconstruction or {JPEG2000} compression, not the same background-boundary
+pattern as mini-MIAS or the single-modality {CMMD} finding.
+
+\textbf{The ultrasound and {MRI} branches are consistently lesion-plausible
+across every checkpoint and backbone}, matching their single-modality
+counterparts: BUS-BRA/BUSI/BrEaST-Lesions {USG} wrong cases are compact
+hotspots in all four mixed-backbone runs (ResNet-18 and ResNet-50 alike, so
+this is not a backbone-specific effect), and both {MRI} sources (BreastDM in
+all five checkpoints, {I-SPY2} in Run E) show the same pattern on their
+errors. This is the same read as the single-modality Grad-CAM sections above,
+now shown to hold inside the fusion model too, not just when each backbone
+is trained alone.
+
+\textbf{BUSC reached 0 wrong cases in two of the five checkpoints} (Run B
+and Run E) -- a perfect 25/25 ultrasound-branch score with nothing left to
+Grad-CAM. This is the same unresolved concern as BUSC's single-modality
+0.992 accuracy (Section~\ref{sec:gradcam}): a fusion-model Grad-CAM check
+cannot confirm or rule out a shortcut when there is no error to inspect, so
+BUSC's perfect scores stay unverified pending the same re-crop fix proposed
+throughout this report, now also for the fusion setting.
+
+\section{Foundation-Model Baseline: BiomedCLIP}
+\label{sec:biomedclip}
+
+As a first vision-language-model comparison, we fine-tuned the image tower
+of BiomedCLIP \citep{zhang2023biomedclip} (a ViT-B/16)\footnote{Hugging
+Face checkpoint
+\nolinkurl{microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224}.}
+with a new linear head as a flat benign-vs-malignant classifier
+(\nolinkurl{scripts/finetune_biomedclip.py}). Unlike \texttt{FusionLateModel},
+this is a single-branch model on ordinary 3-channel $224\times224$ input.
+All ten local sources go into one manifest and reuse each dataset's own
+patient-safe split from \texttt{training/train.py}: mini-MIAS, CDD-CESM,
+CMMD, and BCS-DBT (mammography); BUS-BRA, BUSI, BUSC, and BrEaST-Lesions
+USG (ultrasound); BreastDM and I-SPY2 (MRI). MRI patches are reduced from 9
+DCE phases to one representative phase (index 4) copied to three channels.
+That gives 41{,}476 training and 4{,}565 validation images, 80.7\% of the
+training rows from I-SPY2. Training samples are drawn with the same
+modality, then source, then class balancing as the fusion runs. Training
+used AdamW with learning rate $10^{-5}$ for the encoder and $10^{-3}$ for
+the head, batch size 32, up to 20 epochs, and patience 5.
+
+Validation loss was lowest after epoch 1 ($0.144$) and rose every epoch
+after that while training accuracy reached $0.994$, so training stopped
+after 6 epochs and the reported checkpoint is epoch 1.
+Table~\ref{tab:biomedclip} breaks down its validation accuracy by source.
+
+\begin{table}[htbp]
+  \centering
+  \caption{BiomedCLIP (epoch-1 checkpoint), validation accuracy by source.}
+  \label{tab:biomedclip}
+  \begin{tabular}{llrrrc}
+    \toprule
+    Modality & Source & $n$ & Benign & Malignant & Accuracy \\
+    \midrule
+    \multirow{2}{*}{MRI} & I-SPY2 & 3{,}705 & 0 & 3{,}705 & $0.999$ \\
+     & BreastDM & 117 & 24 & 93 & $0.872$ \\
+    \midrule
+    \multirow{4}{*}{Ultrasound} & BUSC & 25 & 10 & 15 & $1.000$ \\
+     & BUSI & 64 & 43 & 21 & $0.859$ \\
+     & BrEaST-Lesions USG & 25 & 20 & 5 & $0.840$ \\
+     & BUS-BRA & 186 & 132 & 54 & $0.817$ \\
+    \midrule
+    \multirow{4}{*}{Mammography} & CMMD & 368 & 96 & 272 & $0.571$ \\
+     & CDD-CESM & 57 & 27 & 30 & $0.561$ \\
+     & BCS-DBT & 8 & 2 & 6 & $0.500$ \\
+     & mini-MIAS & 10 & 8 & 2 & $0.500$ \\
+    \midrule
+    \multicolumn{2}{l}{All sources} & 4{,}565 & & & $0.943$ \\
+    \multicolumn{2}{l}{All sources except I-SPY2} & 860 & & & $\mathbf{0.705}$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The overall $0.943$ has the same problem as the fusion runs' MRI accuracy:
+I-SPY2 is 81\% of validation and malignant-only. Excluding it gives
+\textbf{0.705}, a more honest summary. The ultrasound sources
+($0.82$--$1.00$) and BreastDM ($0.87$) show real signal, but \textbf{all
+four mammography sources are at or near chance}. Mammography is the
+smallest modality in the manifest (571 images across four sources, against
+2{,}127 for ultrasound and 38{,}382 for MRI), and one epoch of encoder
+fine-tuning at $10^{-5}$ may not be enough for it. Candidate next steps are
+a frozen-encoder linear probe before unfreezing, and a lower I-SPY2
+sampling weight. This is a single brief run with validation-split
+selection, so it is \textbf{not a tuned foundation-model benchmark}, and
+because its manifest includes CDD-CESM, CMMD, and BCS-DBT, it is not
+directly comparable to Table~\ref{tab:combined-ispy2}.
+
+\section{Generative Vision-Language Model: {MedGemma} {LoRA}}
+\label{sec:medgemma}
+
+As a second comparison, we LoRA fine-tuned MedGemma-4B-it
+\citep{sellergren2025medgemma}, a Gemma~3-based generative
+image-text-to-text model with a SigLIP vision tower, pretrained on
+de-identified medical images including radiology. MedGemma and MedSigLIP
+are gated on Hugging Face; the account used here was granted access on
+2026-10-06 (previously confirmed denied via the Hub API). Unlike
+BiomedCLIP, MedGemma is not a classifier: each example is one chat turn,
+the same image plus a fixed prompt (``Is this breast imaging finding
+benign or malignant? Answer with one word...''), scored against the
+model's own chat template, with the loss masked to only the one-word
+answer tokens (5--6 tokens, including every one of the 256 image soft
+tokens). We loaded the base model 4-bit (NF4), froze the vision tower
+entirely, and LoRA-adapted only the language model's attention/MLP
+projections ($r{=}16$, $\alpha{=}32$, 29.8M of 4.33B parameters trainable),
+reusing \nolinkurl{scripts/finetune_biomedclip.py}'s manifest and the same
+modality/source/class-balanced sampling. Training used AdamW at $2\times
+10^{-4}$, gradient accumulation 8 (effective batch 8), 250 steps (2{,}000
+training examples seen, 4.8\% of the 41{,}476-row manifest)
+\footnote{The vision tower lives at \texttt{model.model.vision\_tower}
+(\texttt{Gemma3ForConditionalGeneration} wraps an inner model), and this
+machine's missing \texttt{python3-dev} broke PyTorch's {JIT}-compiled
+{Triton} override of \texttt{aten::bmm} used by Gemma~3's rotary
+embeddings; both are recorded in
+\nolinkurl{docs/breast\_imaging\_vlms.md} in case they recur.}.
+
+Training loss fell smoothly and monotonically throughout (0.153 at step
+110 to 0.093 at step 250); as with BiomedCLIP, that alone does not imply
+better generalization. Evaluation is unbatched greedy generation
+($\sim$1.7\,s/sample on this {GPU}), so the final report below caps each
+source at 40 samples (mini-MIAS and {BCS-DBT} have fewer than 40
+validation rows total, so those two are their complete validation sets;
+every other row is a 40-sample subset of a larger pool) rather than the
+full 4{,}565-row validation set BiomedCLIP's table uses.
+
+\begin{table}[htbp]
+  \centering
+  \caption{MedGemma-{LoRA} vs.\ {BiomedCLIP}, final-checkpoint validation accuracy by source. mini-MIAS and {BCS-DBT} are full validation sets for both models ($n{=}10$ and $n{=}8$); every other {MedGemma} row is a 40-sample subset of {BiomedCLIP}'s full-set $n$.}
+  \label{tab:medgemma}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{llrrr}
+    \toprule
+    Modality & Source & MedGemma $n$ & MedGemma acc.\ & BiomedCLIP acc.\ (full set) \\
+    \midrule
+    \multirow{2}{*}{MRI} & BreastDM & 40 & $0.350$ & $0.872$ \\
+     & I-SPY2 & 40 & $0.900$ & $0.999$ \\
+    \midrule
+    \multirow{4}{*}{Ultrasound} & BUSI & 40 & $0.900$ & $0.859$ \\
+     & BUSC & 25 & $0.840$ & $1.000$ \\
+     & BrEaST-Lesions USG & 25 & $0.800$ & $0.840$ \\
+     & BUS-BRA & 40 & $0.775$ & $0.817$ \\
+    \midrule
+    \multirow{4}{*}{Mammography} & mini-MIAS & 10 (full) & $\mathbf{0.900}$ & $0.500$ \\
+     & CDD-CESM & 40 & $0.600$ & $0.561$ \\
+     & CMMD & 40 & $0.525$ & $0.571$ \\
+     & BCS-DBT & 8 (full) & $0.250$ & $0.500$ \\
+    \midrule
+    \multicolumn{2}{l}{All sources (308 samples)} & & $0.695$ & 0.705 (non-I-SPY2, 860 samples) \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table}
+
+\textbf{Read this table cautiously: only mini-MIAS and {BCS-DBT} compare
+equal, full sample sizes.} Every other row compares a 40-sample
+MedGemma subset against BiomedCLIP's full validation set, so most
+row-to-row differences are not resolvable from this table alone.
+Two findings survive that caveat:
+
+\begin{itemize}
+  \item \textbf{mini-MIAS improved from chance to $0.900$} on identical,
+  full $n{=}10$ validation sets for both models -- the single
+  apples-to-apples comparison in this table, and notable given mini-MIAS
+  is the smallest, historically noisiest branch in every ResNet run above.
+  \item \textbf{BreastDM {MRI} dropped from $0.872$ (full $n{=}117$) to
+  $0.350$ (a $n{=}40$ subset)} -- below chance, meaning the errors are
+  systematic in one direction rather than random noise, even though the
+  sample sizes differ. Grad-CAM evidence below is consistent with the
+  model conflating BreastDM with {I-SPY2}'s all-malignant signal, since
+  both are {MRI} and {I-SPY2} is 80\% of the training manifest. This
+  should be re-measured on the full BreastDM validation split before
+  being trusted further.
+\end{itemize}
+
+{CMMD} and {BCS-DBT} stay at or below chance for both models -- the
+{DICOM}-derived mammography sources remain the weak point across both
+{VLM} attempts, not something specific to one architecture. Overall, the
+two models land at a similar aggregate accuracy ($\approx$0.70) by
+different routes, and \textbf{neither should be reported as beating the
+other, or beating the ResNet \texttt{FusionLateModel} baselines in
+Table~\ref{tab:combined-ispy2}, without a same-size, same-split,
+multi-seed comparison.}
+
+\subsection{{Grad-CAM} on the two {VLMs}' wrong cases}
+\label{sec:gradcam-vlm}
+
+Section~\ref{sec:gradcam}'s \texttt{GradCAM} class hooks a {CNN}'s last
+spatial feature map, shape $[B,C,H,W]$; a {Vision} {Transformer} block
+instead outputs a token sequence $[B,N,D]$. We added \texttt{ViTGradCAM}
+to \texttt{utils/gradcam.py}, which drops any prefix/{CLS} tokens, reshapes
+the remaining $N$ patch tokens into a spatial grid, and applies the same
+gradient-weighted channel sum. For {BiomedCLIP} this hooks the {ViT-B/16}
+trunk's last block ($14\times14$ patches, one {CLS} token dropped); for
+MedGemma it hooks the {SigLIP} vision tower's last encoder layer
+($64\times64$ patches, no prefix token), scoring the generated answer
+token's logit instead of a classifier logit, with the loss masked exactly
+as in training. \texttt{scripts/gradcam\_vlm\_failures.py} runs both
+sweeps and saves every example to \texttt{docs/gradcam\_vlm/}.
+
+\textbf{Both models fail on the same specific images in the three
+smallest, hardest mammography sources.} Of {BiomedCLIP}'s wrong cases,
+100\% of its {CMMD} (2/2 overlapping), {BCS-DBT} (2/2), and mini-MIAS
+(1/1) mistakes are also among MedGemma's mistakes on those sources --
+different architectures, different training recipes, same specific
+images. This reads as evidence that these are genuinely hard or
+borderline-labeled cases at the dataset level, not an idiosyncrasy of
+either model. BreastDM is the exception: the two models' {MRI} mistakes
+do not overlap at all, consistent with MedGemma's regression there being
+a distinct new failure mode rather than the same hard cases scaled up.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.23\textwidth]{gradcam/vlm_biomedclip_cmmd_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/vlm_biomedclip_cmmd_cam.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/vlm_biomedclip_bcsdbt_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/vlm_biomedclip_bcsdbt_cam.png}\\
+  \includegraphics[width=0.23\textwidth]{gradcam/vlm_biomedclip_mias_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/vlm_biomedclip_mias_cam.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/vlm_biomedclip_breamdm_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/vlm_biomedclip_breamdm_cam.png}
+  \caption{{BiomedCLIP}, four wrong cases (original, then {CAM} overlay).
+  Left to right: {CMMD} (malignant predicted benign), {BCS-DBT}
+  (malignant predicted benign), mini-MIAS (malignant predicted benign),
+  BreastDM (benign predicted malignant). The {CMMD} and mini-MIAS cases
+  are broad and diffuse with no focal center, similar in kind to the
+  ResNet {BUSC}/mini-MIAS failures in Figure~\ref{fig:gradcam}. {BCS-DBT}
+  shows a single small, sharply localized hotspot rather than a diffuse
+  region -- the one example here with genuine focal structure.}
+  \label{fig:gradcam-vlm-biomedclip}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.23\textwidth]{gradcam/vlm_medgemma_cmmd_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/vlm_medgemma_cmmd_cam.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/vlm_medgemma_bcsdbt_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/vlm_medgemma_bcsdbt_cam.png}\\
+  \includegraphics[width=0.23\textwidth]{gradcam/vlm_medgemma_mias_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/vlm_medgemma_mias_cam.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/vlm_medgemma_breamdm_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/vlm_medgemma_breamdm_cam.png}
+  \caption{MedGemma, four wrong cases (original, then {CAM} overlay). The
+  {CMMD}, {BCS-DBT}, and mini-MIAS images are the \emph{same source
+  images} as Figure~\ref{fig:gradcam-vlm-biomedclip}'s first three pairs
+  (see the shared-failure-case finding above); the BreastDM case is one
+  of MedGemma's own, distinct {MRI} mistakes. Every MedGemma {CAM} shows
+  a periodic, grid-aligned pattern not present in any {BiomedCLIP} {CAM}
+  -- read as an artifact of bilinear-upsampling a $64\times64$ grid of
+  individually noisy patch gradients (plausibly from 4-bit-quantized
+  backward through the frozen vision tower) rather than as meaningful
+  localization. \textbf{Treat these four {CAMs} as uninterpretable for
+  localization}; they are included to document the artifact itself and
+  to contrast with {BiomedCLIP}'s smoother (if diffuse) maps on the
+  identical underlying images.}
+  \label{fig:gradcam-vlm-medgemma}
+\end{figure}
+
+\textbf{Net read.} The {CMMD}/mini-MIAS/{BCS-DBT} findings corroborate
+Table~\ref{tab:medgemma}: diffuse, non-focal {BiomedCLIP} activation on
+exactly the mammography sources where both {VLMs} are at or near chance,
+plus three images both models fail on regardless of architecture. The
+MedGemma {CAM} grid artifact is a methodological finding in its own
+right -- Grad-CAM on a quantized, frozen, generative {VLM}'s vision tower
+needs a cleaner gradient path (e.g.\ full precision for the {CAM} forward
+pass only) before its localization can be trusted, independent of
+whatever MedGemma's underlying classification behavior turns out to be.
 
 \section{Limitations}
 \label{sec:limitations}
@@ -602,11 +1248,35 @@ predictions.
     has been done for CDD-CESM, and CMMD's per-image predictions have not
     yet been aggregated to breast level. Neither should be compared
     directly to the 5-fold numbers elsewhere in this report.
+  \item \textbf{Malignant-only I-SPY2 inflates pooled accuracy}
+    (Sections~\ref{sec:combined-ispy2} and~\ref{sec:biomedclip}). It
+    makes up most of the MRI and overall validation data in the combined
+    and BiomedCLIP runs, so their MRI and overall accuracies mostly
+    measure how often the model predicts malignant. Only the per-source
+    numbers, and BreastDM evaluated on its own, measure discrimination.
+  \item \textbf{BCS-DBT has 8 validation images} because only the public
+    validation partition is labeled. Its single-mode metrics and its
+    contribution to the combined mammography branch are not reliable.
   \item \textbf{Grad-CAM is a qualitative, not quantitative, check}
-    (Section~\ref{sec:gradcam}). It is read on a handful of examples per
-    model and cannot itself confirm or rule out shortcut learning; it
-    motivates, rather than replaces, the re-crop experiment proposed for
-    BUSC in Section~\ref{sec:preprocessing-discussion}.
+    (Sections~\ref{sec:gradcam},~\ref{sec:gradcam-fusion},
+    and~\ref{sec:gradcam-vlm}). It is read on a handful of examples per
+    model (up to 5 per source per fusion checkpoint in
+    Section~\ref{sec:gradcam-fusion}) and cannot itself confirm or rule
+    out shortcut learning; it motivates, rather than replaces, the
+    re-crop experiment proposed for BUSC in
+    Section~\ref{sec:preprocessing-discussion}. BUSC's two fusion
+    checkpoints with a perfect ultrasound-branch score have no errors to
+    inspect at all, so Grad-CAM says nothing about them either way.
+  \item \textbf{MedGemma's results (Section~\ref{sec:medgemma}) are a
+    single 250-step run, not a tuned comparison.} Its final per-source
+    accuracies are mostly 40-sample subsets measured against BiomedCLIP's
+    full validation sets, so only the mini-MIAS and BCS-DBT rows (equal,
+    full $n$ for both models) are directly comparable; the apparent
+    BreastDM regression should be re-measured on the full validation
+    split before being treated as established. Its Grad-CAM maps also
+    show a periodic grid artifact not present in BiomedCLIP's, so they
+    should not be read for localization at all, only as a methodological
+    finding about Grad-CAM on quantized generative VLMs.
 \end{itemize}
 
 \bibliographystyle{plainnat}

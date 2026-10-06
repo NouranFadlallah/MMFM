@@ -9,19 +9,28 @@ import torch
 import torch.nn.functional as F
 
 
+def target_layer_for_raw_backbone(backbone_module, backbone_name):
+    """Return the last conv-stage module to hook for Grad-CAM, given the raw
+    backbone module create_backbone() built (no SingleBackboneClassifier/
+    FusionLateModel wrapping) and the backbone name used to build it. Shared
+    by target_layer_for_backbone (single-modality models, model.backbone)
+    and FusionLateModel's per-branch model.backbones[i] (fusion models)."""
+    name = backbone_name.lower()
+    if name.startswith('resnet'):
+        return backbone_module.layer4
+    if name.startswith('efficientnet'):
+        return backbone_module.features
+    if name.startswith('densenet'):
+        return backbone_module.features
+    if name.startswith('vgg'):
+        return backbone_module.features
+    raise ValueError(f'No known Grad-CAM target layer for backbone {backbone_name!r}')
+
+
 def target_layer_for_backbone(model, backbone_name):
     """Return the last conv-stage module to hook for Grad-CAM, given a
     SingleBackboneClassifier and the backbone name used to build it."""
-    name = backbone_name.lower()
-    if name.startswith('resnet'):
-        return model.backbone.layer4
-    if name.startswith('efficientnet'):
-        return model.backbone.features
-    if name.startswith('densenet'):
-        return model.backbone.features
-    if name.startswith('vgg'):
-        return model.backbone.features
-    raise ValueError(f'No known Grad-CAM target layer for backbone {backbone_name!r}')
+    return target_layer_for_raw_backbone(model.backbone, backbone_name)
 
 
 class GradCAM:
@@ -64,6 +73,60 @@ class GradCAM:
         cam_max = cam.amax(dim=(1, 2), keepdim=True)
         cam = (cam - cam_min) / (cam_max - cam_min + 1e-8)
         return cam.detach().cpu().numpy(), target_class.detach().cpu().numpy(), probs.cpu().numpy()
+
+
+class ViTGradCAM:
+    """Grad-CAM adapted for a ViT block whose output is a token sequence
+    [B, N, D] (e.g. a timm/open_clip ViT block, or a SigLIP encoder layer)
+    rather than a CNN's spatial [B, C, H, W] feature map. Drops
+    `num_prefix_tokens` (1 for a CLS token, 0 for towers with none) before
+    reshaping the remaining N patch tokens into `grid_size` = (H, W), then
+    treats D as the Grad-CAM channel dimension exactly like GradCAM above.
+
+    Unlike GradCAM, this doesn't own the forward/backward call, since the two
+    models it's used for here (BiomedCLIPClassifier, a plain classifier; and
+    MedGemma, a generative chat model scored at the answer token) have very
+    different calling conventions. The caller runs its own forward pass,
+    picks a scalar `score` per example, and passes it to `compute()`.
+    """
+
+    def __init__(self, target_block, num_prefix_tokens, grid_size):
+        self.activations = None
+        self.gradients = None
+        self.num_prefix_tokens = num_prefix_tokens
+        self.grid_size = grid_size
+        target_block.register_forward_hook(self._save_activation)
+        target_block.register_full_backward_hook(self._save_gradient)
+
+    def _save_activation(self, module, inputs, output):
+        self.activations = output
+
+    def _save_gradient(self, module, grad_input, grad_output):
+        self.gradients = grad_output[0]
+
+    def _to_grid(self, tokens):
+        tokens = tokens[:, self.num_prefix_tokens:, :]
+        b, n, d = tokens.shape
+        h, w = self.grid_size
+        if n != h * w:
+            raise ValueError(f'{n} patch tokens after dropping prefix != grid {h}x{w}')
+        return tokens.permute(0, 2, 1).reshape(b, d, h, w)
+
+    def compute(self, score, image_hw):
+        """score: a [B] tensor already selected for the target class/token
+        (e.g. a classifier logit, or a generated token's logit), with
+        .backward() not yet called. image_hw: (H, W) to upsample the CAM to.
+        Returns a [B, H, W] numpy array in [0, 1]."""
+        score.sum().backward()
+        activations = self._to_grid(self.activations)
+        gradients = self._to_grid(self.gradients)
+        weights = gradients.mean(dim=(2, 3), keepdim=True)
+        cam = F.relu((weights * activations.detach()).sum(dim=1))
+        cam = F.interpolate(cam.unsqueeze(1), size=image_hw, mode='bilinear', align_corners=False).squeeze(1)
+        cam_min = cam.amin(dim=(1, 2), keepdim=True)
+        cam_max = cam.amax(dim=(1, 2), keepdim=True)
+        cam = (cam - cam_min) / (cam_max - cam_min + 1e-8)
+        return cam.detach().cpu().numpy()
 
 
 def overlay_heatmap(image_chw, cam_hw, alpha=0.45):
