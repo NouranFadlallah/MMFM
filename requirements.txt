@@ -11,3 +11,7 @@ wandb>=0.17.0
 open_clip_torch>=3.0.0
 transformers>=4.40.0
 accelerate>=0.30.0
+# dataset audit (scripts/analyze_datasets.py)
+opencv-python-headless>=4.8
+matplotlib>=3.7
+pyarrow>=14.0

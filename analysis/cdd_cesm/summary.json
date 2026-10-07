@@ -1,0 +1,82 @@
+{
+  "dataset": "cdd_cesm",
+  "modality": "mammography",
+  "reported": {
+    "images": 2006,
+    "patients": 326,
+    "benign": null,
+    "malignant": null,
+    "normal": 751,
+    "pathology_confirmed": "Not stated",
+    "license": "CC BY 4.0"
+  },
+  "on_disk": {
+    "images": 2001,
+    "by_label": {
+      "Normal (CESM)": 415,
+      "Normal (DM)": 340,
+      "Malignant (DM)": 331,
+      "Malignant (CESM)": 330,
+      "Benign (DM)": 329,
+      "Benign (CESM)": 256
+    },
+    "groups": 326,
+    "images_per_group": {
+      "min": 2.0,
+      "median": 8.0,
+      "max": 10.0
+    },
+    "with_mask": 0,
+    "with_box": 0,
+    "by_split": {
+      "train": 529,
+      "val": 57
+    }
+  },
+  "used_by_loader": {
+    "images": 586,
+    "by_label": {
+      "Malignant (CESM)": 330,
+      "Benign (CESM)": 256
+    },
+    "groups": 272,
+    "images_per_group": {
+      "min": 1.0,
+      "median": 2.0,
+      "max": 4.0
+    },
+    "with_mask": 0,
+    "with_box": 0,
+    "by_split": {
+      "train": 529,
+      "val": 57
+    }
+  },
+  "load_errors": 0,
+  "unique_sizes": 1995,
+  "bits_stored": {
+    "8": 2001
+  },
+  "color_images": 0,
+  "file_types": {
+    ".jpg": 2001
+  },
+  "flags": {
+    "burnt_label_flag": 228,
+    "implant_suspect_flag": 41
+  },
+  "multi_lesion_candidates": 0,
+  "duplicates": {
+    "hash_candidates": 8092,
+    "confirmed_pairs": 0,
+    "groups": 0,
+    "images_in_groups": 0,
+    "label_conflict_pairs": 0,
+    "split_leak_pairs": 0,
+    "groups_in_multiple_splits": 0
+  },
+  "machine_counts": {
+    "1": 1875,
+    "2": 126
+  }
+}

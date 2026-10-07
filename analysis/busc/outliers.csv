@@ -1,0 +1,13 @@
+sample_id,label_name,used,split,max_abs_z,z_reasons,iforest_score,iforest_flag
+benign/us64,benign,True,train,4.842304385079976,"noise_sigma(z=-3.9),snr(z=+4.8)",0.5775130289976144,True
+benign/us62,benign,True,train,4.786252826086291,"noise_sigma(z=-3.8),snr(z=+4.8)",0.559584257475902,False
+benign/us65,benign,True,train,4.678509104612524,"noise_sigma(z=-3.8),snr(z=+4.7)",0.5698187803293302,True
+benign/us63,benign,True,train,4.633962397149361,"noise_sigma(z=-3.8),snr(z=+4.6)",0.5594609249354188,False
+benign/us61,benign,True,train,4.584466062860282,"noise_sigma(z=-3.8),snr(z=+4.6)",0.5684288216734235,True
+malignant/us171,malignant,True,train,3.576678544401729,aspect_ratio(z=+3.6),0.5160645807089256,False
+malignant/us172,malignant,True,train,3.576678544401729,aspect_ratio(z=+3.6),0.5079758729228584,False
+malignant/us173,malignant,True,train,3.576678544401729,aspect_ratio(z=+3.6),0.5161234868091299,False
+malignant/us174,malignant,True,val,3.576678544401729,aspect_ratio(z=+3.6),0.5144932308033948,False
+malignant/us175,malignant,True,train,3.576678544401729,aspect_ratio(z=+3.6),0.5166880215331376,False
+malignant/us229,malignant,True,train,3.138653663888404,snr(z=+3.1),0.5501095615965234,False
+malignant/us227,malignant,True,train,3.0552949659034416,snr(z=+3.1),0.5503161590227529,False

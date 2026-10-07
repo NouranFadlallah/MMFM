@@ -1,0 +1,86 @@
+{
+  "dataset": "cmmd",
+  "modality": "mammography",
+  "reported": {
+    "images": 5202,
+    "patients": 1775,
+    "benign": null,
+    "malignant": null,
+    "normal": null,
+    "pathology_confirmed": "Yes (biopsy-confirmed)",
+    "license": "CC BY 4.0"
+  },
+  "on_disk": {
+    "images": 5194,
+    "by_label": {
+      "Malignant": 2626,
+      "no clinical label": 1456,
+      "Benign": 1112
+    },
+    "groups": 1773,
+    "images_per_group": {
+      "min": 1.0,
+      "median": 2.0,
+      "max": 4.0
+    },
+    "with_mask": 0,
+    "with_box": 0,
+    "by_split": {
+      "train": 3370,
+      "val": 368
+    }
+  },
+  "used_by_loader": {
+    "images": 3738,
+    "by_label": {
+      "Malignant": 2626,
+      "Benign": 1112
+    },
+    "groups": 1773,
+    "images_per_group": {
+      "min": 1.0,
+      "median": 2.0,
+      "max": 4.0
+    },
+    "with_mask": 0,
+    "with_box": 0,
+    "by_split": {
+      "train": 3370,
+      "val": 368
+    }
+  },
+  "load_errors": 0,
+  "unique_sizes": 1,
+  "bits_stored": {
+    "8": 5192,
+    "16": 2
+  },
+  "color_images": 0,
+  "file_types": {
+    ".dcm": 5194
+  },
+  "flags": {
+    "burnt_label_flag": 179,
+    "implant_suspect_flag": 0
+  },
+  "multi_lesion_candidates": 0,
+  "duplicates": {
+    "hash_candidates": 2950030,
+    "confirmed_pairs": 9,
+    "groups": 9,
+    "images_in_groups": 18,
+    "label_conflict_pairs": 3,
+    "split_leak_pairs": 0,
+    "groups_in_multiple_splits": 0
+  },
+  "dicom_Manufacturer": {
+    "": 5194
+  },
+  "dicom_PhotometricInterpretation": {
+    "MONOCHROME2": 5194
+  },
+  "dicom_BitsStored": {
+    "8": 5192,
+    "16": 2
+  }
+}

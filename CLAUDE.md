@@ -20,7 +20,8 @@ subdirectory — everything lives at repo root:
 - `docs/public_dataset_intake_plan.md` — datasets *not* yet downloaded locally; intake/licensing notes only.
 - `docs/breast_imaging_vlms.md` — literature survey of breast-specialized VLMs/MLLMs, for future comparison baselines; not code-relevant.
 - `notebooks/01_quick_start.ipynb` — minimal end-to-end demo using the fallback `simple` backbone (no torchvision/timm dependency), including a presence-mask example with intentionally-missing modalities.
-- `tests/test_preprocess.py` — the only test file. Covers `BusbraTransform` and `build_manifest`. Nothing else in the repo has test coverage.
+- `audit/` + `scripts/analyze_datasets.py` — raw-stage dataset audit (quality metrics, duplicates/split leakage, artifact flags, lesion stats, DICOM headers, MRI case stats) per `docs/dataset_analysis_plan.md`. Adapters in `audit/sources.py` reuse `training/train.py`'s metadata/split functions so "used"/"split" match training. Outputs to `analysis/<dataset>/`.
+- `tests/` — `test_preprocess.py` (`BusbraTransform`, `build_manifest`), `test_audit.py` (audit metrics/detectors/duplicates), plus others.
 
 ## Datasets and how to train each
 
@@ -42,7 +43,7 @@ Dataset roots are hardcoded relative paths under `datasets/` (gitignored, not
 in this checkout's tracked files) — see `_ultrasound_frame`, `_mias_frame`,
 `_busi_frame`, `_busc_frame`, `_breast_frame` in [training/train.py](training/train.py)
 for the exact expected subpaths. `docs/dataset_reproduction_plan.md` documents
-what's actually present locally (e.g. the BUSI checkout is only 163/780 images).
+what's actually present locally; `docs/dataset_audit.md` has verified on-disk counts (BUSI is the full 780).
 
 Training defaults to `--device cuda` and **raises** if no GPU is available
 (must pass `--device cpu` explicitly for local smoke tests). Every run logs to

@@ -35,3 +35,9 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+# dataset audit outputs (scripts/analyze_datasets.py): keep the small CSV/JSON
+# tables in git; per-image tables, thumbnails and figures contain image-derived
+# data and are backed up with the prepared datasets instead
+analysis/**/*.parquet
+analysis/**/*.npy
+analysis/**/figures/

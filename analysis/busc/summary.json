@@ -1,0 +1,71 @@
+{
+  "dataset": "busc",
+  "modality": "ultrasound",
+  "reported": {
+    "images": null,
+    "patients": null,
+    "benign": null,
+    "malignant": null,
+    "normal": null,
+    "pathology_confirmed": null,
+    "license": null
+  },
+  "on_disk": {
+    "images": 250,
+    "by_label": {
+      "malignant": 150,
+      "benign": 100
+    },
+    "groups": null,
+    "images_per_group": null,
+    "with_mask": 0,
+    "with_box": 0,
+    "by_split": {
+      "train": 225,
+      "val": 25
+    }
+  },
+  "used_by_loader": {
+    "images": 250,
+    "by_label": {
+      "malignant": 150,
+      "benign": 100
+    },
+    "groups": null,
+    "images_per_group": null,
+    "with_mask": 0,
+    "with_box": 0,
+    "by_split": {
+      "train": 225,
+      "val": 25
+    }
+  },
+  "load_errors": 0,
+  "unique_sizes": 46,
+  "bits_stored": {
+    "8": 250
+  },
+  "color_images": 0,
+  "file_types": {
+    ".bmp": 250
+  },
+  "flags": {
+    "doppler_flag": 0,
+    "paper_doppler_flag": 103,
+    "paper_marker_flag": 209,
+    "caliper_flag": 0,
+    "marker_flag": 0,
+    "text_flag": 0,
+    "dual_panel_flag": 0
+  },
+  "multi_lesion_candidates": 0,
+  "duplicates": {
+    "hash_candidates": 498,
+    "confirmed_pairs": 41,
+    "groups": 16,
+    "images_in_groups": 52,
+    "label_conflict_pairs": 0,
+    "split_leak_pairs": 36,
+    "groups_in_multiple_splits": 0
+  }
+}
