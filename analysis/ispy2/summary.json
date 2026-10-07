@@ -1,0 +1,103 @@
+{
+  "dataset": "ispy2",
+  "modality": "mri",
+  "reported": {
+    "images": null,
+    "patients": 982,
+    "benign": 0,
+    "malignant": 982,
+    "normal": 0,
+    "pathology_confirmed": "pCR outcome for a subset; diagnosis not stated",
+    "license": "CC BY-NC-ND 4.0 (BreastDCEDL)"
+  },
+  "on_disk": {
+    "images": 37180,
+    "by_label": {
+      "Malignant": 37180
+    },
+    "groups": 982,
+    "images_per_group": {
+      "min": 1.0,
+      "median": 34.0,
+      "max": 150.0
+    },
+    "with_mask": 0,
+    "with_box": 0,
+    "by_split": {
+      "train": 33475,
+      "val": 3705
+    }
+  },
+  "used_by_loader": {
+    "images": 37180,
+    "by_label": {
+      "Malignant": 37180
+    },
+    "groups": 982,
+    "images_per_group": {
+      "min": 1.0,
+      "median": 34.0,
+      "max": 150.0
+    },
+    "with_mask": 0,
+    "with_box": 0,
+    "by_split": {
+      "train": 33475,
+      "val": 3705
+    }
+  },
+  "load_errors": 0,
+  "unique_sizes": 12937,
+  "bits_stored": {
+    "8": 37180
+  },
+  "color_images": 0,
+  "file_types": {
+    ".npy": 37180
+  },
+  "flags": {},
+  "multi_lesion_candidates": 0,
+  "duplicates": {
+    "hash_candidates": 8290,
+    "confirmed_pairs": 0,
+    "groups": 0,
+    "images_in_groups": 0,
+    "label_conflict_pairs": 0,
+    "split_leak_pairs": 0,
+    "groups_in_multiple_splits": 0
+  },
+  "cases": {
+    "count": 982,
+    "n_phases": {
+      "min": 4.0,
+      "median": 7.0,
+      "max": 11.0
+    },
+    "tumor_volume_ml": {
+      "min": 0.185,
+      "median": 17.942,
+      "max": 805.224
+    },
+    "tumor_slices_axis0": {
+      "min": 1.0,
+      "median": 34.0,
+      "max": 150.0
+    },
+    "enhancement_ratio": {
+      "min": 1.4933798289108047,
+      "median": 2.3278924355454693,
+      "max": 3.5410143228252378
+    },
+    "lesion_cnr_peak": {
+      "min": 0.23362706101639752,
+      "median": 2.0933823708633224,
+      "max": 5.2930654410713505
+    },
+    "slice_thickness": {
+      "min": 1.0,
+      "median": 1.0,
+      "max": 1.0
+    },
+    "phases_repeated_in_img9": 941
+  }
+}

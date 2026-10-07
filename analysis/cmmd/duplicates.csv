@@ -1,0 +1,10 @@
+i,j,ahash_dist,dhash_dist,phash_dist,ssim,dataset_a,sample_id_a,label_name_a,label_a,used_a,group_a,split_a,fold_a,dataset_b,sample_id_b,label_name_b,label_b,used_b,group_b,split_b,fold_b,same_group,label_conflict,group_id
+26,383,2,0,2,0.9955893,cmmd,D1-0014/802a5d99-e0ca-4617-853e-7c30882bcfd9,Benign,0.0,True,D1-0014,train,,cmmd,D1-0269/e7fe15d8-a8d5-4f49-8c7e-ecda67c21e47,Benign,0.0,True,D1-0269,train,,False,False,0
+27,382,0,1,2,0.9964844,cmmd,D1-0014/e36d9d4f-af7a-4f71-a616-111f248de1f8,Benign,0.0,True,D1-0014,train,,cmmd,D1-0269/793614c4-aaff-478f-9d05-d9664e9c9b8b,Benign,0.0,True,D1-0269,train,,False,False,1
+260,3339,0,0,0,1.0,cmmd,D1-0202/18a8a7cb-2be8-4634-9c95-0ccef439693a,Benign,0.0,True,D1-0202,train,,cmmd,D2-0284/f0e5a2fe-762b-4c28-900a-6f31d49198b3,no clinical label,,False,D2-0284,,,False,False,2
+261,3338,0,0,0,1.0,cmmd,D1-0202/3322f343-7e4b-47aa-805a-ca81cf7518dd,Malignant,1.0,True,D1-0202,train,,cmmd,D2-0284/a776b155-0f95-4a2e-a5d3-c01ed2d20ddb,Malignant,1.0,True,D2-0284,train,,False,False,3
+262,3336,0,0,0,1.0,cmmd,D1-0202/b2350f9e-6265-484f-a152-26aba07c167a,Benign,0.0,True,D1-0202,train,,cmmd,D2-0284/018abf63-0c39-4637-99d2-88f4c64f5fb5,no clinical label,,False,D2-0284,,,False,False,4
+263,3337,0,0,0,1.0,cmmd,D1-0202/ebf7f60d-2020-4114-ac28-7c49297a2bba,Malignant,1.0,True,D1-0202,train,,cmmd,D2-0284/25138eb3-d8c0-4c33-8e63-593227676563,Malignant,1.0,True,D2-0284,train,,False,False,5
+1044,1783,0,0,0,1.0,cmmd,D1-0808/3bd4f28e-d25d-41aa-9c61-22e8bf1e266e,Benign,0.0,True,D1-0808,train,,cmmd,D1-1292/f79320dc-c327-4e99-b842-f49ef9e6a831,Malignant,1.0,True,D1-1292,train,,False,True,6
+1045,1782,1,1,6,0.99443233,cmmd,D1-0808/664de443-b385-47d1-8d4a-de04f35f3185,Benign,0.0,True,D1-0808,train,,cmmd,D1-1292/5019308d-0a54-4dc8-8749-9d32085994d0,Malignant,1.0,True,D1-1292,train,,False,True,7
+1359,3169,1,0,4,0.95179397,cmmd,D1-0943/a4136214-2280-4e53-be79-9f11772be73b,Benign,0.0,True,D1-0943,train,,cmmd,D2-0242/9504263d-60fc-45b7-9672-c54d4b120b57,Malignant,1.0,True,D2-0242,train,,False,True,8

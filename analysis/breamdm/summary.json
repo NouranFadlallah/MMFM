@@ -1,0 +1,93 @@
+{
+  "dataset": "breamdm",
+  "modality": "mri",
+  "reported": {
+    "images": null,
+    "patients": 232,
+    "benign": 85,
+    "malignant": 147,
+    "normal": 0,
+    "pathology_confirmed": "Not stated",
+    "license": "UNVERIFIED"
+  },
+  "on_disk": {
+    "images": 1765,
+    "by_label": {
+      "Malignant": 1300,
+      "Benign": 465
+    },
+    "groups": 232,
+    "images_per_group": {
+      "min": 2.0,
+      "median": 6.0,
+      "max": 31.0
+    },
+    "with_mask": 0,
+    "with_box": 0,
+    "by_split": {
+      "train": 1202,
+      "test": 446,
+      "val": 117
+    }
+  },
+  "used_by_loader": {
+    "images": 1319,
+    "by_label": {
+      "Malignant": 968,
+      "Benign": 351
+    },
+    "groups": 185,
+    "images_per_group": {
+      "min": 2.0,
+      "median": 6.0,
+      "max": 31.0
+    },
+    "with_mask": 0,
+    "with_box": 0,
+    "by_split": {
+      "train": 1202,
+      "val": 117
+    }
+  },
+  "load_errors": 0,
+  "unique_sizes": 180,
+  "bits_stored": {
+    "8": 1765
+  },
+  "color_images": 0,
+  "file_types": {
+    ".npy": 1765
+  },
+  "flags": {},
+  "multi_lesion_candidates": 0,
+  "duplicates": {
+    "hash_candidates": 1028,
+    "confirmed_pairs": 0,
+    "groups": 0,
+    "images_in_groups": 0,
+    "label_conflict_pairs": 0,
+    "split_leak_pairs": 0,
+    "groups_in_multiple_splits": 0
+  },
+  "cases": {
+    "count": 232,
+    "tumor_volume_ml": null,
+    "tumor_slices_axis0": {
+      "min": 2.0,
+      "median": 6.0,
+      "max": 8.0
+    },
+    "enhancement_ratio": {
+      "min": 0.7057659718338078,
+      "median": 1.1346036916667326,
+      "max": 2.155634880163182
+    },
+    "lesion_cnr_sub2": {
+      "min": 1.6063415521100781,
+      "median": 3.9070576371662997,
+      "max": 8.160459943684984
+    },
+    "integer_valued": 232,
+    "stored_gb": 1.373592168
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "dataset": "busbra",
+  "modality": "ultrasound",
+  "reported": {
+    "images": 1875,
+    "patients": 1064,
+    "benign": null,
+    "malignant": null,
+    "normal": 0,
+    "pathology_confirmed": "Yes (biopsy-proven)",
+    "license": "CC BY 4.0"
+  },
+  "on_disk": {
+    "images": 1875,
+    "by_label": {
+      "benign": 1268,
+      "malignant": 607
+    },
+    "groups": 1064,
+    "images_per_group": {
+      "min": 1.0,
+      "median": 2.0,
+      "max": 2.0
+    },
+    "with_mask": 1875,
+    "with_box": 1875,
+    "by_split": {
+      "train": 1689,
+      "val": 186
+    }
+  },
+  "used_by_loader": {
+    "images": 1875,
+    "by_label": {
+      "benign": 1268,
+      "malignant": 607
+    },
+    "groups": 1064,
+    "images_per_group": {
+      "min": 1.0,
+      "median": 2.0,
+      "max": 2.0
+    },
+    "with_mask": 1875,
+    "with_box": 1875,
+    "by_split": {
+      "train": 1689,
+      "val": 186
+    }
+  },
+  "load_errors": 0,
+  "unique_sizes": 713,
+  "bits_stored": {
+    "8": 1875
+  },
+  "color_images": 0,
+  "file_types": {
+    ".png": 1875
+  },
+  "flags": {
+    "doppler_flag": 0,
+    "paper_doppler_flag": 1342,
+    "paper_marker_flag": 1874,
+    "caliper_flag": 349,
+    "marker_flag": 349,
+    "text_flag": 898,
+    "dual_panel_flag": 0
+  },
+  "multi_lesion_candidates": 3,
+  "duplicates": {
+    "hash_candidates": 5231,
+    "confirmed_pairs": 0,
+    "groups": 0,
+    "images_in_groups": 0,
+    "label_conflict_pairs": 0,
+    "split_leak_pairs": 0,
+    "groups_in_multiple_splits": 0
+  },
+  "device_counts": {
+    "GE Logiq 7 @10-14MHz": 902,
+    "GE Logiq 5 @10-12MHz": 809,
+    "Toshiba Aplio 300 @12-14 MHz": 139,
+    "U-Systems @10-14MHz": 25
+  }
+}

@@ -1,0 +1,13 @@
+sample_id,reasons,decision,note
+benign/us64,"noise_sigma(z=-3.9),snr(z=+4.8)",,
+benign/us62,"noise_sigma(z=-3.8),snr(z=+4.8)",,
+benign/us65,"noise_sigma(z=-3.8),snr(z=+4.7)",,
+benign/us63,"noise_sigma(z=-3.8),snr(z=+4.6)",,
+benign/us61,"noise_sigma(z=-3.8),snr(z=+4.6)",,
+malignant/us171,aspect_ratio(z=+3.6),,
+malignant/us172,aspect_ratio(z=+3.6),,
+malignant/us173,aspect_ratio(z=+3.6),,
+malignant/us174,aspect_ratio(z=+3.6),,
+malignant/us175,aspect_ratio(z=+3.6),,
+malignant/us229,snr(z=+3.1),,
+malignant/us227,snr(z=+3.1),,
