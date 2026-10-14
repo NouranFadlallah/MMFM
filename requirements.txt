@@ -15,3 +15,6 @@ accelerate>=0.30.0
 opencv-python-headless>=4.8
 matplotlib>=3.7
 pyarrow>=14.0
+# dataset re-download (scripts/datasets.py fetch, IDC sources)
+idc-index>=0.8
+pyyaml>=6.0

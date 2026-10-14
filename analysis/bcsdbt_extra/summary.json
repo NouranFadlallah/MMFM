@@ -1,0 +1,78 @@
+{
+  "dataset": "bcsdbt_extra",
+  "modality": "mammography",
+  "reported": null,
+  "on_disk": {
+    "images": 321,
+    "by_label": {
+      "Benign": 185,
+      "Cancer": 136
+    },
+    "groups": 161,
+    "images_per_group": {
+      "min": 1.0,
+      "median": 2.0,
+      "max": 4.0
+    },
+    "with_mask": 0,
+    "with_box": 321,
+    "by_split": {
+      "train": 200,
+      "test": 121
+    }
+  },
+  "used_by_loader": {
+    "images": 321,
+    "by_label": {
+      "Benign": 185,
+      "Cancer": 136
+    },
+    "groups": 161,
+    "images_per_group": {
+      "min": 1.0,
+      "median": 2.0,
+      "max": 4.0
+    },
+    "with_mask": 0,
+    "with_box": 321,
+    "by_split": {
+      "train": 200,
+      "test": 121
+    }
+  },
+  "load_errors": 0,
+  "unique_sizes": 2,
+  "bits_stored": {
+    "10": 321
+  },
+  "color_images": 0,
+  "file_types": {
+    ".dcm": 321
+  },
+  "flags": {
+    "burnt_label_flag": 57,
+    "implant_suspect_flag": 0
+  },
+  "multi_lesion_candidates": 0,
+  "duplicates": {
+    "hash_candidates": 6273,
+    "confirmed_pairs": 0,
+    "groups": 0,
+    "images_in_groups": 0,
+    "label_conflict_pairs": 0,
+    "split_leak_pairs": 0,
+    "groups_in_multiple_splits": 0
+  },
+  "dicom_Manufacturer": {
+    "HOLOGIC, Inc.": 321
+  },
+  "dicom_ManufacturerModelName": {
+    "Selenia Dimensions": 321
+  },
+  "dicom_PhotometricInterpretation": {
+    "MONOCHROME2": 321
+  },
+  "dicom_BitsStored": {
+    "10": 321
+  }
+}

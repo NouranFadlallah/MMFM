@@ -1,0 +1,6 @@
+{
+  "centre_accuracy_from_image_stats": 0.9304993252361673,
+  "centre_chance_accuracy": 0.33738191632928477,
+  "benign_vs_malignant_auc_from_centre_only": 0.7062502542407356,
+  "benign_vs_malignant_auc_from_image_stats": 0.7620035525905436
+}

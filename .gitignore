@@ -41,3 +41,7 @@ venv.bak/
 analysis/**/*.parquet
 analysis/**/*.npy
 analysis/**/figures/
+
+# LaTeX build artifacts for the dataset report (sources and generated/ are tracked)
+docs/dataset_report/main.*
+!docs/dataset_report/main.tex

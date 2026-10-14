@@ -3,9 +3,13 @@
 Goal: free enough local disk to download more datasets, without losing the
 ability to (a) train exactly as today and (b) rebuild any dataset from scratch.
 
-**Status: plan only — nothing implemented or deleted yet.** Deletion of any raw
-data is gated on [dataset_analysis_plan.md](dataset_analysis_plan.md) having been
-run and reviewed for that dataset first (see §5).
+**Status (2026-10-13):**
+- **Done:** raw-stage audit of all 10 datasets; duplicate copies in `~/Downloads` removed (main disk 23 G → 55 G free); dataset registry (`data/sources/registry.yaml`) and `scripts/datasets.py` (list / status / checksum / verify / fetch / backup / restore); exact re-download series lists for CMMD and BCS-DBT (`data/sources/series/`).
+- **Checksummed:** sha256 of every original file for all 10 datasets (`data/sources/checksums/`), also stored in each HF backup.
+- **Backed up (Phase 4):** 9 private HF repos `noe95/mmfm-*` (~5.5 GB; ISPY2 excluded by its NoDerivatives license). Restore tested: BUSC restored byte-identical to its checksums.
+- **Not started:** Phase 1 (cache-only CMMD/BCS-DBT loaders), Phase 2 (prepared-data layout).
+
+Deletion of any raw data is still gated on §6.
 
 ## 0. Current state (measured 2026-10-06)
 
@@ -104,6 +108,16 @@ only if it saves >1 G; it requires a small loader change in `BreaDMDataset`.
 
 ## 4. Phase 3 — Dataset registry and one-command re-download
 
+**Implemented** as `data/sources/registry.yaml` + `scripts/datasets.py` (the
+design below is kept for reference; the registry lives in `data/sources/`, and
+fetch types are `zenodo`, `tcia` (NBIA `getImage` per series), `idc`
+(`idc-index`, by SeriesInstanceUID), `direct`, and `manual` with written steps).
+Verified routes on 2026-10-13: Zenodo (BUS-BRA), TCIA getImage (CMMD), IDC index
+(all 1,163 BCS-DBT series present, 82.7 GB; the 75 used = 6.5 GB). The MIAS host
+`peipa.essex.ac.uk` was unreachable, so MIAS is listed as manual (Cambridge
+repository) with the HF backup as the fast restore.
+
+
 Replace "where did I get this from?" with a tracked registry:
 
 - `data/sources/registry.yaml` (tracked; `datasets/` is gitignored so it can't
@@ -169,7 +183,7 @@ tested fetch · prepared backup verified by re-download.
 | 3 | CMMD DICOMs | 22 G | ~~root~~ data | **moved** to `/mnt/data` 2026-10-06 (checksum-verified, symlinks repointed); delete after gate | old copy in `~/Downloads/data for thesis/Mammography/` still to be removed by hand; deletion of the `/mnt/data` copy needs Phase 1 |
 | 4 | BreaDM `seg/`, `seg3D/` | 8.9 G | root | delete after segmentation training + gate (or shrink: `seg3D` stores 0–255 values as float64 for most cases, so a lossless uint8 cast cuts ~7.8 G to ~1 G) | not read by current code. **Blocked until the BreaDM segmentation training (`dataset_reproduction_plan.md` §6 step 6) has been run**; also needs a registry entry and mask stats (analysis plan F/K) |
 | 5 | HF cache | ≤12 G | root | `hf cache scan` → delete unused revisions | re-downloads automatically on next use |
-| 6 | BCS-DBT DICOMs | 79 G → 6.6 G | data | **prune** to the 75 used volumes after gate (frees ~72 G); optionally delete those too later | only Benign/Cancer views with a lesion box are used (75 of 1,163; the rest are Normal/Actionable). Keeping the 75 full volumes (6.63 G, measured) keeps the option of multi-slice crops and re-cropping without a re-download. Needs Phase 1 for full deletion; pruning alone does not (loader only resolves those 75). Before pruning: write the list of kept series to the registry and record checksums for all 1,163 so a full re-fetch from IDC can be verified |
+| 6 | BCS-DBT DICOMs | 79 G → 6.6 G | data | **DONE 2026-10-13: pruned** (78.1 G freed; 75 kept volumes verified against checksums) — to the 75 used volumes after gate (frees ~72 G); optionally delete those too later | only Benign/Cancer views with a lesion box are used (75 of 1,163; the rest are Normal/Actionable). Keeping the 75 full volumes (6.63 G, measured) keeps the option of multi-slice crops and re-cropping without a re-download. Needs Phase 1 for full deletion; pruning alone does not (loader only resolves those 75). Before pruning: write the list of kept series to the registry and record checksums for all 1,163 so a full re-fetch from IDC can be verified |
 | 7 | ISPY2 raw NIfTI | 55 G | data | delete | `prepare` must be re-runnable from re-fetched raw |
 
 Expected: ~34 G freed on `/` now (items 1–3; CMMD's 22 G already moved off `/`),

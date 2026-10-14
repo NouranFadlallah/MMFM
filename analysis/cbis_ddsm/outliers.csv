@@ -1,0 +1,189 @@
+sample_id,label_name,used,split,max_abs_z,z_reasons,iforest_score,iforest_flag
+full/Mass-Test_P_00324_RIGHT_CC,MALIGNANT (full image),False,test,29.615854156353617,hf_energy_frac(z=+29.6),0.6146712926797107,True
+full/Calc-Test_P_01179_LEFT_MLO,MALIGNANT (full image),False,test,28.709424996329616,"sharpness_lapvar(z=+28.7),height(z=+3.4)",0.6486675503564068,True
+full/Calc-Test_P_00466_LEFT_MLO,MALIGNANT (full image),False,test,24.08232949481019,"snr(z=+3.1),hf_energy_frac(z=+24.1)",0.6368857217493662,True
+full/Mass-Training_P_01221_LEFT_CC,MALIGNANT (full image),False,train,18.23421682816986,hf_energy_frac(z=+18.2),0.6364793901360148,True
+full/Mass-Training_P_00303_RIGHT_CC,BENIGN (full image),False,train,15.009439630799323,hf_energy_frac(z=+15.0),0.5849134772920255,False
+Calc-Training_P_01440_RIGHT_MLO_1,BENIGN_WITHOUT_CALLBACK,True,train,12.207650396489914,sharpness_lapvar(z=+12.2),0.5458375692731985,False
+full/Mass-Test_P_01108_RIGHT_MLO,BENIGN (full image),False,test,10.927716455693089,"snr(z=+4.0),hf_energy_frac(z=+10.9)",0.6400723871094255,True
+Calc-Training_P_00812_LEFT_CC_1,BENIGN_WITHOUT_CALLBACK,True,train,10.561089249677986,aspect_ratio(z=+10.6),0.5899592843980928,False
+Calc-Training_P_01838_LEFT_MLO_6,BENIGN_WITHOUT_CALLBACK,True,train,10.453565000800436,"contrast(z=+3.0),sharpness_lapvar(z=+10.5)",0.5850095342001662,False
+Calc-Training_P_00767_RIGHT_MLO_1,BENIGN_WITHOUT_CALLBACK,True,train,9.421634085863047,aspect_ratio(z=+9.4),0.551512446494215,False
+Calc-Training_P_00385_LEFT_MLO_3,BENIGN_WITHOUT_CALLBACK,True,train,9.280325882836618,aspect_ratio(z=+9.3),0.5321452555530056,False
+Calc-Training_P_01864_LEFT_CC_2,BENIGN_WITHOUT_CALLBACK,True,train,9.257214835519404,aspect_ratio(z=+9.3),0.5754488724103118,False
+Mass-Training_P_01051_RIGHT_MLO_1,BENIGN,True,train,9.225709251962273,"sharpness_lapvar(z=+9.2),noise_sigma(z=+6.5)",0.6175143255907408,True
+Calc-Test_P_01713_RIGHT_MLO_1,BENIGN,True,test,7.204547555957578,aspect_ratio(z=+7.2),0.519117622537901,False
+Calc-Training_P_01420_RIGHT_CC_1,MALIGNANT,True,train,7.127410818994073,aspect_ratio(z=+7.1),0.48190148895141677,False
+full/Mass-Training_P_01149_RIGHT_CC,MALIGNANT (full image),False,train,6.089538311875777,"hf_energy_frac(z=+6.1),height(z=+3.7),width(z=+3.9)",0.6311699771545707,True
+Calc-Training_P_01306_LEFT_MLO_1,BENIGN_WITHOUT_CALLBACK,True,train,5.92432195748359,aspect_ratio(z=+5.9),0.5164096661677823,False
+Calc-Training_P_00767_LEFT_CC_1,BENIGN_WITHOUT_CALLBACK,True,train,5.893435406716196,aspect_ratio(z=+5.9),0.5908563845519803,False
+full/Mass-Training_P_00637_RIGHT_CC,MALIGNANT (full image),False,train,5.651565297540937,"height(z=+4.2),width(z=+5.7)",0.6174778920853323,True
+Mass-Training_P_01265_RIGHT_CC_1,BENIGN,True,train,5.594752171028714,"sharpness_lapvar(z=+5.6),noise_sigma(z=+4.6)",0.6060344982161313,False
+Mass-Training_P_00607_RIGHT_MLO_1,MALIGNANT,True,train,5.5916336075680775,"sharpness_lapvar(z=+5.6),noise_sigma(z=+4.2)",0.6272239322884858,True
+P_00038_RIGHT_CC_2,BENIGN_WITHOUT_CALLBACK,True,test,5.5706630892036175,aspect_ratio(z=+5.6),0.5748512250307075,False
+Calc-Test_P_01536_RIGHT_CC_1,MALIGNANT,True,test,5.402987805629883,sharpness_lapvar(z=+5.4),0.6010862726688024,False
+Calc-Training_P_00471_LEFT_MLO_1,BENIGN_WITHOUT_CALLBACK,True,train,5.282354085120718,aspect_ratio(z=+5.3),0.5008853507268523,False
+full/Mass-Training_P_01047_LEFT_MLO,MALIGNANT (full image),False,train,5.11299198398334,"brightness(z=-3.5),contrast(z=+5.1),entropy(z=-3.5)",0.6400820601002111,True
+Calc-Training_P_00443_RIGHT_MLO_1,MALIGNANT,True,train,5.098173976590055,"sharpness_lapvar(z=+3.8),noise_sigma(z=+5.1)",0.607484904484424,False
+full/Calc-Test_P_02501_RIGHT_CC,MALIGNANT (full image),False,test,5.084563923012034,snr(z=+5.1),0.5589578132350559,False
+full/Mass-Test_P_01578_LEFT_MLO,BENIGN (full image),False,test,5.05981721310952,"height(z=+4.1),width(z=+5.1)",0.6230205363405122,True
+full/Calc-Training_P_01846_RIGHT_CC,MALIGNANT (full image),False,train,5.03443524370083,snr(z=+5.0),0.5857704871918377,False
+Mass-Training_P_00106_LEFT_MLO_4,BENIGN_WITHOUT_CALLBACK,True,train,4.894844013296827,"sharpness_lapvar(z=+4.7),noise_sigma(z=+4.9)",0.596557476098209,False
+Calc-Training_P_00385_LEFT_MLO_4,BENIGN_WITHOUT_CALLBACK,True,train,4.889466999301653,aspect_ratio(z=+4.9),0.5517573096046299,False
+full/Mass-Test_P_01251_LEFT_MLO,BENIGN (full image),False,test,4.808772571229524,"height(z=+4.0),width(z=+4.8)",0.5950497125053997,False
+Calc-Training_P_01099_LEFT_CC_6,BENIGN_WITHOUT_CALLBACK,True,train,4.802716267843418,aspect_ratio(z=+4.8),0.5110847901725658,False
+Calc-Training_P_00385_LEFT_CC_3,BENIGN_WITHOUT_CALLBACK,True,train,4.719228166940631,aspect_ratio(z=+4.7),0.517588294950497,False
+P_00723_LEFT_MLO_4,BENIGN,True,test,4.642951793196357,"sharpness_lapvar(z=+4.6),noise_sigma(z=+4.6)",0.6096269665110854,True
+full/Mass-Training_P_00414_LEFT_CC,MALIGNANT (full image),False,train,4.5935914496181,"height(z=+4.3),width(z=+4.6)",0.6133001113246063,True
+Calc-Test_P_01157_RIGHT_MLO_1,MALIGNANT,True,test,4.570574191540646,aspect_ratio(z=+4.6),0.5239341577831406,False
+Calc-Training_P_00983_LEFT_CC_1,MALIGNANT,True,train,4.570574191540646,aspect_ratio(z=+4.6),0.4816758840946126,False
+full/Calc-Training_P_00709_RIGHT_CC,BENIGN (full image),False,train,4.568259059710289,snr(z=+4.6),0.5648383377609695,False
+P_01407_LEFT_CC_1,BENIGN_WITHOUT_CALLBACK,True,test,4.407724379968703,"sharpness_lapvar(z=+4.2),noise_sigma(z=+4.4)",0.6090444552708246,False
+full/Calc-Training_P_01227_RIGHT_CC,BENIGN (full image),False,train,4.388962641263892,snr(z=+4.4),0.5586387985231375,False
+Calc-Training_P_00106_RIGHT_MLO_4,BENIGN_WITHOUT_CALLBACK,True,train,4.3830557785224125,"sharpness_lapvar(z=+4.4),noise_sigma(z=+4.2)",0.603695757703916,False
+full/Mass-Test_P_01251_LEFT_CC,BENIGN (full image),False,test,4.378410328006676,"height(z=+3.9),width(z=+4.4)",0.602325529882133,False
+full/Calc-Training_P_01143_RIGHT_CC,MALIGNANT (full image),False,train,4.378410328006676,"height(z=+3.9),width(z=+4.4)",0.570213196228437,False
+full/Mass-Test_P_00147_RIGHT_MLO,MALIGNANT (full image),False,test,4.3643293292747,"height(z=+4.4),width(z=+4.1)",0.592759726735919,False
+full/Calc-Test_P_01415_RIGHT_MLO,BENIGN (full image),False,test,4.332074183010499,"height(z=+4.3),width(z=+3.9)",0.5878995042731191,False
+full/Calc-Training_P_00162_LEFT_CC,MALIGNANT (full image),False,train,4.332074183010499,"height(z=+4.3),width(z=+3.6)",0.5730090064429361,False
+full/Calc-Training_P_01756_LEFT_CC,MALIGNANT (full image),False,train,4.332074183010499,"height(z=+4.3),width(z=+4.3)",0.5722972337585505,False
+full/Calc-Test_P_00649_LEFT_CC,BENIGN (full image),False,test,4.310570752167699,"height(z=+4.3),width(z=+4.0)",0.6231977069328346,True
+Mass-Training_P_00554_LEFT_CC_1,MALIGNANT,True,train,4.254367336149768,"sharpness_lapvar(z=+4.1),noise_sigma(z=+4.3)",0.5488330841154204,False
+full/Calc-Test_P_01217_RIGHT_MLO,MALIGNANT (full image),False,test,4.237163345911833,"snr(z=+4.2),height(z=+3.1)",0.5608182714585156,False
+Calc-Training_P_02518_RIGHT_MLO_1,MALIGNANT,True,train,4.230489094048447,aspect_ratio(z=+4.2),0.5486204612630541,False
+full/Calc-Training_P_01161_LEFT_CC,MALIGNANT (full image),False,train,4.227522298678602,"sharpness_lapvar(z=+4.2),height(z=+3.3)",0.589231025308889,False
+full/Mass-Test_P_01210_RIGHT_MLO,MALIGNANT (full image),False,test,4.224557028796498,"height(z=+4.2),width(z=+3.2)",0.549621005246118,False
+Calc-Test_P_02275_LEFT_MLO_1,MALIGNANT,True,test,4.209070883822687,aspect_ratio(z=+4.2),0.5188666732774788,False
+full/Mass-Test_P_00510_LEFT_MLO,BENIGN_WITHOUT_CALLBACK (full image),False,test,4.195506374636964,"height(z=+3.5),width(z=+4.2)",0.5375420072154954,False
+Calc-Training_P_00780_RIGHT_MLO_2,BENIGN_WITHOUT_CALLBACK,True,train,4.181170924740569,aspect_ratio(z=+4.2),0.47672326355435846,False
+full/Calc-Test_P_00485_LEFT_MLO,MALIGNANT (full image),False,test,4.17637916382706,"height(z=+3.6),width(z=+4.2)",0.56324245766465,False
+full/Mass-Test_P_00202_RIGHT_MLO,MALIGNANT (full image),False,test,4.17637916382706,"height(z=+3.7),width(z=+4.2)",0.5780080694233287,False
+Calc-Training_P_01408_LEFT_MLO_5,BENIGN_WITHOUT_CALLBACK,True,train,4.169354779680155,aspect_ratio(z=+4.2),0.47183681843134373,False
+full/Mass-Test_P_01795_LEFT_MLO,BENIGN (full image),False,test,4.149295020846697,"height(z=+4.1),width(z=+4.1)",0.5627075230528156,False
+full/Mass-Test_P_00576_LEFT_CC,MALIGNANT (full image),False,test,4.145297446260965,"height(z=+3.3),width(z=+4.1)",0.5842496045840073,False
+Calc-Training_P_00538_RIGHT_MLO_2,BENIGN_WITHOUT_CALLBACK,True,train,4.13421003845219,"sharpness_lapvar(z=+3.5),noise_sigma(z=+4.1)",0.6233489914404721,True
+P_00038_LEFT_MLO_1,BENIGN,True,test,4.115329909427601,"sharpness_lapvar(z=+3.9),noise_sigma(z=+4.1)",0.6001350413889055,False
+Calc-Training_P_01127_RIGHT_CC_1,MALIGNANT,True,train,4.1012710850649094,aspect_ratio(z=+4.1),0.4958463578166268,False
+full/Mass-Test_P_00969_LEFT_CC,MALIGNANT (full image),False,test,4.09030671518249,"height(z=+3.4),width(z=+4.1)",0.520545791326389,False
+Mass-Training_P_01146_LEFT_CC_1,BENIGN,True,train,4.09028057496777,contrast(z=+4.1),0.505309652952841,False
+full/Mass-Training_P_01669_LEFT_CC,MALIGNANT (full image),False,train,4.084784728318297,height(z=+4.1),0.5804425664264417,False
+full/Mass-Test_P_01623_RIGHT_MLO,BENIGN (full image),False,test,4.074033012896897,"height(z=+4.1),width(z=+3.6)",0.5624344053112702,False
+full/Calc-Test_P_01842_LEFT_MLO,MALIGNANT (full image),False,test,4.074033012896897,"height(z=+4.1),width(z=+3.8)",0.576804418554277,False
+full/Mass-Test_P_01347_RIGHT_MLO,MALIGNANT (full image),False,test,4.074033012896897,"height(z=+4.1),width(z=+3.4)",0.5575934024443882,False
+full/Calc-Test_P_00485_LEFT_CC,MALIGNANT (full image),False,test,4.061615898967633,"height(z=+3.7),width(z=+4.1)",0.544431943022345,False
+full/Calc-Test_P_00331_LEFT_MLO,BENIGN (full image),False,test,4.052529582054096,"height(z=+4.1),width(z=+3.8)",0.5429877695243527,False
+full/Mass-Training_P_01819_RIGHT_CC,BENIGN_WITHOUT_CALLBACK (full image),False,train,4.042488688157729,"height(z=+3.5),width(z=+4.0)",0.5493483470818898,False
+full/Calc-Training_P_00476_RIGHT_MLO,BENIGN_WITHOUT_CALLBACK (full image),False,train,4.032925082752777,"height(z=+3.5),width(z=+4.0)",0.5422433456301947,False
+full/Calc-Training_P_01628_LEFT_MLO,BENIGN_WITHOUT_CALLBACK (full image),False,train,4.032925082752777,"height(z=+3.5),width(z=+4.0)",0.5401291071066537,False
+full/Mass-Test_P_00951_RIGHT_MLO,MALIGNANT (full image),False,test,4.013797871942872,"height(z=+3.5),width(z=+4.0)",0.5220199414861277,False
+full/Mass-Training_P_01158_RIGHT_MLO,BENIGN (full image),False,train,3.998771004947096,"height(z=+4.0),width(z=+3.2)",0.5794312825197451,False
+Calc-Training_P_00624_LEFT_MLO_1,BENIGN,True,train,3.995931509972182,aspect_ratio(z=+4.0),0.5054113046265469,False
+full/Calc-Training_P_01777_LEFT_MLO,BENIGN (full image),False,train,3.994670661132968,"height(z=+3.6),width(z=+4.0)",0.5747002385648187,False
+full/Mass-Test_P_00494_RIGHT_MLO,BENIGN (full image),False,test,3.988019289525696,"height(z=+4.0),width(z=+3.8)",0.5472494166488416,False
+full/Mass-Training_P_00041_LEFT_CC,BENIGN_WITHOUT_CALLBACK (full image),False,train,3.9755434503230633,"height(z=+3.5),width(z=+4.0)",0.6238856311387856,True
+full/Calc-Training_P_00971_RIGHT_MLO,MALIGNANT (full image),False,train,3.9665158586828957,"height(z=+4.0),width(z=+3.1)",0.5689226677445226,False
+full/Mass-Training_P_01553_RIGHT_MLO,MALIGNANT (full image),False,train,3.9659798449181114,"height(z=+3.6),width(z=+4.0)",0.5592481230292605,False
+full/Mass-Test_P_01090_LEFT_MLO,BENIGN (full image),False,test,3.9181618178933504,"height(z=+3.4),width(z=+3.9)",0.5267849595463351,False
+full/Mass-Training_P_00199_LEFT_MLO,MALIGNANT (full image),False,train,3.899034607083446,"height(z=+3.4),width(z=+3.9)",0.5613147190250826,False
+full/Calc-Training_P_02559_RIGHT_MLO,MALIGNANT (full image),False,train,3.8942528043809697,"height(z=+3.2),width(z=+3.9)",0.5639520173098002,False
+full/Calc-Test_P_00608_LEFT_CC,BENIGN (full image),False,test,3.8912538507330954,"snr(z=+3.7),height(z=+3.9)",0.574618238761768,False
+full/Calc-Training_P_00455_LEFT_CC,BENIGN_WITHOUT_CALLBACK (full image),False,train,3.860780185463637,"height(z=+3.5),width(z=+3.9)",0.5694639989002084,False
+full/Mass-Test_P_01489_RIGHT_MLO,MALIGNANT (full image),False,test,3.858998704468895,"height(z=+3.9),width(z=+3.4)",0.5270436838752017,False
+Calc-Training_P_01875_RIGHT_CC_1,BENIGN_WITHOUT_CALLBACK,True,train,3.8539704427375012,aspect_ratio(z=+3.9),0.5051897671151836,False
+full/Mass-Test_P_00230_RIGHT_CC,BENIGN (full image),False,test,3.8482469890474946,"snr(z=+3.2),height(z=+3.8),width(z=+3.1)",0.6017573345387399,False
+full/Calc-Test_P_02418_RIGHT_CC,MALIGNANT (full image),False,test,3.794601910547605,"snr(z=+3.8),height(z=+3.2)",0.5790244102279356,False
+full/Calc-Training_P_00578_LEFT_CC,BENIGN (full image),False,train,3.7944884119404945,"height(z=+3.8),width(z=+3.3)",0.5462740562006838,False
+full/Calc-Training_P_01296_RIGHT_MLO,MALIGNANT (full image),False,train,3.7938349476289717,"height(z=+3.6),width(z=+3.8)",0.5373320083193179,False
+full/Mass-Training_P_00492_RIGHT_MLO,BENIGN (full image),False,train,3.772984981097694,"height(z=+3.8),width(z=+3.5)",0.5602469888460343,False
+Calc-Training_P_00539_RIGHT_CC_2,MALIGNANT,True,train,3.7659103324744048,entropy(z=-3.8),0.6274678755519987,True
+full/Mass-Test_P_00278_RIGHT_CC,BENIGN (full image),False,test,3.762233265676294,"height(z=+3.8),width(z=+3.5)",0.6044808134060069,False
+full/Mass-Training_P_01250_RIGHT_MLO,BENIGN (full image),False,train,3.7555805260091626,"height(z=+3.6),width(z=+3.8)",0.539735019081438,False
+Calc-Training_P_00510_RIGHT_CC_3,BENIGN_WITHOUT_CALLBACK,True,train,3.739117546283835,aspect_ratio(z=+3.7),0.48537700182498233,False
+full/Mass-Training_P_01070_LEFT_CC,MALIGNANT (full image),False,train,3.7307462613789446,"contrast(z=+3.1),snr(z=+3.7)",0.6104873712709477,True
+Mass-Training_P_00778_RIGHT_CC_2,BENIGN,True,train,3.7302192770268503,sharpness_lapvar(z=+3.7),0.5883116333254103,False
+full/Mass-Training_P_00733_RIGHT_MLO,BENIGN (full image),False,train,3.7299781194120936,"height(z=+3.7),width(z=+3.1)",0.5557933126036784,False
+full/Mass-Test_P_00699_RIGHT_MLO,BENIGN (full image),False,test,3.7149352030381158,"height(z=+3.2),width(z=+3.7)",0.5647678870153295,False
+Mass-Training_P_00044_RIGHT_CC_3,BENIGN,True,train,3.7132049279411525,noise_sigma(z=+3.7),0.5753428332016662,False
+full/Calc-Test_P_01483_LEFT_CC,MALIGNANT (full image),False,test,3.6962894110917066,"height(z=+3.7),width(z=+3.2)",0.542246985726145,False
+Mass-Test_P_00238_RIGHT_CC_1,BENIGN,True,test,3.6799708979426575,"sharpness_lapvar(z=+3.4),noise_sigma(z=+3.7)",0.5508909591402348,False
+full/Mass-Training_P_00596_RIGHT_MLO,MALIGNANT (full image),False,train,3.669508077364593,"height(z=+3.5),width(z=+3.7)",0.5460108485083008,False
+Calc-Training_P_01440_LEFT_CC_1,BENIGN_WITHOUT_CALLBACK,True,train,3.6614274344435773,noise_sigma(z=+3.7),0.5931582889380643,False
+full/Mass-Test_P_00813_RIGHT_MLO,MALIGNANT (full image),False,test,3.6611399226352597,"height(z=+3.3),width(z=+3.7)",0.5780535503352507,False
+full/Calc-Training_P_00639_RIGHT_MLO,MALIGNANT (full image),False,train,3.6561496735184797,"height(z=+3.7),width(z=+3.0)",0.5441603423790385,False
+full/Mass-Training_P_01412_LEFT_MLO,MALIGNANT (full image),False,train,3.650415425293733,"height(z=+3.7),width(z=+3.6)",0.527703669558077,False
+full/Calc-Training_P_00784_RIGHT_CC,MALIGNANT (full image),False,train,3.6389469288442395,"height(z=+3.6),width(z=+3.0)",0.5189532129278878,False
+full/Mass-Test_P_00017_LEFT_CC,MALIGNANT (full image),False,test,3.6389469288442395,"height(z=+3.6),width(z=+3.0)",0.5334509345602593,False
+full/Calc-Training_P_01579_RIGHT_CC,BENIGN (full image),False,train,3.6332126806194927,"height(z=+3.6),width(z=+3.6)",0.5262367396881324,False
+full/Calc-Test_P_01773_RIGHT_MLO,BENIGN (full image),False,test,3.627478432394746,height(z=+3.6),0.5841453297022109,False
+full/Calc-Training_P_01625_RIGHT_CC,MALIGNANT (full image),False,train,3.627478432394746,"height(z=+3.6),width(z=+3.5)",0.5691744500932301,False
+Calc-Training_P_00916_RIGHT_MLO_1,MALIGNANT,True,train,3.6252892157545293,entropy(z=-3.6),0.629376371880784,True
+Calc-Test_P_00906_LEFT_MLO_3,MALIGNANT,True,test,3.6007126187463507,entropy(z=-3.6),0.597100260134514,False
+Calc-Training_P_00539_RIGHT_MLO_3,MALIGNANT,True,train,3.59338654047783,entropy(z=-3.6),0.6106837563602572,True
+full/Mass-Training_P_00496_LEFT_CC,BENIGN (full image),False,train,3.582249789439797,"snr(z=+3.6),height(z=+3.2),width(z=+3.1)",0.5450105591476294,False
+full/Calc-Training_P_00220_LEFT_CC,BENIGN (full image),False,train,3.5794541035124925,"height(z=+3.6),width(z=+3.5)",0.5447277562941018,False
+Mass-Training_P_00554_LEFT_MLO_1,MALIGNANT,True,train,3.563160336799146,"sharpness_lapvar(z=+3.2),noise_sigma(z=+3.6)",0.5384192520111212,False
+full/Mass-Test_P_01192_LEFT_MLO,BENIGN (full image),False,test,3.557313609889916,"snr(z=+3.6),height(z=+3.3)",0.5897845360057539,False
+full/Calc-Training_P_01166_RIGHT_CC,MALIGNANT (full image),False,train,3.5177430530940463,snr(z=+3.5),0.5767337120794149,False
+Mass-Training_P_00906_LEFT_MLO_1,MALIGNANT,True,train,3.5129012125382637,entropy(z=-3.5),0.5489252419031814,False
+Calc-Training_P_00030_RIGHT_CC_1,BENIGN_WITHOUT_CALLBACK,True,train,3.5038696979083737,aspect_ratio(z=+3.5),0.48275438734260595,False
+full/Calc-Training_P_01315_LEFT_MLO,MALIGNANT (full image),False,train,3.487141447902936,"snr(z=+3.5),height(z=+3.3)",0.5479119770308369,False
+full/Mass-Test_P_00773_LEFT_MLO,MALIGNANT (full image),False,test,3.4852867774297955,"snr(z=+3.5),height(z=+3.2)",0.6020761995170945,False
+full/Mass-Training_P_00826_LEFT_CC,BENIGN (full image),False,train,3.4638905611581206,"height(z=+3.2),width(z=+3.5)",0.5637210947865696,False
+full/Calc-Test_P_00141_LEFT_MLO,BENIGN (full image),False,test,3.445958801023835,"height(z=+3.3),width(z=+3.4)",0.5373673182211559,False
+Calc-Training_P_01056_RIGHT_CC_1,BENIGN,True,train,3.427262241403343,snr(z=+3.4),0.5951892140956154,False
+Mass-Training_P_00829_LEFT_MLO_1,BENIGN,True,train,3.3946521031516093,sharpness_lapvar(z=+3.4),0.525301361502648,False
+Calc-Test_P_01157_RIGHT_CC_1,MALIGNANT,True,test,3.3945640885072543,aspect_ratio(z=+3.4),0.4812375901971552,False
+Calc-Training_P_01838_RIGHT_CC_2,BENIGN_WITHOUT_CALLBACK,True,train,3.3699054825097767,brightness(z=-3.4),0.60939226916057,True
+Calc-Training_P_01291_RIGHT_CC_1,MALIGNANT,True,train,3.3566618063250053,aspect_ratio(z=+3.4),0.483114107856439,False
+Mass-Training_P_01301_RIGHT_CC_1,BENIGN,True,train,3.356139778265544,snr(z=+3.4),0.513617984608459,False
+full/Calc-Test_P_00879_RIGHT_MLO,MALIGNANT (full image),False,test,3.3429163642416904,height(z=+3.3),0.5535872822469565,False
+full/Mass-Test_P_01167_LEFT_MLO,MALIGNANT (full image),False,test,3.3429163642416904,height(z=+3.3),0.5548471653602884,False
+full/Calc-Test_P_01861_LEFT_MLO,MALIGNANT (full image),False,test,3.3429163642416904,"snr(z=+3.0),height(z=+3.3)",0.546472572953532,False
+Calc-Training_P_00336_LEFT_MLO_1,BENIGN,True,train,3.3394403905588113,snr(z=+3.3),0.5886857051306619,False
+full/Calc-Training_P_01019_LEFT_CC,BENIGN (full image),False,train,3.338394525086035,"snr(z=+3.3),height(z=+3.2)",0.5496832423724333,False
+full/Calc-Training_P_00993_RIGHT_CC,MALIGNANT (full image),False,train,3.3383682402181227,"height(z=+3.3),width(z=+3.3)",0.5136881384799272,False
+full/Calc-Test_P_00681_LEFT_MLO,MALIGNANT (full image),False,test,3.33216464882029,height(z=+3.3),0.5879026576522466,False
+full/Calc-Training_P_00683_RIGHT_MLO,MALIGNANT (full image),False,train,3.3214129333988898,height(z=+3.3),0.5320833342632759,False
+Calc-Training_P_00297_RIGHT_CC_1,BENIGN,True,train,3.31787217974384,aspect_ratio(z=+3.3),0.46404709990774046,False
+Calc-Training_P_01875_LEFT_CC_1,BENIGN_WITHOUT_CALLBACK,True,train,3.3168761809287313,aspect_ratio(z=+3.3),0.4636494750206238,False
+Calc-Training_P_01864_LEFT_MLO_5,BENIGN_WITHOUT_CALLBACK,True,train,3.3143335253433315,aspect_ratio(z=+3.3),0.5158053056696424,False
+full/Mass-Test_P_01140_LEFT_MLO,MALIGNANT (full image),False,test,3.306091071976409,width(z=+3.3),0.4934622040128316,False
+P_01211_RIGHT_MLO_2,BENIGN_WITHOUT_CALLBACK,True,test,3.2854733049751346,brightness(z=-3.3),0.4974542474013438,False
+full/Calc-Test_P_00811_LEFT_CC,BENIGN (full image),False,test,3.2784060717132895,height(z=+3.3),0.5689261779858289,False
+full/Mass-Training_P_00648_LEFT_CC,MALIGNANT (full image),False,train,3.2676543562918896,"height(z=+3.3),width(z=+3.3)",0.524787226052082,False
+full/Mass-Training_P_00108_LEFT_CC,BENIGN (full image),False,train,3.2676543562918896,"height(z=+3.3),width(z=+3.3)",0.5463428066992188,False
+full/Mass-Training_P_00859_LEFT_MLO,BENIGN (full image),False,train,3.2676543562918896,"height(z=+3.3),width(z=+3.1)",0.5401932923673337,False
+full/Mass-Training_P_01509_RIGHT_CC,MALIGNANT (full image),False,train,3.2569026408704893,height(z=+3.3),0.5812114173934728,False
+full/Mass-Training_P_00859_LEFT_CC,BENIGN (full image),False,train,3.2246474946062893,height(z=+3.2),0.5473817344051656,False
+full/Calc-Test_P_00919_RIGHT_MLO,MALIGNANT (full image),False,test,3.213895779184889,height(z=+3.2),0.5311661711784278,False
+full/Calc-Training_P_00232_RIGHT_CC,MALIGNANT (full image),False,train,3.2135217144700428,snr(z=+3.2),0.568618385229241,False
+full/Calc-Training_P_00043_LEFT_MLO,MALIGNANT (full image),False,train,3.2031440637634887,height(z=+3.2),0.5502007688633845,False
+full/Mass-Training_P_01124_RIGHT_CC,BENIGN (full image),False,train,3.2031440637634887,"snr(z=+3.2),height(z=+3.2)",0.5514698817638404,False
+full/Mass-Test_P_00629_RIGHT_MLO,BENIGN (full image),False,test,3.192392348342089,height(z=+3.2),0.5608016139131897,False
+full/Mass-Training_P_01757_RIGHT_MLO,BENIGN (full image),False,train,3.192392348342089,height(z=+3.2),0.5192969115571949,False
+Calc-Training_P_00162_LEFT_CC_1,MALIGNANT,True,train,3.1839386345325282,aspect_ratio(z=+3.2),0.46942859550894533,False
+full/Mass-Training_P_01048_RIGHT_MLO,BENIGN (full image),False,train,3.1816406329206885,height(z=+3.2),0.5468386283284392,False
+full/Calc-Test_P_01253_RIGHT_MLO,MALIGNANT (full image),False,test,3.1816406329206885,height(z=+3.2),0.5291538986061313,False
+full/Calc-Training_P_00551_RIGHT_CC,MALIGNANT (full image),False,train,3.1816406329206885,height(z=+3.2),0.5626570663289916,False
+Calc-Training_P_01229_RIGHT_CC_1,MALIGNANT,True,train,3.1751298028485984,snr(z=+3.2),0.5741130589535112,False
+Calc-Training_P_00480_LEFT_MLO_1,BENIGN_WITHOUT_CALLBACK,True,train,3.1733058811390102,aspect_ratio(z=+3.2),0.483447287134687,False
+Calc-Training_P_01563_LEFT_MLO_2,BENIGN_WITHOUT_CALLBACK,True,train,3.1718829702228177,entropy(z=-3.2),0.5896717397895558,False
+full/Mass-Training_P_01131_LEFT_CC,BENIGN (full image),False,train,3.1708889174992887,"height(z=+3.2),width(z=+3.1)",0.5189960546145703,False
+full/Mass-Training_P_01801_RIGHT_MLO,MALIGNANT (full image),False,train,3.1626369909021257,width(z=+3.2),0.5008045899350752,False
+full/Mass-Training_P_01757_RIGHT_CC,BENIGN (full image),False,train,3.1493854866564885,height(z=+3.1),0.5203111871829444,False
+full/Calc-Training_P_01259_RIGHT_CC,MALIGNANT (full image),False,train,3.142895140722805,snr(z=+3.1),0.5706255792808682,False
+Calc-Training_P_02559_RIGHT_MLO_1,MALIGNANT,True,train,3.1414350957734283,aspect_ratio(z=+3.1),0.4503974149034554,False
+full/Mass-Test_P_01119_LEFT_CC,MALIGNANT (full image),False,test,3.137298482217339,"snr(z=+3.1),height(z=+3.1)",0.5388302872907449,False
+Calc-Training_P_00736_LEFT_CC_1,MALIGNANT,True,train,3.1175637593506633,snr(z=+3.1),0.5371191093250212,False
+full/Calc-Test_P_00141_LEFT_CC,BENIGN (full image),False,test,3.117130340392288,height(z=+3.1),0.5203914072313666,False
+full/Mass-Training_P_01801_RIGHT_CC,MALIGNANT (full image),False,train,3.1052553584724127,width(z=+3.1),0.5429702937211917,False
+Calc-Training_P_00121_LEFT_CC_1,MALIGNANT,True,train,3.103293257920942,noise_sigma(z=+3.1),0.5605578045759464,False
+Mass-Training_P_00666_RIGHT_CC_1,BENIGN_WITHOUT_CALLBACK,True,train,3.0910570266054567,sharpness_lapvar(z=+3.1),0.5179306488582324,False
+Mass-Training_P_01860_RIGHT_CC_1,MALIGNANT,True,train,3.075959565073985,snr(z=+3.1),0.483993749141749,False
+full/Mass-Test_P_01119_LEFT_MLO,MALIGNANT (full image),False,test,3.074123478706688,height(z=+3.1),0.5104013412078877,False
+Calc-Training_P_01336_LEFT_MLO_2,BENIGN_WITHOUT_CALLBACK,True,train,3.060615346779655,noise_sigma(z=+3.1),0.6003502073663802,False
+Calc-Training_P_01705_LEFT_CC_1,BENIGN,True,train,3.0316784975728592,aspect_ratio(z=+3.0),0.4454423045967635,False
+full/Mass-Training_P_00901_RIGHT_CC,MALIGNANT (full image),False,train,3.0311166170210875,height(z=+3.0),0.5082551877581883,False
+P_00038_LEFT_CC_1,BENIGN,True,test,3.0185242941286474,noise_sigma(z=+3.0),0.5301291537021312,False
+Mass-Training_P_00107_RIGHT_MLO_1,BENIGN_WITHOUT_CALLBACK,True,train,3.01737542605318,noise_sigma(z=+3.0),0.5388688399302921,False
+Calc-Training_P_01306_RIGHT_MLO_2,BENIGN_WITHOUT_CALLBACK,True,train,2.8498114501134006,,0.6118625802857361,True

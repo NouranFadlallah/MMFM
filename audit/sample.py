@@ -120,6 +120,9 @@ def load_mask(sample, shape):
     """Binary lesion mask in native coordinates: from the mask file if present,
     else rasterized from the box, else None."""
     if sample.mask_path and Path(sample.mask_path).exists():
+        if sample.mask_path.endswith('.dcm'):
+            import pydicom
+            return pydicom.dcmread(sample.mask_path).pixel_array > 0
         mask = np.asarray(Image.open(sample.mask_path).convert('L')) > 127
         return mask
     if sample.box is not None:

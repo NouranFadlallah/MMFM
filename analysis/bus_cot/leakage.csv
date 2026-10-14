@@ -1,0 +1,3 @@
+i,j,ahash_dist,dhash_dist,phash_dist,ssim,dataset_a,sample_id_a,label_name_a,label_a,used_a,group_a,split_a,fold_a,dataset_b,sample_id_b,label_name_b,label_b,used_b,group_b,split_b,fold_b,same_group,label_conflict,group_id,leak_type
+2852,2892,0,0,0,1.0,bus_cot,002852,Malignant,1.0,True,TUHD@000132,trainval,,bus_cot,002892,Malignant,1.0,True,TUHD@000144,test,,False,False,82,holdout_split
+5181,5957,0,2,1,0.96287715,bus_cot,005181,Malignant,1.0,True,TFUSL@000110,test,,bus_cot,005957,Malignant,1.0,True,TFUSL@000125,trainval,,False,False,221,holdout_split
