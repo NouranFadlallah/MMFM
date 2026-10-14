@@ -30,12 +30,19 @@ DATASET_ROOTS = {
     'bcsdbt': 'datasets/mammography/bcsdbt_dicom',
     'breamdm': 'datasets/MRI/BreaDM',
     'ispy2': 'datasets/MRI/ISPY2/cls/img9Se',
+    'cbis_ddsm': '/mnt/data/mmfm_datasets/mammography/cbis_ddsm',
+    'bcsdbt_extra': 'datasets/mammography/bcsdbt_extra',
+    'odelia': '/mnt/data/mmfm_datasets/MRI/odelia',
+    'bus_cot': 'datasets/ultrasound/bus_cot/extracted/BUSCoT',
 }
 MODALITY = {
     'busbra': 'ultrasound', 'busi': 'ultrasound', 'busc': 'ultrasound', 'breast': 'ultrasound',
     'mias': 'mammography', 'cdd_cesm': 'mammography', 'cmmd': 'mammography', 'bcsdbt': 'mammography',
-    'breamdm': 'mri', 'ispy2': 'mri',
+    'breamdm': 'mri', 'ispy2': 'mri', 'cbis_ddsm': 'mammography', 'bcsdbt_extra': 'mammography',
+    'odelia': 'mri',
+    'bus_cot': 'ultrasound',
 }
+CBIS_LABELS = Path('/mnt/data/mmfm_datasets/mammography/CBIS-DDSM-labels')
 ISPY2_RAW_ROOT = Path('/mnt/data/mmfm_datasets/MRI/PKG - BreastDCEDL_ISPY2/BreastDCEDL_ISPY2')
 
 
@@ -324,9 +331,164 @@ def ispy2(root):
     return _img9se_samples(root, 'ispy2', {'train', 'val'})
 
 
+def cbis_ddsm(root, labels_dir=CBIS_LABELS):
+    """Lesion crops (used) plus the 188-image full-mammogram sample (audit only).
+    Not wired into training yet: "used" = benign/malignant crop, "split" = the
+    official CBIS-DDSM train/test assignment. Crops are matched to the label
+    CSVs by SeriesInstanceUID because ~150 TCIA folder names lack their
+    Mass-/Calc- prefix. Each crop folder also holds a full-size 8-bit ROI mask."""
+    import pydicom
+
+    root = Path(root)
+    frames = []
+    for kind in ('mass', 'calc'):
+        for split in ('train', 'test'):
+            df = pd.read_csv(Path(labels_dir) / f'{kind}_case_description_{split}_set.csv')
+            df['kind'], df['split'] = kind, split
+            frames.append(df)
+    labels = pd.concat(frames, ignore_index=True).to_dict('records')
+    by_series, by_full = {}, {}
+    for row in labels:
+        for column in ('cropped image file path', 'ROI mask file path'):
+            parts = str(row[column]).strip().split('/')
+            if len(parts) >= 3:
+                by_series[parts[2]] = row
+        by_full.setdefault(str(row['image file path']).split('/')[0], []).append(row)
+
+    def benign_malignant(pathology):
+        return 1 if pathology == 'MALIGNANT' else 0
+
+    def read_header(path):
+        try:
+            return pydicom.dcmread(path, stop_before_pixels=True)
+        except pydicom.errors.InvalidDicomError:
+            print(f'  cbis_ddsm: unreadable DICOM skipped: {path}')
+            return None
+
+    samples, masks_by_image = [], {}
+    for folder in sorted(p for p in root.iterdir() if p.is_dir()):
+        dicoms = sorted(p for p in folder.rglob('*.dcm') if p.is_file())
+        headers = [(d, h) for d in dicoms if (h := read_header(d)) is not None]
+        if not headers:
+            continue
+        if any('full mammogram' in str(h.get('SeriesDescription', '')) for _, h in headers):
+            continue  # full images are added below, once their masks are known
+        crop = min(headers, key=lambda dh: int(dh[1].Rows) * int(dh[1].Columns))
+        mask = max(headers, key=lambda dh: int(dh[1].Rows) * int(dh[1].Columns)) if len(headers) > 1 else None
+        row = by_series.get(str(crop[1].SeriesInstanceUID))
+        if row is None:
+            continue
+        full_id = str(row['image file path']).split('/')[0]
+        if mask is not None:
+            masks_by_image.setdefault(full_id, str(mask[0]))
+        samples.append(Sample(
+            sample_id=folder.name.replace('.dcm', ''), dataset='cbis_ddsm', modality='mammography',
+            label_name=row['pathology'], label=benign_malignant(row['pathology']), used=True,
+            group=row['patient_id'], split=row['split'], fold=None,
+            native_kind='dicom', native_path=str(crop[0]),
+            extra={'kind': row['kind'], 'breast_density': _clean(row['breast_density']),
+                   'assessment': _clean(row['assessment']), 'subtlety': _clean(row['subtlety']), 'view': row['image view'],
+                   'full_image': full_id, 'crop_mask_pair': mask is not None},
+        ))
+    for folder in sorted(p for p in root.iterdir() if p.is_dir()):
+        dicoms = sorted(p for p in folder.rglob('*.dcm') if p.is_file())
+        if len(dicoms) != 1:
+            continue
+        header = read_header(dicoms[0])
+        if header is None or 'full mammogram' not in str(header.get('SeriesDescription', '')):
+            continue
+        rows = by_full.get(folder.name, [])
+        pathology = 'MALIGNANT' if any(r['pathology'] == 'MALIGNANT' for r in rows) else (rows[0]['pathology'] if rows else 'unknown')
+        samples.append(Sample(
+            sample_id=f'full/{folder.name}', dataset='cbis_ddsm', modality='mammography',
+            label_name=f'{pathology} (full image)', label=benign_malignant(pathology) if rows else None, used=False,
+            group=rows[0]['patient_id'] if rows else None, split=rows[0]['split'] if rows else None, fold=None,
+            native_kind='dicom', native_path=str(dicoms[0]), mask_path=masks_by_image.get(folder.name),
+            extra={'kind': rows[0]['kind'] if rows else None, 'n_abnormalities': len(rows)},
+        ))
+    return samples
+
+
+def bcsdbt_extra(root):
+    """BCS-DBT training + test Benign/Cancer views (not wired into training yet:
+    "used" = Benign/Cancer, "split" = the release, train or test)."""
+    T = _train_module()
+    root = Path(root)
+    dicom_root, labels_dir = root / 'breast_cancer_screening_dbt', root / 'labels'
+    releases = [('train', 'BCS-DBT-labels-train-v2.csv', 'BCS-DBT-boxes-train-v2.csv', 'BCS-DBT-file-paths-train-v2.csv'),
+                ('test', 'BCS-DBT-labels-test-PHASE-2.csv', 'BCS-DBT-boxes-test-v2-PHASE-2-Jan-2024.csv',
+                 'BCS-DBT-file-paths-test-v2.csv')]
+    samples = []
+    for split, label_file, box_file, path_file in releases:
+        key = ['PatientID', 'StudyUID', 'View']
+        file_paths = pd.read_csv(labels_dir / path_file).set_index(key)['descriptive_path']
+        boxes = pd.read_csv(labels_dir / box_file)
+        for _, row in pd.read_csv(labels_dir / label_file).iterrows():
+            label_name = 'Cancer' if row['Cancer'] == 1 else 'Benign' if row['Benign'] == 1 else None
+            k = (row['PatientID'], row['StudyUID'], row['View'])
+            if label_name is None or k not in file_paths.index:
+                continue
+            dicom = T._dbt_resolve_dicom(dicom_root, row['PatientID'], file_paths[k])
+            if dicom is None:
+                continue
+            view_boxes = boxes[(boxes.PatientID == k[0]) & (boxes.StudyUID == k[1]) & (boxes.View == k[2])]
+            box = view_boxes.iloc[0] if len(view_boxes) else None
+            samples.append(Sample(
+                sample_id=f'{split}/{k[0]}/{k[1]}/{k[2]}', dataset='bcsdbt_extra', modality='mammography',
+                label_name=label_name, label=1 if label_name == 'Cancer' else 0, used=True,
+                group=row['PatientID'], split=split, fold=None,
+                native_kind='dicom', native_path=str(dicom),
+                native_frame=int(box['Slice']) if box is not None else None,
+                box=(int(box['X']), int(box['Y']), int(box['X'] + box['Width']), int(box['Y'] + box['Height']))
+                if box is not None else None,
+                extra={'view': k[2], 'n_boxes': len(view_boxes)},
+            ))
+    return samples
+
+
+def bus_cot(root):
+    """BUS-CoT "BUS-Expert" images (cropped ultrasound region), one sample per
+    image. BUS-CoT aggregates public sources (BUSI, BUS-BRA, UDIAT, TFUSL,
+    Thammasat, web/PMC figures...), recorded in meta_source. Not wired into
+    training: "used" = benign/malignant from a clinical-dataset source that is
+    not already in this project (i.e. excluding BUSI/BUS-BRA copies and
+    scraped web/figure sources); "split" = the BUS-Lesion train/test split
+    where the image is part of it."""
+    import json
+
+    root = Path(root)
+    records = json.loads((root / 'DatasetFiles' / 'BUS-Expert_dataset.json').read_text())
+    lesions = json.loads((root / 'DatasetFiles' / 'lesion_dataset.json').read_text())
+    split_of = {}
+    for key, value in lesions.items():
+        split_of.setdefault(key.split('_', 1)[-1].split('@')[0], value['split'])
+    new_clinical = {'TFUSL', 'TUHD', 'BUDIAT', 'STU-Hospital', 'Birads-ultrasound'}
+    samples = []
+    for image_id, record in records.items():
+        pathology = record['pathology_histology'].get('pathology') or ''
+        label = {'Benign': 0, 'Malignant': 1}.get(pathology)
+        image = root / 'BUS-Expert' / record['image_file']['cropped_image']
+        if not image.exists():
+            continue
+        subtypes = list(record['pathology_histology'].get('subtype', {}) or {})
+        samples.append(Sample(
+            sample_id=image_id, dataset='bus_cot', modality='ultrasound',
+            label_name=pathology or 'unlabelled', label=label,
+            used=label is not None and record['dataset'] in new_clinical,
+            group=record['patient_id'], split=split_of.get(image_id), fold=None,
+            native_kind='image', native_path=str(image),
+            extra={'source': record['dataset'], 'subtype': subtypes[0] if subtypes else None,
+                   'device': record.get('device_type') or None},
+        ))
+    return samples
+
+
 ADAPTERS = {
     'busbra': busbra, 'busi': busi, 'busc': busc, 'breast': breast, 'mias': mias,
     'cdd_cesm': cdd_cesm, 'cmmd': cmmd, 'bcsdbt': bcsdbt, 'breamdm': breamdm, 'ispy2': ispy2,
+    'cbis_ddsm': cbis_ddsm, 'bcsdbt_extra': bcsdbt_extra,
+    'odelia': None,  # parquet volumes: handled by audit/odelia.py, not per-file samples
+    'bus_cot': bus_cot,
 }
 
 

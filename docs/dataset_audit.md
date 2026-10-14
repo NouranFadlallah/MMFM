@@ -60,8 +60,8 @@ Results of `scripts/analyze_datasets.py --dataset all --cross` (method:
 - **CMMD DICOMs are 8-bit**, so the cached 8-bit PNGs lose no bit depth.
 - **BCS-DBT DICOMs are 10-bit**, so the 8-bit crops do lose precision; keep uint16
   if they are ever re-prepared.
-- **BreaDM `seg3D`** holds integer 0–255 values in float64 for all 232 cases, so
-  a lossless uint8 cast cuts ~7.8 G to ~1 G.
+- **BreaDM `seg3D`** holds integer 0–255 values for all 232 cases, but 147 of them
+  are stored as float64; a lossless uint8 cast cuts the folder from ~7.8 G to ~1 G.
 
 ## Detector notes
 
@@ -72,3 +72,96 @@ Results of `scripts/analyze_datasets.py --dataset all --cross` (method:
 - No cross-dataset duplicates within ultrasound or within mammography.
 - Outlier counts (z > 3 or isolation forest) are review queues, not
   exclusions: decisions go in each `outliers_review.csv`.
+
+## Newly downloaded datasets (audit run 2026-10-13)
+
+Neither is wired into training yet, so "used" = every benign/malignant sample
+and "split" = the dataset's official train/test assignment.
+
+| Dataset | On disk | Used | Notes |
+|---|---|---|---|
+| CBIS-DDSM (crops + full sample) | 2,006 lesion crops + 187 readable full mammograms, 1,226 patients | 2,006 crops: 839 benign, 379 benign-without-callback, 788 malignant (1,477 train / 529 test) | 16-bit; 1,902 crops come with a full-size ROI mask; 1 full mammogram (`Mass-Test_P_00516_LEFT_MLO`) has a corrupt header |
+| BCS-DBT training + test (Benign/Cancer) | 321 views, 161 patients | 321 (185 Benign / 136 Cancer; 200 train / 121 test) | Hologic Selenia Dimensions only, 10-bit; no patient overlap with the validation release we already had |
+
+Findings:
+
+1. **No duplicates** within either dataset, and none across all six
+   mammography sets (MIAS, CDD-CESM, CMMD, BCS-DBT validation + train/test,
+   CBIS-DDSM; 4.1 M hash candidates checked with SSIM).
+2. **CBIS-DDSM's official split mixes patients.** 16 patients have a mass in
+   one split and a calcification in the other (57 crops), because CBIS-DDSM
+   assigned train/test separately for the mass and calcification subsets.
+   → When using mass and calcification crops together, split by patient
+   (`patient_id`) instead of using the official train/test folders.
+3. **"BENIGN_WITHOUT_CALLBACK" is not biopsy-confirmed.** These 379 crops
+   (304 of them calcifications) were judged benign without further work-up.
+   Only BENIGN and MALIGNANT are pathology-confirmed. → Report results with
+   and without them, or drop them for a strictly pathology-confirmed set.
+4. **Film labels are common in the full mammograms:** burnt-in labels outside
+   the breast on 113 of 187 (60%). They are invisible in the tight crops, so
+   crop-based training is unaffected; whole-image training would need masking.
+5. **Detector caveat:** the implant heuristic fires on 79 crops and 26 full
+   images; on crops it is reacting to bright calcifications and on film to
+   saturation, not implants. Treat that flag as unreliable for CBIS-DDSM.
+
+## BUS-CoT (audit run 2026-10-14)
+
+BUS-CoT (Yu et al., arXiv 2509.17046; Figshare, CC BY 4.0) is an **aggregate of
+public sources**, not new clinical data: "open-access papers, publicly
+available case studies (Radiopaedia, PubMed) and open-access datasets", with
+histopathology categories "extracted from description texts" and image
+features / BI-RADS annotated by six senior radiologists. 11,439 images,
+4,838 patients.
+
+| Source inside BUS-CoT | Images | Overlap with this project | Internal duplicates |
+|---|---|---|---|
+| Web data / PMC / ROCO / PatternFigures | 5,121 | — | many (scraped figures) |
+| TFUSL (likely *The Free UltraSound Library*, SonoSkills/FUJIFILM teaching cases) | 2,472 | none | 5% of images, 17 label-conflict pairs |
+| BUS-BRA | 1,875 | **all 1,875 = our `busbra`** | — |
+| TUHD (likely Thammasat University data, Thailand) | 886 | none | **36% of images, 88 label-conflict pairs** |
+| BUSI | 780 | **all 780 = our `busi`** | — |
+| UDIAT (Dataset B), STU-Hospital, Birads-ultrasound | 305 | none | ≤5% |
+
+Findings:
+
+1. **Never combine BUS-CoT's BUSI/BUS-BRA copies with our own** — every one of
+   those 2,655 images is identical to an image we already train on.
+2. **BUS-CoT relabels 8 BUSI images** (e.g. our `benign (433)` is Malignant in
+   BUS-CoT, SSIM 1.0), several of them the same BUSI images our audit already
+   flagged as conflicting duplicates. Useful as an independent second opinion.
+3. **Genuinely new usable data: 3,599 images / 1,050 patients** (TFUSL, TUHD,
+   UDIAT, Birads-ultrasound; 1,572 benign / 2,027 malignant), but the Thammasat
+   part needs de-duplication first, and labels are only as good as each source
+   (teaching-case text for TFUSL).
+4. Two images failed to load (2 of 11,439).
+
+## ODELIA Breast MRI Challenge 2025 (audit run 2026-10-14)
+
+1,482 breasts / 741 patients from six European centres (unilateral
+configuration, 256×256×32). Labels per breast: 978 no lesion, 195 benign,
+309 malignant, assigned by radiologists "based on histopathological or 2-year
+follow-up information" → **partially pathology-confirmed**. Files verified
+against Hugging Face SHA-256 (94/94 shards). No load errors, no duplicates.
+
+| Centre | Benign | Malignant | Benign share of lesions | Post-contrast phases |
+|---|---|---|---|---|
+| CAM (Cambridge) | 45 | 97 | 32% | 2 |
+| MHA (Athens) | 15 | 52 | 22% | 4 |
+| RSH (Valencia; challenge OOD test centre) | 16 | 61 | 21% | 5 |
+| RUMC (Nijmegen) | 2 | 18 | 10% | 4 |
+| **UKA (Aachen)** | **75** | **32** | **70%** | 4 |
+| UMCU (Utrecht) | 42 | 49 | 46% | 5 |
+
+Findings:
+
+1. **Centre shortcut.** A logistic regression on 8 whole-breast statistics
+   identifies the centre with 93% accuracy (chance 34%). The centre alone
+   predicts benign vs malignant with AUC 0.71, and the same image statistics
+   reach only 0.76 — most of that signal is the centre. UKA (2D, no fat
+   suppression, TR ≈ 263 ms) contributes 38% of all benign lesions.
+   → Evaluate leave-one-centre-out (at minimum keep RSH unseen), report per
+   centre, and consider centre-balanced sampling.
+2. **Phase count differs by centre** (CAM 2, others 4–5), so fixed multi-phase
+   channel stacks would repeat or pad phases per centre (the same problem as
+   ISPY2's img9Se). → Use Pre, Sub_1 and T2, which every centre has (the
+   ODELIA paper's own input choice).

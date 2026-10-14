@@ -78,7 +78,7 @@ independently of this document.
 - Modality: Digital mammography, biopsy-confirmed; molecular subtype for a subset
 - Size: 1,775 patients, 1,775 studies, 5,202 images, 22.9 GB; molecular subtype for 749 patients
 - Pathologically confirmed: Yes — "biopsy-confirmed" (also reflected in the paper title, "An Online Mammography Database with Biopsy Confirmed Types")
-- Citation: Cui, C. et al., "An Online Mammography Database with Biopsy Confirmed Types," *Scientific Data* 10, 174 (2023). DOI: [10.1038/s41597-023-02025-1](https://www.nature.com/articles/s41597-023-02025-1). Data DOI: [10.7937/tcia.eqde-4b16](https://doi.org/10.7937/tcia.eqde-4b16)
+- Citation: Cai, H. et al., "An Online Mammography Database with Biopsy Confirmed Types," *Scientific Data* 10, 123 (2023). DOI: [10.1038/s41597-023-02025-1](https://www.nature.com/articles/s41597-023-02025-1). Data DOI: [10.7937/tcia.eqde-4b16](https://doi.org/10.7937/tcia.eqde-4b16)
 - Access: [TCIA](https://wiki.cancerimagingarchive.net/pages/viewpage.action?pageId=70230508), NBIA Data Retriever
 - License: CC BY 4.0
 
@@ -429,9 +429,9 @@ independently of this document.
 - License: CC BY 4.0
 
 **BreastDM (BreaDM)** *(this repo's currently-implemented `breamdm` dataset)*
-- Modality: DCE-MRI, pre-contrast + 8 post-contrast + subtraction sequences; Taizhou Central Hospital, 2018-2021
-- Size: 232 cases (147 malignant, 85 benign); tumor segmentation + classification labels
-- Pathologically confirmed: Not stated
+- Modality: DCE-MRI, pre-contrast + 8 post-contrast + subtraction sequences, 3.0T (GE SIGNA HDx / Siemens Skyra), resampled to 1 mm isotropic; Taizhou Central Hospital, Jan 2018 - Sep 2021
+- Size: 232 cases (147 malignant: 112 IDC, 25 DCIS, 10 other; 85 benign: 49 fibroadenoma, 17 fibrocystic change, 19 other), age 22-79; tumor segmentation (4 radiologists, verified by a 5th) + classification labels; random 7:1:2 split (166/19/47 cases)
+- Pathologically confirmed: Yes — all patients "were confirmed by histological examination" (paper §3.1)
 - Citation: Zhao, X. et al., "BreastDM: A DCE-MRI dataset for breast tumor image segmentation and classification," *Computers in Biology and Medicine* 164:107255, 2023. DOI: [10.1016/j.compbiomed.2023.107255](https://doi.org/10.1016/j.compbiomed.2023.107255)
 - Access: [GitHub](https://github.com/kamranisg/BreastDM) with Google Drive links
 - License: **[UNVERIFIED]** — no explicit license in repo, confirm with authors before redistribution

@@ -1,0 +1,249 @@
+# Dataset registry: where every dataset came from, where it lives locally, and
+# how to get it back. Read by scripts/datasets.py (list / status / checksum /
+# verify / fetch / backup). See docs/storage_management_plan.md.
+#
+# raw_dir      original download (what checksums cover and what fetch restores)
+# prepared     what training actually reads, if different from raw_dir
+# source.type  zenodo | direct | tcia | idc | manual
+#              tcia / idc fetch exactly the series in data/sources/series/<name>.txt
+# backup       private Hugging Face dataset repo for the training inputs, or
+#              null when the license does not allow re-hosting
+# backup_paths what to upload (default: prepared, else raw_dir + extra_files);
+#              folders keep their name in the repo, single files go to extra/
+
+busbra:
+  name: BUS-BRA
+  modality: ultrasound
+  license: CC BY 4.0
+  pathology_confirmed: yes (biopsy)
+  raw_dir: datasets/ultrasound/busbra
+  prepared: null
+  source:
+    type: zenodo
+    record: '8231412'
+    landing: https://zenodo.org/records/8231412
+  backup: noe95/mmfm-busbra
+
+busi:
+  name: BUSI (Dataset of Breast Ultrasound Images)
+  modality: ultrasound
+  license: not stated
+  pathology_confirmed: not stated
+  raw_dir: datasets/ultrasound/Dataset_BUSI
+  prepared: null
+  source:
+    type: manual
+    landing: https://scholar.cu.edu.eg/?q=afahmy/pages/dataset
+    steps: >-
+      Download Dataset_BUSI_with_GT from the Cairo University page (or the Kaggle
+      mirror aryashah2k/breast-ultrasound-images-dataset) and unzip into raw_dir.
+  backup: noe95/mmfm-busi
+
+busc:
+  name: BUSC
+  modality: ultrasound
+  license: not stated
+  pathology_confirmed: not stated
+  raw_dir: datasets/ultrasound/us-dataset
+  prepared: null
+  source:
+    type: manual
+    landing: https://data.mendeley.com/datasets/vckdnhtw26/1
+    steps: Download the Mendeley Data archive (version 1) and unzip so raw_dir/originals/{benign,malignant} exists.
+  backup: noe95/mmfm-busc
+
+breast:
+  name: BrEaST-Lesions-USG
+  modality: ultrasound
+  license: CC BY 4.0
+  pathology_confirmed: partial (biopsy or follow-up)
+  raw_dir: datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023
+  prepared: null
+  source:
+    type: manual
+    landing: https://www.cancerimagingarchive.net/collection/breast-lesions-usg/
+    doi: 10.7937/9WKK-Q141
+    steps: Download the "images and masks" zip (Dec-15-2023) and the clinical xlsx from TCIA into raw_dir.
+  backup: noe95/mmfm-breast
+
+mias:
+  name: mini-MIAS
+  modality: mammography
+  license: CC BY
+  pathology_confirmed: not stated
+  raw_dir: datasets/mammography/mias
+  prepared: null
+  source:
+    type: manual
+    landing: https://www.repository.cam.ac.uk/handle/1810/250394
+    steps: >-
+      Download the MIAS v1.21 archive from the Cambridge repository (the PEIPA
+      host peipa.essex.ac.uk was unreachable on 2026-10-13) and extract the PGMs
+      plus Info.txt into raw_dir/all-mias. The HF backup is the faster restore.
+  backup: noe95/mmfm-mias
+
+cdd_cesm:
+  name: CDD-CESM
+  modality: mammography (CESM)
+  license: CC BY 4.0
+  pathology_confirmed: partial (pathology or follow-up)
+  raw_dir: /home/nouran/Downloads/PKG - CDD-CESM/CDD-CESM
+  extra_files:
+    - /home/nouran/Downloads/Radiology-manual-annotations.xlsx
+  prepared: null
+  source:
+    type: manual
+    landing: https://www.cancerimagingarchive.net/collection/cdd-cesm/
+    doi: 10.7937/29kw-ae92
+    steps: >-
+      Download the CDD-CESM image package (Aspera/Faspex via TCIA) and the
+      "Radiology manual annotations" xlsx; check against CDD-CESM.sums.
+  backup: noe95/mmfm-cdd-cesm
+
+cmmd:
+  name: CMMD (Chinese Mammography Database)
+  modality: mammography
+  license: CC BY 4.0
+  pathology_confirmed: yes (core-needle biopsy)
+  raw_dir: /mnt/data/mmfm_datasets/mammography/cmmd
+  prepared: datasets/mammography/cmmd_png
+  source:
+    type: tcia
+    collection: CMMD
+    doi: 10.7937/tcia.eqde-4b16
+    series_list: data/sources/series/cmmd.txt
+    extra_files_note: CMMD_clinicaldata_revision.xlsx from the TCIA collection page
+  backup: noe95/mmfm-cmmd
+  backup_paths:
+    - datasets/mammography/cmmd_png
+    - /mnt/data/mmfm_datasets/mammography/cmmd/CMMD_clinicaldata_revision.xlsx
+
+bcsdbt:
+  name: Breast-Cancer-Screening-DBT (validation release)
+  modality: tomosynthesis
+  license: CC BY-NC 4.0
+  pathology_confirmed: yes for Benign/Cancer
+  raw_dir: /mnt/data/mmfm_datasets/mammography/breast_cancer_screening_dbt
+  pruned: >-
+    2026-10-13: kept only the 75 series training uses (data/sources/series/bcsdbt_kept_dirs.txt,
+    bcsdbt_used.txt); the other 1,088 were deleted. checksums/bcsdbt.sha256 still lists all
+    1,163 originals; `fetch bcsdbt` restores the full set from IDC, `--used-only` just the 75.
+  prepared: datasets/mammography/bcsdbt_png
+  source:
+    type: idc
+    collection: breast_cancer_screening_dbt
+    series_list: data/sources/series/bcsdbt.txt
+    series_list_used: data/sources/series/bcsdbt_used.txt
+    extra_files_note: BCS-DBT labels / file-paths / boxes CSVs (validation, PHASE-2 Jan-2024) from TCIA
+  backup: noe95/mmfm-bcsdbt   # non-commercial: private repo only
+  backup_paths:
+    - datasets/mammography/bcsdbt_png
+    - datasets/mammography/bcsdbt_labels.csv
+    - datasets/mammography/bcsdbt_file_paths.csv
+    - datasets/mammography/bcsdbt_boxes.csv
+
+breamdm:
+  name: BreastDM
+  modality: mri
+  license: not stated
+  pathology_confirmed: yes (histology)
+  raw_dir: datasets/MRI/BreaDM
+  prepared: datasets/MRI/BreaDM/cls/img9Se
+  source:
+    type: manual
+    landing: https://github.com/smallboy-code/Breast-cancer-dataset
+    steps: Follow the Google Drive links in the repository README; unzip so raw_dir/{cls,seg,seg3D} exist.
+  backup: noe95/mmfm-breastdm
+  backup_paths:
+    - datasets/MRI/BreaDM/cls   # all four classification representations (76 MB)
+
+ispy2:
+  name: BreastDCEDL-ISPY2
+  modality: mri
+  license: CC BY-NC-ND 4.0
+  pathology_confirmed: yes (trial entry)
+  raw_dir: /mnt/data/mmfm_datasets/MRI/PKG - BreastDCEDL_ISPY2/BreastDCEDL_ISPY2
+  prepared: datasets/MRI/ISPY2/cls/img9Se
+  prepare: >-
+    .venv/bin/python scripts/preprocess_ispy2_mri.py --source "<raw_dir>"
+    --dest datasets/MRI/ISPY2/cls/img9Se
+  source:
+    type: manual
+    landing: https://www.cancerimagingarchive.net/analysis-result/breastdcedl-ispy2/
+    doi: 10.7937/42WQ-TH78
+    steps: Download the BreastDCEDL_ISPY2 package (54 GB) via Aspera Connect from TCIA into raw_dir's parent.
+  backup: null   # NoDerivatives: do not re-host preprocessed arrays; keep raw re-fetchable instead
+
+cbis_ddsm:
+  name: CBIS-DDSM (cropped lesions + 188-image full-mammogram sample)
+  modality: mammography (digitized film)
+  license: CC BY 3.0
+  pathology_confirmed: yes (pathology-confirmed benign/malignant)
+  raw_dir: /mnt/data/mmfm_datasets/mammography/cbis_ddsm
+  extra_files:
+    - /mnt/data/mmfm_datasets/mammography/CBIS-DDSM-labels/mass_case_description_train_set.csv
+    - /mnt/data/mmfm_datasets/mammography/CBIS-DDSM-labels/mass_case_description_test_set.csv
+    - /mnt/data/mmfm_datasets/mammography/CBIS-DDSM-labels/calc_case_description_train_set.csv
+    - /mnt/data/mmfm_datasets/mammography/CBIS-DDSM-labels/calc_case_description_test_set.csv
+  prepared: null
+  source:
+    type: idc
+    collection: cbis_ddsm
+    series_list: data/sources/series/cbis_ddsm_cropped.txt
+    extra_series_list: data/sources/series/cbis_ddsm_full_sample.txt
+    landing: https://www.cancerimagingarchive.net/collection/cbis-ddsm/
+    note: >-
+      Downloaded 2026-10-13 with the TCIA Data Retriever from filtered manifests
+      (~/CBIS-DDSM-cropped.tcia: 2,006 "cropped images" series, 31.6 GB;
+      ~/CBIS-DDSM-full-sample.tcia: 188 stratified full mammograms, 6.1 GB).
+      Label CSVs from https://wiki.cancerimagingarchive.net/download/attachments/22516629/
+  backup: null   # 38 GB raw, re-fetchable from IDC by series list; back up prepared crops later
+
+bcsdbt_extra:
+  name: Breast-Cancer-Screening-DBT training + test (Benign/Cancer views only)
+  modality: tomosynthesis
+  license: CC BY-NC 4.0
+  pathology_confirmed: yes for Benign/Cancer
+  raw_dir: datasets/mammography/bcsdbt_extra
+  prepared: null
+  source:
+    type: idc
+    collection: breast_cancer_screening_dbt
+    series_list: data/sources/series/bcsdbt_train_test_benign_cancer.txt
+    note: >-
+      321 series (train 200 views: 124 benign / 76 cancer; test 121 views: 61 / 60),
+      26 GB. Labels/boxes/file-path CSVs in raw_dir/labels, from
+      https://www.cancerimagingarchive.net/collection/breast-cancer-screening-dbt/
+  backup: null   # raw volumes are 26 GB; back up the prepared crops once they exist
+
+odelia:
+  name: ODELIA Breast MRI Challenge 2025 (unilateral, 256x256x32)
+  modality: mri
+  license: CC BY-NC 4.0
+  pathology_confirmed: not stated (dataset card); check the challenge paper
+  raw_dir: /mnt/data/mmfm_datasets/MRI/odelia
+  prepared: null
+  source:
+    type: manual
+    landing: https://huggingface.co/datasets/ODELIA-AI/ODELIA-Challenge-2025
+    steps: >-
+      Accept the gated-access terms on Hugging Face, then
+      snapshot_download(repo_type='dataset', allow_patterns=['unilateral/*',
+      'split_unilateral.csv', 'README.md', 'data_to_unilateral_example_script.py']).
+  backup: null   # already hosted on HF by the authors
+
+bus_cot:
+  name: BUS-CoT (chain-of-thought breast ultrasound, all 99 WHO histopathology categories)
+  modality: ultrasound
+  license: CC BY 4.0
+  pathology_confirmed: yes (histopathology category for every lesion)
+  raw_dir: datasets/ultrasound/bus_cot   # main disk (the /mnt/data SSD stalls under long writes)
+  prepared: null
+  source:
+    type: direct
+    url: https://ndownloader.figshare.com/files/60240116
+    filename: BUSCoT.zip
+    md5: 832db89dd4095f49a1a4182a72c75be8
+    landing: https://doi.org/10.6084/m9.figshare.30838715
+    note: single BUSCoT.zip (6.94 GB), unzipped into raw_dir/extracted
+  backup: null   # open Figshare download with an md5; re-fetchable

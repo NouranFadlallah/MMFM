@@ -1,0 +1,63 @@
+sample_id,label_name,used,split,max_abs_z,z_reasons,iforest_score,iforest_flag
+3214736656_right,malignant,True,val,9.073630299229029,"sharpness_lapvar(z=+9.1),noise_sigma(z=+5.6)",0.6931483013402675,True
+3214736656_left,no lesion,False,val,8.82868637704447,"sharpness_lapvar(z=+8.8),noise_sigma(z=+6.1)",0.7153021419299035,True
+UKA_69_right,malignant,True,val,8.004260395560204,"sharpness_lapvar(z=+8.0),noise_sigma(z=+6.4)",0.6828813646587636,True
+UKA_92_right,malignant,True,train,7.60665109127591,"sharpness_lapvar(z=+7.6),noise_sigma(z=+6.4)",0.6843738015016647,True
+UKA_69_left,no lesion,False,val,6.7306209288025585,"sharpness_lapvar(z=+6.7),noise_sigma(z=+5.4)",0.6828607679012388,True
+ODELIA_BRAID1_0227_1_right,no lesion,False,train,6.446923831622147,snr(z=+6.4),0.6793545886939423,True
+UKA_21_right,benign,True,train,6.182027062888576,"sharpness_lapvar(z=+6.2),noise_sigma(z=+5.2)",0.6730422908750288,True
+ODELIA_BRAID1_0227_1_left,no lesion,False,train,5.8988826810802255,snr(z=+5.9),0.6625451103896622,True
+UKA_43_right,benign,True,train,5.680724602116652,"sharpness_lapvar(z=+5.7),noise_sigma(z=+5.2)",0.66512212295397,True
+UKA_21_left,no lesion,False,train,5.612388027914192,"sharpness_lapvar(z=+5.6),noise_sigma(z=+4.5)",0.6786561460698559,True
+UKA_22_right,no lesion,False,train,5.553669537374745,"sharpness_lapvar(z=+5.6),noise_sigma(z=+5.4)",0.6711926426560874,True
+UKA_48_right,no lesion,False,train,5.545988636710444,"sharpness_lapvar(z=+5.5),noise_sigma(z=+5.3)",0.6706662611395523,True
+ODELIA_BRAID1_0176_1_right,no lesion,False,train,5.5441923257869234,snr(z=+5.5),0.6747736828819021,True
+ODELIA_BRAID1_0176_1_left,no lesion,False,train,5.484239041510603,snr(z=+5.5),0.6371060846411983,False
+UKA_73_right,no lesion,False,train,5.365052053808465,"sharpness_lapvar(z=+5.4),noise_sigma(z=+5.1)",0.6503586107099547,False
+Anonymized34_left,no lesion,False,train,5.22497536864165,"sharpness_lapvar(z=+5.2),noise_sigma(z=+3.7)",0.644443803343226,False
+51B50053_left,no lesion,False,val,5.1326903790194836,entropy(z=-5.1),0.6024847163292103,False
+UKA_87_right,benign,True,train,4.925495950824861,"sharpness_lapvar(z=+4.9),noise_sigma(z=+4.9)",0.6518340424688748,True
+Anonymized100_left,no lesion,False,val,4.853162831823131,entropy(z=-4.9),0.6302655264215702,False
+UKA_4_right,no lesion,False,train,4.801631057053681,"sharpness_lapvar(z=+4.8),noise_sigma(z=+3.9)",0.633049277907568,False
+UKA_22_left,no lesion,False,train,4.585692974627271,"sharpness_lapvar(z=+4.2),noise_sigma(z=+4.6)",0.6227616872565992,False
+8856654209_right,malignant,True,train,4.528294735439511,"sharpness_lapvar(z=+4.5),noise_sigma(z=+3.9)",0.670731731018021,True
+UKA_77_right,no lesion,False,train,4.505022576762281,"sharpness_lapvar(z=+4.4),noise_sigma(z=+4.5)",0.6302888858944711,False
+UKA_73_left,benign,True,train,4.346346197287842,"sharpness_lapvar(z=+3.9),noise_sigma(z=+4.3)",0.6092059955865616,False
+6016321371_left,no lesion,False,train,4.294752276672931,entropy(z=-4.3),0.5307849266132152,False
+UKA_10_right,benign,True,val,4.075294968150434,"sharpness_lapvar(z=+3.9),noise_sigma(z=+4.1)",0.6097741385254286,False
+ODELIA_BRAID1_0250_1_left,no lesion,False,train,4.008295988000898,snr(z=+4.0),0.5855025489455937,False
+6016321371_right,benign,True,train,4.005183475926163,entropy(z=-4.0),0.5485252882524905,False
+3133009002_right,no lesion,False,train,3.9868191691541597,"sharpness_lapvar(z=+4.0),noise_sigma(z=+3.2)",0.5919321394504874,False
+UKA_76_right,benign,True,train,3.9092271096512174,"sharpness_lapvar(z=+3.9),noise_sigma(z=+3.4)",0.5975782919343927,False
+9929163784_right,no lesion,False,train,3.8948836661984028,entropy(z=-3.9),0.5509497170141523,False
+ODELIA_BRAID1_0250_1_right,no lesion,False,train,3.868686485141321,snr(z=+3.9),0.6177079299087428,False
+8242227451_left,benign,True,test,3.8603189126857393,entropy(z=-3.9),0.5128289434519618,False
+1127361460_right,no lesion,False,train,3.847556459953848,"sharpness_lapvar(z=+3.8),noise_sigma(z=+3.3)",0.5795605725395832,False
+UKA_92_left,no lesion,False,train,3.728596267848887,noise_sigma(z=+3.7),0.5755819307297736,False
+Anonymized34_right,malignant,True,train,3.63538305057755,sharpness_lapvar(z=+3.6),0.5926880372792237,False
+ODELIA_BRAID1_0245_1_left,no lesion,False,train,3.6163096529161334,snr(z=+3.6),0.5654387792523017,False
+UKA_2_right,malignant,True,train,3.5109057537468775,noise_sigma(z=+3.5),0.6005199665049481,False
+F548040D_right,no lesion,False,train,3.4449577308745862,snr(z=+3.4),0.6140842955878631,False
+9311996890_right,no lesion,False,train,3.333493905873788,entropy(z=-3.3),0.4949993639174737,False
+UKA_77_left,no lesion,False,train,3.3321610190576023,noise_sigma(z=+3.3),0.5407803751634119,False
+Anonymized6_left,no lesion,False,val,3.295708685212989,sharpness_lapvar(z=+3.3),0.5999957222615386,False
+ODELIA_BRAID1_0245_1_right,no lesion,False,train,3.2491420155442206,snr(z=+3.2),0.57258234974675,False
+UKA_7_right,no lesion,False,val,3.2470841764299414,"sharpness_lapvar(z=+3.2),noise_sigma(z=+3.2)",0.5869035838835824,False
+4192314077_right,no lesion,False,train,3.2334968517865295,entropy(z=-3.2),0.5400456190467972,False
+RUMC_023_left,no lesion,False,train,3.21478341407761,sharpness_lapvar(z=+3.2),0.5766559184417912,False
+ODELIA_TRICKS_0078_1_left,no lesion,False,test,3.206339290708152,snr(z=+3.2),0.593283732638656,False
+UKA_48_left,malignant,True,train,3.1896229224421044,noise_sigma(z=+3.2),0.5328227428392397,False
+ODELIA_BRAID1_0261_1_left,no lesion,False,val,3.187556366531805,snr(z=+3.2),0.609563804226966,False
+F548040D_left,no lesion,False,train,3.1855095524365633,snr(z=+3.2),0.5994640054946234,False
+Anonymized14_right,no lesion,False,test,3.176360955403903,sharpness_lapvar(z=+3.2),0.5552028698699388,False
+UKA_2_left,no lesion,False,train,3.1745868345635455,noise_sigma(z=+3.2),0.5615484051967409,False
+RUMC_044_right,no lesion,False,train,3.170221222470296,sharpness_lapvar(z=+3.2),0.5619101575197109,False
+ODELIA_BRAID1_0261_1_right,no lesion,False,val,3.1668309857238492,"entropy(z=-3.1),snr(z=+3.2)",0.6335811489945118,False
+UKA_12_right,no lesion,False,train,3.125214903683821,contrast(z=+3.1),0.5609826529895398,False
+ODELIA_BRAID1_0234_1_left,no lesion,False,train,3.109999841473628,snr(z=+3.1),0.5454184650816759,False
+ODELIA_BRAID1_0315_1_left,no lesion,False,train,3.098294688842125,snr(z=+3.1),0.5859492316273801,False
+Anonymized14_left,no lesion,False,test,3.0713939664294783,sharpness_lapvar(z=+3.1),0.5550966599015135,False
+5122601318_left,no lesion,False,train,3.051577806808501,snr(z=+3.1),0.6003304325862411,False
+1127361460_left,no lesion,False,train,3.0456130732257303,sharpness_lapvar(z=+3.0),0.5526620549648257,False
+UKA_87_left,benign,True,train,3.0417629987920916,noise_sigma(z=+3.0),0.5299238784042213,False
+3133009002_left,no lesion,False,train,3.0372548567755775,sharpness_lapvar(z=+3.0),0.5578012991198615,False

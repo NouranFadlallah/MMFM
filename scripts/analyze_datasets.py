@@ -29,7 +29,7 @@ import pandas as pd
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
-from audit import duplicates, report, volumes  # noqa: E402
+from audit import duplicates, odelia, report, volumes  # noqa: E402
 from audit.analyze import analyze_sample  # noqa: E402
 from audit.sources import ADAPTERS, DATASET_ROOTS, MODALITY, case_dirs  # noqa: E402
 
@@ -83,6 +83,8 @@ def analyze_dataset(name, args):
     out_dir = args.out / name
     figures_dir = out_dir / 'figures'
     figures_dir.mkdir(parents=True, exist_ok=True)
+    if name == 'odelia':
+        return analyze_odelia(args, out_dir)
     print(f'=== {name}: enumerating samples')
     samples = [] if args.reuse and (out_dir / 'per_image.parquet').exists() else ADAPTERS[name](REPO_ROOT / DATASET_ROOTS[name])
     if args.limit and len(samples) > args.limit:
@@ -120,6 +122,25 @@ def analyze_dataset(name, args):
         cases = pd.DataFrame(_run_parallel(_case_job, [(name, d) for d in dirs], args.workers, 'cases'))
         _to_parquet(cases, out_dir / 'cases.parquet')
     return _finish_dataset(name, args, out_dir, frame, thumbs, headers, cases)
+
+
+def analyze_odelia(args, out_dir):
+    print('=== odelia: reading parquet shards (one row per breast)')
+    if args.reuse and (out_dir / 'per_image.parquet').exists():
+        frame, thumbs = pd.read_parquet(out_dir / 'per_image.parquet'), np.load(out_dir / 'thumbs.npy')
+    else:
+        frame, thumbs = odelia.build(REPO_ROOT / DATASET_ROOTS['odelia'], args.workers)
+        _to_parquet(frame, out_dir / 'per_image.parquet')
+        np.save(out_dir / 'thumbs.npy', thumbs)
+    table = odelia.centre_table(frame)
+    table.to_csv(out_dir / 'centre_labels.csv')
+    probes = odelia.centre_probes(frame)
+    (out_dir / 'centre_probes.json').write_text(json.dumps(probes, indent=2))
+    odelia.mip_sheet(frame, thumbs, out_dir / 'figures' / 'mean_mip_by_centre_label.png')
+    print(table.to_string())
+    print(json.dumps(probes, indent=2))
+    args_no_sheets = argparse.Namespace(**{**vars(args), 'no_sheets': True})  # raw volumes live in parquet
+    return _finish_dataset('odelia', args_no_sheets, out_dir, frame, thumbs, None, None)
 
 
 def _finish_dataset(name, args, out_dir, frame, thumbs, headers, cases):
@@ -202,7 +223,7 @@ def main():
     args = parser.parse_args()
 
     if not args.cross_only:
-        names = list(ADAPTERS) if 'all' in args.dataset else args.dataset
+        names = list(ADAPTERS) if 'all' in args.dataset else args.dataset  # includes odelia
         for name in names:
             analyze_dataset(name, args)
     if args.cross or args.cross_only:

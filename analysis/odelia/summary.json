@@ -1,0 +1,64 @@
+{
+  "dataset": "odelia",
+  "modality": "mri",
+  "reported": null,
+  "on_disk": {
+    "images": 1482,
+    "by_label": {
+      "no lesion": 978,
+      "malignant": 309,
+      "benign": 195
+    },
+    "groups": 741,
+    "images_per_group": {
+      "min": 2.0,
+      "median": 2.0,
+      "max": 2.0
+    },
+    "with_mask": 0,
+    "with_box": 0,
+    "by_split": {
+      "train": 944,
+      "test": 300,
+      "val": 238
+    }
+  },
+  "used_by_loader": {
+    "images": 504,
+    "by_label": {
+      "malignant": 309,
+      "benign": 195
+    },
+    "groups": 450,
+    "images_per_group": {
+      "min": 1.0,
+      "median": 1.0,
+      "max": 2.0
+    },
+    "with_mask": 0,
+    "with_box": 0,
+    "by_split": {
+      "train": 311,
+      "test": 107,
+      "val": 86
+    }
+  },
+  "load_errors": 0,
+  "unique_sizes": 1,
+  "bits_stored": null,
+  "color_images": null,
+  "file_types": {
+    ".parquet": 1482
+  },
+  "flags": {},
+  "multi_lesion_candidates": 0,
+  "duplicates": {
+    "hash_candidates": 22158,
+    "confirmed_pairs": 0,
+    "groups": 0,
+    "images_in_groups": 0,
+    "label_conflict_pairs": 0,
+    "split_leak_pairs": 0,
+    "groups_in_multiple_splits": 0
+  }
+}

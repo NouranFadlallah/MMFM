@@ -1,0 +1,7 @@
+meta_institution,benign,malignant,no lesion,benign_share_of_lesions,n_post_median,t2_available
+CAM,45,97,358,0.317,2.0,1.0
+MHA,15,52,133,0.224,4.0,1.0
+RSH,16,61,123,0.208,5.0,1.0
+RUMC,2,18,42,0.1,4.0,1.0
+UKA,75,32,93,0.701,4.0,1.0
+UMCU,42,49,229,0.462,5.0,1.0

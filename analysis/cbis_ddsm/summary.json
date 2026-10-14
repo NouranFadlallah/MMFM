@@ -1,0 +1,77 @@
+{
+  "dataset": "cbis_ddsm",
+  "modality": "mammography",
+  "reported": null,
+  "on_disk": {
+    "images": 2193,
+    "by_label": {
+      "BENIGN": 839,
+      "MALIGNANT": 788,
+      "BENIGN_WITHOUT_CALLBACK": 379,
+      "MALIGNANT (full image)": 95,
+      "BENIGN (full image)": 78,
+      "BENIGN_WITHOUT_CALLBACK (full image)": 14
+    },
+    "groups": 1226,
+    "images_per_group": {
+      "min": 1.0,
+      "median": 1.0,
+      "max": 14.0
+    },
+    "with_mask": 125,
+    "with_box": 0,
+    "by_split": {
+      "train": 1577,
+      "test": 616
+    }
+  },
+  "used_by_loader": {
+    "images": 2006,
+    "by_label": {
+      "BENIGN": 839,
+      "MALIGNANT": 788,
+      "BENIGN_WITHOUT_CALLBACK": 379
+    },
+    "groups": 1200,
+    "images_per_group": {
+      "min": 1.0,
+      "median": 1.0,
+      "max": 13.0
+    },
+    "with_mask": 0,
+    "with_box": 0,
+    "by_split": {
+      "train": 1477,
+      "test": 529
+    }
+  },
+  "load_errors": 0,
+  "unique_sizes": 1989,
+  "bits_stored": {
+    "16": 2193
+  },
+  "color_images": 0,
+  "file_types": {
+    ".dcm": 2193
+  },
+  "flags": {
+    "burnt_label_flag": 118,
+    "implant_suspect_flag": 105
+  },
+  "multi_lesion_candidates": 53,
+  "duplicates": {
+    "hash_candidates": 3293,
+    "confirmed_pairs": 0,
+    "groups": 0,
+    "images_in_groups": 0,
+    "label_conflict_pairs": 0,
+    "split_leak_pairs": 0,
+    "groups_in_multiple_splits": 16
+  },
+  "dicom_PhotometricInterpretation": {
+    "MONOCHROME2": 2193
+  },
+  "dicom_BitsStored": {
+    "16": 2193
+  }
+}
