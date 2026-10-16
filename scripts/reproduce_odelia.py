@@ -259,7 +259,7 @@ def train(args):
     print(f'fold {args.fold}: train={len(train_frame)} val={len(val_frame)} '
           f'test={len(test_frame)} ood={len(ood_frame)} sequences={sequences}')
 
-    best_loss, stale = float('inf'), 0
+    best_score, stale = -float('inf'), 0
     for epoch in range(args.max_epochs):
         model.train()
         optimizer.zero_grad()
@@ -279,8 +279,12 @@ def train(args):
               f'val_macro_auc={val_metrics["macro_auc"]:.3f}', flush=True)
         run.log({'epoch': epoch + 1, 'train/loss': total / len(train_frame), 'validation/loss': val_loss,
                  **{f'validation/{k}': v for k, v in val_metrics.items()}})
-        if val_loss < best_loss:
-            best_loss, stale = val_loss, 0
+        # validation loss bottoms out early while macro AUC keeps improving
+        # (fold 0, 2026-10-16), so select and early-stop on macro AUC by default
+        score = val_metrics['macro_auc'] if args.select_on == 'auc' else -val_loss
+        if score > best_score:
+            best_score, stale = score, 0
+            print(f'  checkpoint saved (epoch {epoch + 1})', flush=True)
             torch.save(model.state_dict(), checkpoint)
         else:
             stale += 1
@@ -314,8 +318,10 @@ def main(argv=None):
     train_parser.add_argument('--accumulate', type=int, default=8,
                               help='1 x 8 = the paper\'s batch size 8 (batch 2 needs more than 12 GB)')
     train_parser.add_argument('--lr', type=float, default=1e-5)
-    train_parser.add_argument('--max-epochs', type=int, default=30)
-    train_parser.add_argument('--patience', type=int, default=5)
+    train_parser.add_argument('--max-epochs', type=int, default=50)
+    train_parser.add_argument('--patience', type=int, default=10)
+    train_parser.add_argument('--select-on', choices=('auc', 'loss'), default='auc',
+                              help='validation macro AUC (default) or validation loss')
     train_parser.add_argument('--seed', type=int, default=42)
     train_parser.add_argument('--run-name', default=None)
     args = parser.parse_args(argv)

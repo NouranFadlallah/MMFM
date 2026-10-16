@@ -86,10 +86,11 @@ def build_slices(meta, out_dir=SLICE_DIR):
 
 
 class SliceDataset(torch.utils.data.Dataset):
-    def __init__(self, frame, augment=False, size=224):
+    def __init__(self, frame, augment=False, size=224, strong=False):
         self.frame = frame.reset_index(drop=True)
         self.augment = augment
         self.size = size
+        self.strong = strong
 
     def __len__(self):
         return len(self.frame)
@@ -106,6 +107,14 @@ class SliceDataset(torch.utils.data.Dataset):
             if random.random() < 0.5:
                 tensor = tensor.flip(-2)
             tensor = TF.rotate(tensor, random.uniform(-15.0, 15.0))
+            if self.strong:
+                # random resized crop (80-100% area) plus brightness / contrast jitter
+                scale = random.uniform(0.8, 1.0) ** 0.5
+                crop = int(self.size * scale)
+                top, left = random.randint(0, self.size - crop), random.randint(0, self.size - crop)
+                tensor = TF.resize(tensor[:, top:top + crop, left:left + crop], [self.size, self.size], antialias=True)
+                tensor = TF.adjust_contrast(TF.adjust_brightness(tensor, random.uniform(0.85, 1.15)),
+                                            random.uniform(0.85, 1.15))
         tensor = TF.normalize(tensor, [0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
         return tensor, int(row['pCR'])
 
@@ -155,14 +164,23 @@ def train(args):
     device = torch.device(args.device)
     model = timm.create_model(args.model, pretrained=True, num_classes=2).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    loader = torch.utils.data.DataLoader(SliceDataset(frames['train'], augment=True), batch_size=args.batch_size,
-                                         shuffle=True, num_workers=4, pin_memory=True)
+    def epoch_loader(epoch):
+        """All training slices, or (--slices-per-patient K) a fresh draw of K
+        slices per patient each epoch: about 38 near-identical slices per
+        patient let the ViT memorize patients (first run, 2026-10-16)."""
+        frame = frames['train']
+        if args.slices_per_patient:
+            frame = frame.sample(frac=1.0, random_state=args.seed + epoch).groupby('pid').head(args.slices_per_patient)
+        return torch.utils.data.DataLoader(SliceDataset(frame, augment=True, strong=args.strong_augment),
+                                           batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=True)
+
     run = wandb.init(project='mmfm-ispy2-pcr', name=args.run_name, config=vars(args))
-    checkpoint = Path('ispy2_pcr_vit_best.pth')
+    checkpoint = Path(f'{args.run_name}_best.pth')
     best_auc = -1.0
     for epoch in range(args.epochs):
         model.train()
         total = 0.0
+        loader = epoch_loader(epoch)
         for images, labels in loader:
             with torch.autocast('cuda', dtype=torch.bfloat16, enabled=device.type == 'cuda'):
                 loss = F.cross_entropy(model(images.to(device)).float(), labels.to(device))
@@ -171,8 +189,8 @@ def train(args):
             optimizer.step()
             total += loss.item() * len(labels)
         val = pcr_metrics(patient_scores(model, frames['val'], device, args.batch_size))
-        print(f'epoch {epoch + 1}: train_loss={total / len(frames["train"]):.4f} val_auc={val["auc"]:.3f}', flush=True)
-        run.log({'epoch': epoch + 1, 'train/loss': total / len(frames['train']),
+        print(f'epoch {epoch + 1}: train_loss={total / len(loader.dataset):.4f} val_auc={val["auc"]:.3f}', flush=True)
+        run.log({'epoch': epoch + 1, 'train/loss': total / len(loader.dataset),
                  **{f'validation/{k}': v for k, v in val.items()}})
         if val['auc'] > best_auc:
             best_auc = val['auc']
@@ -183,7 +201,7 @@ def train(args):
     print('I-SPY2 test (patient level): ' + ' '.join(f'{k}={v:.3f}' for k, v in test.items()))
     for k, v in test.items():
         run.summary[f'test/{k}'] = v
-    Path('ispy2_pcr_vit_results.json').write_text(json.dumps({'best_val_auc': best_auc, 'test': test}, indent=2))
+    Path(f'{args.run_name}_results.json').write_text(json.dumps({'best_val_auc': best_auc, 'test': test}, indent=2))
     run.finish()
 
 
@@ -201,6 +219,8 @@ def main(argv=None):
     t.add_argument('--weight-decay', type=float, default=0.05)
     t.add_argument('--batch-size', type=int, default=32)
     t.add_argument('--epochs', type=int, default=10)
+    t.add_argument('--slices-per-patient', type=int, default=0, help='0 = every tumour slice each epoch')
+    t.add_argument('--strong-augment', action='store_true')
     t.add_argument('--device', default='cuda')
     t.add_argument('--seed', type=int, default=42)
     t.add_argument('--run-name', default='ispy2_pcr_vit_b16')
