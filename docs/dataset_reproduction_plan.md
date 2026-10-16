@@ -702,8 +702,26 @@ swap), crop and z-normalization match the authors' pipeline. Note that the
 released checkpoint's state dict uses transformers 4.x key names, so the script
 remaps `backbone.layer.*` to `backbone.model.layer.*` for transformers 5.
 
-Training our own MST (5 folds, Pre + Sub_1 + T2) waits on access to the gated
-`facebook/dinov3-vits16-pretrain-lvd1689m` weights.
+### Our own MST, fold 0 (2026-10-16)
+
+`python3 scripts/reproduce_odelia.py train --fold 0`: DINOv3-S, Pre + Sub_1 + T2,
+batch 1 x 8 accumulation, AdamW 1e-5, early stopping on validation loss
+(patience 5). Splits: 816 train / 206 val / 260 in-distribution test / 200 RSH.
+
+| | Macro AUC | Micro AUC | Benign vs. malignant AUC |
+|---|---|---|---|
+| Paper, in-distribution (overall) | 79.0 | 87.4 | not reported |
+| Ours, fold 0 in-distribution test | 71.7 | 82.3 | 0.811 |
+| Paper, RSH (OOD) | 63.1 | 78.3 | not reported |
+| Ours, fold 0 RSH | 50.0 | 74.9 | 0.447 |
+
+**Below the paper, and most likely undertrained.** Validation loss was lowest
+at epoch 5 and stopped training at epoch 10, while validation macro AUC was
+still climbing (0.643 -> 0.658) and training loss was still 0.65. The
+released checkpoint is from epoch 17. Since the released weights reproduce
+the paper exactly on this data, the gap is in training length and selection,
+not in data handling.
+Results: `runs/run-4/odelia_mst_fold0_results.json`.
 
 ## 15. BreastDCEDL-ISPY2 pCR (treatment response)
 
