@@ -19,9 +19,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from config import cfg
 from data.dataset import (
-    BreaDMDataset, BreadmTransform, BusbraTransform, MiasTransform,
-    SingleModalityBranchDataset, TripleImageDataset,
+    BreaDMDataset, BreadmTransform, BusbraTransform, MiasTransform, PadToSquareTransform,
+    ShenTransform, SingleModalityBranchDataset, TripleImageDataset,
 )
+from data.us_preprocessing import PreprocessedTransform, build_pipeline
 from models.backbone import create_backbone
 from models.fusion_model import FusionLateModel
 from utils.metrics import classification_metrics
@@ -30,6 +31,102 @@ from utils.metrics import classification_metrics
 MAMMOGRAPHY_BRANCH, ULTRASOUND_BRANCH, MRI_BRANCH = 0, 1, 2
 BRANCH_CHANNELS = (3, 3, 9)
 ULTRASOUND_DATASET_CHOICES = ('busbra', 'busi', 'busc', 'breast')
+ULTRASOUND_DATASETS = ULTRASOUND_DATASET_CHOICES + ('bus_cot',)
+
+
+def _with_us_preprocess(args, transform):
+    """Wrap an ultrasound image transform with the --us-preprocess pipeline
+    (data/us_preprocessing.py), if one was requested."""
+    pipeline = build_pipeline(getattr(args, 'us_preprocess', None))
+    if pipeline is None:
+        return transform
+    return PreprocessedTransform(pipeline, transform, getattr(args, 'us_preprocess_cache', None)
+                                 or Path('datasets/ultrasound/_preprocessed'))
+
+# --paper-match training recipes, keyed by --dataset. 'default' is the BUS-BRA
+# paper recipe (Gomez-Flores et al. 2024), which the run-2 busi/busc/breast/mias
+# k-fold baselines also used. Keys set here override the matching CLI args
+# (epochs, batch_size, backbone, image_size) so a --paper-match run can't
+# silently drift from the paper. 'stages' is a staged-unfreeze schedule of
+# (epochs, lr, trainable scope), scope one of 'head' / 'top' / 'all'.
+PAPER_RECIPES = {
+    'default': {
+        'optimizer': 'sgd', 'lr': 1e-3, 'momentum': 0.9,
+        'class_weights': True, 'early_stopping': False,
+    },
+    # Yu et al. 2025 (BUS-CoT, arXiv 2509.17046), "Technical Validation"
+    'bus_cot': {
+        'backbone': 'resnet50', 'pretrained': True, 'image_size': 224, 'epochs': 5, 'batch_size': 16,
+        'optimizer': 'adamw', 'lr': 5e-5, 'betas': (0.9, 0.999), 'weight_decay': 0.1, 'schedule': 'cosine',
+        'class_weights': False, 'early_stopping': False,
+    },
+    # Shen et al. 2019 (arXiv 1708.09427) patch-classifier stage, S1 schedule:
+    # last layer @1e-3 for 3 epochs, top layers @1e-4 for 10, all @1e-5 to 200
+    'cbis_ddsm': {
+        'backbone': 'resnet50', 'pretrained': True, 'image_size': 224, 'epochs': 200, 'batch_size': 32,
+        'optimizer': 'adam', 'stages': [(3, 1e-3, 'head'), (10, 1e-4, 'top'), (187, 1e-5, 'all')],
+        'class_weights': True, 'early_stopping': False,
+        # Shen keeps "the epoch when the best validation accuracy has been reached";
+        # min val loss picks a head-only epoch once the full network starts to overfit
+        'select_on': 'accuracy',
+    },
+}
+
+
+def _paper_recipe(dataset):
+    return PAPER_RECIPES.get(dataset, PAPER_RECIPES['default'])
+
+
+def _apply_paper_recipe(args):
+    """Override CLI args with the dataset's --paper-match recipe, printing what changed."""
+    if not args.paper_match:
+        return
+    recipe = _paper_recipe(args.dataset)
+    if 'stages' in recipe:
+        args.epochs = sum(epochs for epochs, _, _ in recipe['stages'])
+    for key in ('backbone', 'pretrained', 'image_size', 'epochs', 'batch_size'):
+        if key in recipe and getattr(args, key) != recipe[key]:
+            print(f'--paper-match ({args.dataset}): {key} {getattr(args, key)} -> {recipe[key]}')
+            setattr(args, key, recipe[key])
+
+
+def _use_class_weights(args):
+    return args.paper_match and _paper_recipe(args.dataset)['class_weights']
+
+
+def _set_trainable_scope(model, scope):
+    """'head' = projection + classifier only, 'top' = also the last backbone
+    stage (ResNet layer4, the torchvision analogue of Shen's top 46 Keras
+    layers), 'all' = everything."""
+    for parameter in model.parameters():
+        parameter.requires_grad = scope == 'all'
+    if scope == 'all':
+        return
+    trainable = [model.projection, model.classifier]
+    if scope == 'top':
+        trainable.append(model.backbone.layer4)
+    for module in trainable:
+        for parameter in module.parameters():
+            parameter.requires_grad = True
+
+
+def _make_optimizer(recipe, parameters, lr):
+    parameters = [p for p in parameters if p.requires_grad]
+    if recipe['optimizer'] == 'sgd':
+        return optim.SGD(parameters, lr=lr, momentum=recipe.get('momentum', 0.0))
+    if recipe['optimizer'] == 'adamw':
+        return optim.AdamW(parameters, lr=lr, betas=recipe.get('betas', (0.9, 0.999)),
+                           weight_decay=recipe.get('weight_decay', 0.0))
+    return optim.Adam(parameters, lr=lr, weight_decay=recipe.get('weight_decay', 0.0))
+
+
+def _epoch_stage(stages, epoch):
+    """(lr, scope) of the staged-unfreeze stage that epoch (0-indexed) falls in."""
+    for epochs, lr, scope in stages:
+        if epoch < epochs:
+            return lr, scope
+        epoch -= epochs
+    return stages[-1][1], stages[-1][2]
 
 
 def _make_loader(dataset, batch_size, num_workers=0, shuffle=False, sampler=None):
@@ -75,7 +172,7 @@ class SingleBackboneClassifier(nn.Module):
         return self.classifier(self.projection(features)), None, None
 
 
-def train_one_epoch(model, loader, opt, device, modality_dropout_prob=0.0, criterion=None):
+def train_one_epoch(model, loader, opt, device, modality_dropout_prob=0.0, criterion=None, scheduler=None):
     model.train()
     total_loss = 0.0
     criterion = criterion or nn.CrossEntropyLoss()
@@ -101,6 +198,8 @@ def train_one_epoch(model, loader, opt, device, modality_dropout_prob=0.0, crite
         loss = criterion(fused, y)
         loss.backward()
         opt.step()
+        if scheduler is not None:
+            scheduler.step()
         total_loss += loss.item() * y.size(0)
     return total_loss / len(loader.dataset)
 
@@ -436,14 +535,16 @@ def _cdd_cesm_frame(root, annotation_path, seed=42, validation_fraction=0.2):
     return metadata[~metadata['patient'].isin(validation_patients)], metadata[metadata['patient'].isin(validation_patients)]
 
 
-def _dicom_to_png_cached(dicom_path, cache_dir):
+def _dicom_to_png_cached(dicom_path, cache_dir, out_name=None):
     """Convert one CMMD DICOM to an 8-bit grayscale PNG, cached by relative path
-    under cache_dir so repeated frame-building doesn't re-decode 5,000+ DICOMs."""
+    under cache_dir so repeated frame-building doesn't re-decode 5,000+ DICOMs.
+    out_name overrides the cache file name for collections (CBIS-DDSM) whose
+    DICOMs all share names like 1-1.dcm."""
     from PIL import Image
 
     dicom_path = Path(dicom_path)
     cache_dir = Path(cache_dir)
-    out_path = cache_dir / dicom_path.with_suffix('.png').name
+    out_path = cache_dir / (out_name or dicom_path.with_suffix('.png').name)
     if out_path.exists():
         return out_path
 
@@ -541,9 +642,13 @@ def _dbt_slice_to_png_cached(dicom_path, box, cache_dir):
     import pydicom
     from pydicom.pixel_data_handlers.util import apply_voi_lut
 
-    ds = pydicom.dcmread(dicom_path)
-    volume = ds.pixel_array
-    frame = volume[slice_index] if volume.ndim == 3 else volume
+    from pydicom.pixels import pixel_array
+
+    # decode only the annotated frame: decoding the whole multi-frame JPEG2000
+    # volume to keep one slice takes minutes per view
+    ds = pydicom.dcmread(dicom_path, stop_before_pixels=True)
+    multi_frame = int(getattr(ds, 'NumberOfFrames', 1) or 1) > 1
+    frame = pixel_array(dicom_path, index=slice_index if multi_frame else None)
     frame = apply_voi_lut(frame, ds)
     if getattr(ds, 'PhotometricInterpretation', '') == 'MONOCHROME1':
         frame = frame.max() - frame
@@ -622,6 +727,112 @@ def _dbt_frame(dicom_root, labels_path, file_paths_path, boxes_path, cache_dir, 
     return metadata[~metadata['patient'].isin(validation_patients)], metadata[metadata['patient'].isin(validation_patients)]
 
 
+def _patient_split(metadata, group_col, seed, validation_fraction):
+    """Random group-level train/validation split (whole patients go to one side)."""
+    groups = metadata[group_col].drop_duplicates().to_numpy(copy=True)
+    rng = np.random.default_rng(seed)
+    rng.shuffle(groups)
+    validation_count = max(1, int(len(groups) * validation_fraction))
+    validation_groups = set(groups[-validation_count:])
+    in_validation = metadata[group_col].isin(validation_groups)
+    return metadata[~in_validation], metadata[in_validation]
+
+
+DBT_EXTRA_RELEASES = (
+    ('train', 'BCS-DBT-labels-train-v2.csv', 'BCS-DBT-file-paths-train-v2.csv', 'BCS-DBT-boxes-train-v2.csv'),
+    ('test', 'BCS-DBT-labels-test-PHASE-2.csv', 'BCS-DBT-file-paths-test-v2.csv',
+     'BCS-DBT-boxes-test-v2-PHASE-2-Jan-2024.csv'),
+)
+
+
+def _dbt_full_metadata(root, cache_dir=Path('datasets/mammography/bcsdbt_png')):
+    """Every locally-held BCS-DBT Benign/Cancer view with a lesion box: the
+    validation release used by --dataset bcsdbt plus the train and test releases
+    under datasets/mammography/bcsdbt_extra. No patient appears in two releases
+    (docs/dataset_audit.md), so a patient-level split stays leak-free."""
+    root = Path(root)
+    frames = [_dbt_metadata(
+        Path('datasets/mammography/bcsdbt_dicom'), Path('datasets/mammography/bcsdbt_labels.csv'),
+        Path('datasets/mammography/bcsdbt_file_paths.csv'), Path('datasets/mammography/bcsdbt_boxes.csv'),
+        cache_dir,
+    ).assign(release='validation')]
+    for release, labels, file_paths, boxes in DBT_EXTRA_RELEASES:
+        labels_dir = root / 'labels'
+        frames.append(_dbt_metadata(
+            root / 'breast_cancer_screening_dbt', labels_dir / labels, labels_dir / file_paths,
+            labels_dir / boxes, cache_dir,
+        ).assign(release=release))
+    return pd.concat(frames, ignore_index=True)
+
+
+CBIS_LABELS_DIR = Path('/mnt/data/mmfm_datasets/mammography/CBIS-DDSM-labels')
+CBIS_LABEL_MAP = {'BENIGN': 0, 'BENIGN_WITHOUT_CALLBACK': 0, 'MALIGNANT': 1}
+
+
+def _cbis_ddsm_metadata(root, cache_dir=Path('datasets/mammography/cbis_ddsm_png'), include_bwc=False):
+    """CBIS-DDSM ROI crops with pathology labels, converted to cached 8-bit PNGs.
+    Crop discovery reuses audit/sources.py's cbis_ddsm adapter (it matches crops
+    to the label CSVs by SeriesInstanceUID, since ~150 TCIA folder names lack
+    their Mass-/Calc- prefix); the result is cached as metadata.csv because that
+    scan reads ~6,000 DICOM headers. BENIGN_WITHOUT_CALLBACK crops were never
+    biopsied, so they are dropped unless include_bwc (docs/dataset_audit.md)."""
+    cache_dir = Path(cache_dir)
+    index_path = cache_dir / 'metadata.csv'
+    if index_path.exists():
+        metadata = pd.read_csv(index_path)
+    else:
+        from audit.sources import cbis_ddsm
+
+        rows = []
+        for sample in cbis_ddsm(root, labels_dir=CBIS_LABELS_DIR):
+            if not sample.used:
+                continue
+            name = sample.sample_id.replace('/', '_') + '.png'
+            png_path = _dicom_to_png_cached(sample.native_path, cache_dir, out_name=name)
+            rows.append({'image': str(png_path), 'pathology': sample.label_name, 'patient': sample.group,
+                         'kind': sample.extra['kind'], 'official_split': sample.split})
+        metadata = pd.DataFrame(rows)
+        if metadata.empty:
+            raise ValueError(f'No labeled CBIS-DDSM crops found under {root}')
+        metadata.to_csv(index_path, index=False)
+    if not include_bwc:
+        metadata = metadata[metadata['pathology'] != 'BENIGN_WITHOUT_CALLBACK']
+    metadata = metadata.assign(label=metadata['pathology'].map(CBIS_LABEL_MAP))
+    metadata['image'] = metadata['image'].map(Path)
+    return metadata.reset_index(drop=True)
+
+
+def _cbis_ddsm_frames(root, seed=42, include_bwc=False, test_fraction=0.15, validation_fraction=0.1):
+    """Shen et al. 2019's split: patient-level 85/15 train/test, then 10% of the
+    training patients held out for validation. Patient-level rather than the
+    official folders, which put 16 patients in both splits (docs/dataset_audit.md)."""
+    metadata = _cbis_ddsm_metadata(root, include_bwc=include_bwc)
+    pool, test = _patient_split(metadata, 'patient', seed, test_fraction)
+    train, validation = _patient_split(pool, 'patient', seed + 1, validation_fraction)
+    return train, validation, test
+
+
+def _bus_cot_metadata(root):
+    """BUS-CoT's BUS-Lesion classification set (Yu et al. 2025): one cropped
+    lesion image per entry of lesion_dataset.json, with its official patient-level
+    trainval/test split and the patient ID from BUS-Expert_dataset.json."""
+    import json
+
+    root = Path(root)
+    lesions = json.loads((root / 'DatasetFiles' / 'lesion_dataset.json').read_text())
+    records = json.loads((root / 'DatasetFiles' / 'BUS-Expert_dataset.json').read_text())
+    label_map = {'Benign': 0, 'Malignant': 1}
+    rows = []
+    for key, lesion in lesions.items():
+        label = label_map.get(lesion['pathology_histology'].get('pathology'))
+        if label is None:
+            continue
+        record = records[key.split('_', 1)[1].split('@')[0]]
+        rows.append({'image': root / lesion['image_path'], 'label': label, 'patient': record['patient_id'],
+                     'source': record['dataset'], 'split': lesion['split']})
+    return pd.DataFrame(rows)
+
+
 def _assign_stratified_group_folds(metadata, group_col, num_folds, seed):
     """Assign each group (or each row, if group_col is None) to one of num_folds
     folds, stratified by class label at the group level, with a fixed seed."""
@@ -635,6 +846,18 @@ def _assign_stratified_group_folds(metadata, group_col, num_folds, seed):
         for i, group_id in enumerate(ids):
             fold_of_group[group_id] = (i % num_folds) + 1
     return groups.map(fold_of_group)
+
+
+def _fixed_test_kfold_frame(metadata, group_col, num_folds, fold, seed):
+    """k-fold over a dataset's official non-test rows, with its official test
+    rows ('split' == 'test') held out unchanged: fold k is validation, the
+    remaining folds are training."""
+    if not 1 <= fold <= num_folds:
+        raise ValueError(f'fold must be in [1, {num_folds}]')
+    test = metadata[metadata['split'] == 'test']
+    pool = metadata[metadata['split'] != 'test']
+    fold_ids = _assign_stratified_group_folds(pool, group_col, num_folds, seed)
+    return pool[fold_ids != fold], pool[fold_ids == fold], test
 
 
 def _group_kfold_frame(metadata, group_col, num_folds, test_fold, seed, holdout_fraction=0.2):
@@ -681,8 +904,8 @@ def _ultrasound_frame(name, args):
     else:
         raise ValueError(f'Unknown ultrasound dataset {name}')
     train_frame, validation_frame = frame
-    train_transform = transform_cls(size=args.image_size, augment=True)
-    validation_transform = transform_cls(size=args.image_size, augment=False)
+    train_transform = _with_us_preprocess(args, transform_cls(size=args.image_size, augment=True))
+    validation_transform = _with_us_preprocess(args, transform_cls(size=args.image_size, augment=False))
     return train_frame, validation_frame, train_transform, validation_transform
 
 
@@ -819,7 +1042,8 @@ def _warm_start_branch(model, branch_index, checkpoint_path):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Train the three-branch fusion model.')
-    parser.add_argument('--dataset', choices=['busbra', 'busi', 'busc', 'breast', 'mias', 'cdd_cesm', 'cmmd', 'bcsdbt', 'breamdm', 'combined'], default='busbra')
+    parser.add_argument('--dataset', choices=['busbra', 'busi', 'busc', 'breast', 'mias', 'cdd_cesm', 'cmmd', 'bcsdbt', 'bcsdbt_full',
+                                                  'cbis_ddsm', 'bus_cot', 'breamdm', 'combined'], default='busbra')
     parser.add_argument(
         '--cdd-cesm-annotations', type=Path, default=None,
         help='Path to the CDD-CESM "Radiology-manual-annotations.xlsx" file (TCIA supporting documentation, not part of the image package).'
@@ -910,9 +1134,25 @@ def main(argv=None):
     )
     parser.add_argument(
         '--kfold', type=int, choices=[5, 10], default=None,
-        help='Cross-validate busi/busc/breast/mias with our own stratified group '
-             'k-fold (no official fold assignment exists for these datasets, unlike '
-             'BUS-BRA), grouped by patient/case where available.'
+        help='Cross-validate busi/busc/breast/mias/bus_cot/bcsdbt_full with our own '
+             'stratified group k-fold (no official fold assignment exists for these '
+             'datasets, unlike BUS-BRA), grouped by patient/case where available. '
+             'bus_cot keeps its official test split fixed and rotates validation.'
+    )
+    parser.add_argument(
+        '--us-preprocess', nargs='+', default=None, metavar='STEP',
+        help='Ultrasound preprocessing steps applied before the usual transform, in order, '
+             'each "name" or "name:key=value;key=value" (data/us_preprocessing.py): hist_eq, '
+             'hist_match:reference=REF, hist_spec, intensity_window:low=0.5;high=99.5, '
+             'perc_hm:reference=REF, line_removal:line_length=2;min_area=3, cross_removal, '
+             'cyclegan:checkpoint=CKPT;direction=A2B. Applies to ultrasound datasets and '
+             'the ultrasound branch of --dataset combined.'
+    )
+    parser.add_argument('--us-preprocess-cache', type=Path, default=None,
+                        help='Where processed images are cached (default datasets/ultrasound/_preprocessed).')
+    parser.add_argument(
+        '--cbis-include-bwc', action='store_true',
+        help='Keep CBIS-DDSM BENIGN_WITHOUT_CALLBACK crops (not biopsy-confirmed) as benign.'
     )
     parser.add_argument(
         '--test-fold', type=int, default=None,
@@ -920,6 +1160,7 @@ def main(argv=None):
              'sequentially and report the mean/std.'
     )
     args = parser.parse_args(argv)
+    _apply_paper_recipe(args)
 
     _set_seed(args.seed)
     requested_device = args.device
@@ -927,6 +1168,7 @@ def main(argv=None):
         raise RuntimeError('CUDA was requested but no GPU is available. Use --device cpu explicitly for a CPU run.')
     device = torch.device(requested_device)
 
+    test_frame = None
     if args.dataset in DATASET_KFOLD_SPECS and args.kfold is not None:
         return _run_generic_kfold(args, device)
     elif args.dataset == 'mias':
@@ -983,6 +1225,30 @@ def main(argv=None):
         )
         train_transform = MiasTransform(size=args.image_size, augment=True)
         validation_transform = MiasTransform(size=args.image_size, augment=False)
+    elif args.dataset == 'bcsdbt_full':
+        dataset_root = args.dataset_root or DATASET_KFOLD_SPECS['bcsdbt_full']['default_root']
+        train_frame, validation_frame = _patient_split(
+            _dbt_full_metadata(dataset_root), 'patient', args.seed, args.validation_fraction
+        )
+        train_transform = MiasTransform(size=args.image_size, augment=True)
+        validation_transform = MiasTransform(size=args.image_size, augment=False)
+    elif args.dataset == 'bus_cot':
+        metadata = _bus_cot_metadata(args.dataset_root or DATASET_KFOLD_SPECS['bus_cot']['default_root'])
+        test_frame = metadata[metadata['split'] == 'test']
+        train_frame, validation_frame = _patient_split(
+            metadata[metadata['split'] != 'test'], 'patient', args.seed, args.validation_fraction
+        )
+        train_transform = PadToSquareTransform(size=args.image_size, augment=not args.paper_match)
+        validation_transform = PadToSquareTransform(size=args.image_size, augment=False)
+    elif args.dataset == 'cbis_ddsm':
+        dataset_root = args.dataset_root or Path('/mnt/data/mmfm_datasets/mammography/cbis_ddsm')
+        train_frame, validation_frame, test_frame = _cbis_ddsm_frames(
+            dataset_root, args.seed, include_bwc=args.cbis_include_bwc
+        )
+        mean = _mean_gray(train_frame['image'])
+        print(f'cbis_ddsm: training-set mean gray {mean:.4f} subtracted (Shen et al. 2019)')
+        train_transform = ShenTransform(size=args.image_size, augment=True, mean=mean)
+        validation_transform = ShenTransform(size=args.image_size, augment=False, mean=mean)
     elif args.dataset == 'breamdm':
         dataset_root = args.dataset_root or Path('datasets/MRI/BreaDM/cls/img9Se')
         train_transform = BreadmTransform(size=args.image_size, augment=True)
@@ -1014,18 +1280,37 @@ def main(argv=None):
         validation_transform = BusbraTransform(size=args.image_size, augment=False, contrast_stretch=args.paper_match)
     if args.checkpoint_path is None:
         args.checkpoint_path = Path(f'{args.dataset}_single_{args.backbone}_best.pth')
+    if args.dataset in ULTRASOUND_DATASETS:
+        train_transform = _with_us_preprocess(args, train_transform)
+        validation_transform = _with_us_preprocess(args, validation_transform)
     train_dataset = _make_dataset(train_frame, train_transform)
     validation_dataset = _make_dataset(validation_frame, validation_transform)
     loader = _make_loader(train_dataset, args.batch_size, args.num_workers, shuffle=True)
     val_loader = _make_loader(validation_dataset, args.batch_size, args.num_workers)
-    print(f'dataset={args.dataset} device={device} train_samples={len(train_dataset)} validation_samples={len(validation_dataset)}')
+    test_loader = None
+    if test_frame is not None:
+        test_loader = _make_loader(_make_dataset(test_frame, validation_transform), args.batch_size, args.num_workers)
+    print(f'dataset={args.dataset} device={device} train_samples={len(train_dataset)} validation_samples={len(validation_dataset)}'
+          + (f' test_samples={len(test_frame)}' if test_frame is not None else ''))
 
     # CMMD's benign/malignant split is a real-world ~30/70 imbalance (not an
     # artifact of our splitting), so weight its loss unconditionally rather
     # than gating that on --paper-match like the BUS-BRA-specific recipe.
-    use_class_weights = args.paper_match or args.dataset == 'cmmd'
+    use_class_weights = _use_class_weights(args) or args.dataset == 'cmmd'
     class_weights = _class_weights(train_frame['label'], cfg.num_classes) if use_class_weights else None
-    return _train_model(args, device, loader, val_loader, class_weights=class_weights)
+    return _train_model(args, device, loader, val_loader, test_loader=test_loader, class_weights=class_weights)
+
+
+def _mean_gray(image_paths):
+    """Mean pixel value in [0, 1] over a set of grayscale images."""
+    from PIL import Image
+
+    pixel_sum, pixel_count = 0.0, 0
+    for path in image_paths:
+        array = np.asarray(Image.open(path).convert('L'), dtype=np.float64)
+        pixel_sum += array.sum()
+        pixel_count += array.size
+    return float(pixel_sum / pixel_count / 255.0)
 
 
 def _run_busbra_kfold(args, device):
@@ -1044,8 +1329,10 @@ def _run_busbra_kfold(args, device):
         train_frame, validation_frame, test_frame = _busbra_kfold_frame(
             dataset_root, args.busbra_kfold, fold, args.seed, holdout_fraction=0.2
         )
-        train_transform = BusbraTransform(size=args.image_size, augment=True, contrast_stretch=args.paper_match)
-        eval_transform = BusbraTransform(size=args.image_size, augment=False, contrast_stretch=args.paper_match)
+        train_transform = _with_us_preprocess(
+            args, BusbraTransform(size=args.image_size, augment=True, contrast_stretch=args.paper_match))
+        eval_transform = _with_us_preprocess(
+            args, BusbraTransform(size=args.image_size, augment=False, contrast_stretch=args.paper_match))
         train_dataset = _make_dataset(train_frame, train_transform)
         validation_dataset = _make_dataset(validation_frame, eval_transform)
         test_dataset = _make_dataset(test_frame, eval_transform)
@@ -1057,7 +1344,7 @@ def _run_busbra_kfold(args, device):
 
         args.checkpoint_path = base_checkpoint.with_stem(f'{base_checkpoint.stem}_fold{fold}')
         args.wandb_run_name = f'{base_run_name}-fold{fold}' if base_run_name else f'busbra-{args.busbra_kfold}fold-{fold}'
-        class_weights = _class_weights(train_frame['label'], cfg.num_classes) if args.paper_match else None
+        class_weights = _class_weights(train_frame['label'], cfg.num_classes) if _use_class_weights(args) else None
         result = _train_model(args, device, loader, val_loader, test_loader=test_loader, class_weights=class_weights)
         fold_test_metrics.append(result['test_metrics'])
 
@@ -1107,12 +1394,29 @@ DATASET_KFOLD_SPECS = {
         'group_col': 'patient',
         'transform_cls': MiasTransform,
     },
+    # official patient-level trainval/test split: test stays fixed and the k
+    # folds rotate validation over trainval (Yu et al. 2025 five-fold CV)
+    'bus_cot': {
+        'metadata_fn': _bus_cot_metadata,
+        'default_root': Path('datasets/ultrasound/bus_cot/extracted/BUSCoT'),
+        'group_col': 'patient',
+        'transform_cls': PadToSquareTransform,
+        'fixed_test': True,
+        'paper_augment': False,
+    },
+    'bcsdbt_full': {
+        'metadata_fn': _dbt_full_metadata,
+        'default_root': Path('datasets/mammography/bcsdbt_extra'),
+        'group_col': 'patient',
+        'transform_cls': MiasTransform,
+    },
 }
 
 
 def _run_generic_kfold(args, device):
-    """Cross-validate busi/busc/breast/mias with our own stratified group k-fold
-    (none of them ship an official fold assignment like BUS-BRA's K5B/K10B)."""
+    """Cross-validate the DATASET_KFOLD_SPECS datasets with our own stratified
+    group k-fold (none of them ship an official fold assignment like BUS-BRA's
+    K5B/K10B); bus_cot keeps its official test split fixed across folds."""
     if not args.single_mode:
         raise ValueError('--kfold requires --single-mode (a single ResNet backbone, not fusion)')
     spec = DATASET_KFOLD_SPECS[args.dataset]
@@ -1127,12 +1431,21 @@ def _run_generic_kfold(args, device):
 
     fold_test_metrics = []
     for fold in folds:
-        train_frame, validation_frame, test_frame = _group_kfold_frame(
-            metadata, spec['group_col'], args.kfold, fold, args.seed, holdout_fraction=0.2
-        )
+        if spec.get('fixed_test'):
+            train_frame, validation_frame, test_frame = _fixed_test_kfold_frame(
+                metadata, spec['group_col'], args.kfold, fold, args.seed
+            )
+        else:
+            train_frame, validation_frame, test_frame = _group_kfold_frame(
+                metadata, spec['group_col'], args.kfold, fold, args.seed, holdout_fraction=0.2
+            )
         transform_kwargs = {'contrast_stretch': args.paper_match} if supports_contrast_stretch else {}
-        train_transform = transform_cls(size=args.image_size, augment=True, **transform_kwargs)
+        augment = not (args.paper_match and spec.get('paper_augment') is False)
+        train_transform = transform_cls(size=args.image_size, augment=augment, **transform_kwargs)
         eval_transform = transform_cls(size=args.image_size, augment=False, **transform_kwargs)
+        if args.dataset in ULTRASOUND_DATASETS:
+            train_transform = _with_us_preprocess(args, train_transform)
+            eval_transform = _with_us_preprocess(args, eval_transform)
         train_dataset = _make_dataset(train_frame, train_transform)
         validation_dataset = _make_dataset(validation_frame, eval_transform)
         test_dataset = _make_dataset(test_frame, eval_transform)
@@ -1144,7 +1457,7 @@ def _run_generic_kfold(args, device):
 
         args.checkpoint_path = base_checkpoint.with_stem(f'{base_checkpoint.stem}_fold{fold}')
         args.wandb_run_name = f'{base_run_name}-fold{fold}' if base_run_name else f'{args.dataset}-{args.kfold}fold-{fold}'
-        class_weights = _class_weights(train_frame['label'], cfg.num_classes) if args.paper_match else None
+        class_weights = _class_weights(train_frame['label'], cfg.num_classes) if _use_class_weights(args) else None
         result = _train_model(args, device, loader, val_loader, test_loader=test_loader, class_weights=class_weights)
         fold_test_metrics.append(result['test_metrics'])
 
@@ -1221,22 +1534,38 @@ def _train_model(args, device, loader, val_loader, test_loader=None, class_weigh
     model.to(device)
 
     paper_match = getattr(args, 'paper_match', False)
-    if paper_match:
-        opt = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-    else:
+    recipe = _paper_recipe(args.dataset) if paper_match else None
+    stages = recipe.get('stages') if recipe else None
+    if stages and not args.single_mode:
+        raise ValueError(f'the {args.dataset} --paper-match recipe unfreezes in stages and needs --single-mode')
+    scheduler = None
+    if recipe is None:
         opt = optim.Adam(model.parameters(), lr=cfg.lr)
+    elif not stages:
+        opt = _make_optimizer(recipe, model.parameters(), recipe['lr'])
+        if recipe.get('schedule') == 'cosine':
+            scheduler = optim.lr_scheduler.CosineAnnealingLR(opt, T_max=args.epochs * len(loader))
     criterion = nn.CrossEntropyLoss(weight=class_weights.to(device) if class_weights is not None else None)
 
     best_validation_loss = float('inf')
+    best_validation_accuracy = -1.0
     epochs_without_improvement = 0
-    # the paper trains a fixed 100-epoch budget with no early stopping, only
+    # the papers train a fixed epoch budget with no early stopping, only
     # snapshotting the lowest-val-loss epoch; --paper-match reproduces that
-    patience = args.epochs if paper_match else args.patience
+    patience = args.epochs if paper_match and not recipe['early_stopping'] else args.patience
+    current_stage = None
 
     # combined samples carry exactly one modality each, so dropping it leaves no signal at all
     for epoch in range(args.epochs):
+        if stages and _epoch_stage(stages, epoch) != current_stage:
+            current_stage = _epoch_stage(stages, epoch)
+            lr, scope = current_stage
+            _set_trainable_scope(model, scope)
+            opt = _make_optimizer(recipe, model.parameters(), lr)
+            print(f'epoch {epoch+1}: stage lr={lr} trainable={scope}')
         dropout_prob = 0.0 if (args.single_mode or args.dataset == 'combined') else cfg.modality_dropout_prob
-        loss = train_one_epoch(model, loader, opt, device, modality_dropout_prob=dropout_prob, criterion=criterion)
+        loss = train_one_epoch(model, loader, opt, device, modality_dropout_prob=dropout_prob,
+                               criterion=criterion, scheduler=scheduler)
         validation_loss, acc, branch_accuracy = validate(model, val_loader, device, criterion=criterion)
         branch_names = ('mammography', 'ultrasound', 'mri')
         branch_summary = ' '.join(
@@ -1249,10 +1578,14 @@ def _train_model(args, device, loader, val_loader, test_loader=None, class_weigh
             if value is not None:
                 log_payload[f'validation/{name}_accuracy'] = value
         run.log(log_payload)
-        if validation_loss < best_validation_loss:
+        select_on_accuracy = recipe is not None and recipe.get('select_on') == 'accuracy'
+        improved = acc > best_validation_accuracy if select_on_accuracy else validation_loss < best_validation_loss
+        if improved:
             best_validation_loss = validation_loss
+            best_validation_accuracy = acc
             epochs_without_improvement = 0
             torch.save(model.state_dict(), args.checkpoint_path)
+            print(f'  checkpoint saved (epoch {epoch+1})')
         else:
             epochs_without_improvement += 1
             if epochs_without_improvement >= patience:

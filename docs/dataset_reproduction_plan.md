@@ -625,6 +625,86 @@ epoch 8: **val accuracy 0.75** (sensitivity 0.667, specificity 1.0, AUC 1.0;
 With only 8 validation samples this is barely more than a sanity check — don't
 read it as a stable estimate.
 
+## 12. BUS-CoT (BUS-Lesion classification set)
+
+Yu et al. 2025, [arXiv 2509.17046](https://arxiv.org/abs/2509.17046). Recipe and
+target per [new_datasets_training_plan.md](new_datasets_training_plan.md) R1.
+
+Ran (2026-10-16): `python3 training/train.py --dataset bus_cot --single-mode
+--paper-match --kfold 5 --wandb-project mmfm-bus_cot --wandb-run-name
+bus_cot_paper_resnet50`. ImageNet ResNet-50, zero-padded 224 px input, AdamW lr
+5e-5 with cosine decay, weight decay 0.1, batch 16, 5 epochs. Each fold
+validates on one fifth of `trainval` (about 3,500 train / 870 val), and every
+fold is tested on the same official 825-image `test` split.
+
+| | AUROC | Accuracy |
+|---|---|---|
+| Paper, ResNet-50 | 0.8085 (95% CI 0.781–0.836) | 0.738 |
+| Ours, mean ± std over 5 folds | **0.849 ± 0.005** | **0.772 ± 0.011** |
+
+Other metrics: sensitivity 0.747, specificity 0.793, F1 0.750. Checkpoints are
+saved as `bus_cot_single_resnet50_best_fold{1..5}.pth`, and the fold numbers in
+`bus_cot_5fold_resnet50_results.json`.
+
+**Reproduced, and above the paper's CI.** The most likely reason is the data:
+we train on `BUS-Lesion` (5,163 lesions with a fixed test split), while the
+paper's 5-fold CV appears to span the whole dataset (10,019 lesions, including
+scraped web figures). In fold 5, validation loss was lowest at epoch 1 while
+training loss fell to 0.03, so the best-val-loss snapshot can be an early epoch. Treat this as
+the BUS-Lesion number, not a like-for-like copy of Table 2.
+
+## 13. CBIS-DDSM (ROI crops, Shen et al. patch recipe)
+
+There is no comparable paper number for crops (see
+[new_datasets_training_plan.md](new_datasets_training_plan.md) R2 and D1).
+Setup: `python3 training/train.py --dataset cbis_ddsm --single-mode --paper-match`.
+Data: BENIGN vs. MALIGNANT only, with Shen's patient-level split (1,244 train /
+133 val / 250 test crops). Recipe: ImageNet ResNet-50 at 224 px,
+training-set mean gray (0.499) subtracted, 3-stage unfreeze over 200 epochs.
+
+| Checkpoint selection | Selected epoch | Test AUC | Test accuracy | Sensitivity | Specificity |
+|---|---|---|---|---|---|
+| Lowest validation loss (first run) | ≤ 3 (head-only stage) | 0.730 | 0.656 | 0.829 | 0.436 |
+| **Best validation accuracy (Shen's rule)** | 21 | **0.752** | **0.704** | 0.664 | 0.755 |
+
+Selecting on validation loss kept a model from the head-only stage. Once the
+whole network is unfrozen, training loss falls to 0.03 and validation loss
+rises while validation accuracy keeps improving. So the recipe now selects on
+validation accuracy (`select_on: 'accuracy'`), as Shen did. Both selections
+rest on a 133-crop validation set, so the selected epoch is noisy.
+Checkpoints: `cbis_ddsm_single_resnet50_best.pth` (accuracy-selected) and
+`cbis_ddsm_single_resnet50_best_valloss.pth`.
+
+## 14. ODELIA Breast MRI Challenge 2025
+
+Müller-Franzes et al. 2025, [arXiv 2506.00474](https://arxiv.org/abs/2506.00474).
+Recipe and target per [new_datasets_training_plan.md](new_datasets_training_plan.md) R5.
+The unilateral parquet release is cached as one `.npz` per breast (Pre, Sub_1,
+T2; 1,482 breasts, 8.2 GB) under `/mnt/data/mmfm_datasets/MRI/odelia/npz` by
+`scripts/reproduce_odelia.py cache`.
+
+### Released-weights check (2026-10-16)
+
+`python3 scripts/reproduce_odelia.py eval-released --fold 0` scores the
+published `ODELIA-AI/MST` checkpoint (Sub_1 only) on our cached data. The test
+set is fold 0's in-distribution test split, which drops RSH (n = 260); the OOD
+set is every RSH breast (n = 200).
+
+| | Macro AUC | Micro AUC | Benign vs. malignant AUC (lesion breasts only) |
+|---|---|---|---|
+| Paper, fold 1 (in-distribution) | 81.6 | 85.9 | not reported |
+| Released MST on our fold 0 test | **81.6** | **86.0** | 0.905 |
+| Paper, RSH (OOD) | 63.1 | 78.3 | not reported |
+| Released MST on our RSH set | **63.1** | **78.3** | 0.579 |
+
+Exact agreement means our loading, orientation (`tio.Flip((1, 0))`, X/Z
+swap), crop and z-normalization match the authors' pipeline. Note that the
+released checkpoint's state dict uses transformers 4.x key names, so the script
+remaps `backbone.layer.*` to `backbone.model.layer.*` for transformers 5.
+
+Training our own MST (5 folds, Pre + Sub_1 + T2) waits on access to the gated
+`facebook/dinov3-vits16-pretrain-lvd1689m` weights.
+
 ## Execution Order
 
 1. Resolve BUSI completeness and recover BrEaST labels/metadata.

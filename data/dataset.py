@@ -91,6 +91,63 @@ class MiasTransform:
         return torch.from_numpy(array).unsqueeze(0).repeat(3, 1, 1)
 
 
+def _pad_to_square(image):
+    """Zero-pad a grayscale PIL image to a centered square, preserving aspect ratio."""
+    side = max(image.size)
+    padded = Image.new('L', (side, side), 0)
+    padded.paste(image, ((side - image.width) // 2, (side - image.height) // 2))
+    return padded
+
+
+class PadToSquareTransform:
+    """Aspect-preserving zero-pad to a square, then resize (BUS-CoT, Yu et al. 2025:
+    "zero-padded 224x224 images"; the paper names no augmentation)."""
+    def __init__(self, size=224, augment=False):
+        self.size = (size, size)
+        self.augment = augment
+
+    def __call__(self, image):
+        image = _pad_to_square(image.convert('L'))
+        if self.augment and random.random() < 0.5:
+            image = image.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+        image = image.resize(self.size, Image.Resampling.BILINEAR)
+        array = np.asarray(image, dtype=np.float32) / 255.0
+        return torch.from_numpy(array).unsqueeze(0).repeat(3, 1, 1)
+
+
+class ShenTransform:
+    """CBIS-DDSM ROI crops prepared like Shen et al. 2019's patch classifier:
+    training-set mean gray subtraction plus Keras ImageDataGenerator-style
+    augmentation (h/v flips, rotation +/-25 deg, shear +/-0.2 rad, zoom 0.8-1.2,
+    channel shift +/-20 gray levels). Zoom is isotropic here; Keras samples it
+    per axis."""
+    def __init__(self, size=224, augment=False, mean=0.0):
+        self.size = (size, size)
+        self.augment = augment
+        self.mean = mean
+
+    def __call__(self, image):
+        from torchvision.transforms import functional as F
+
+        image = _pad_to_square(image.convert('L'))
+        if self.augment:
+            if random.random() < 0.5:
+                image = image.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+            if random.random() < 0.5:
+                image = image.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
+            image = F.affine(
+                image, angle=random.uniform(-25.0, 25.0), translate=[0, 0],
+                scale=random.uniform(0.8, 1.2), shear=[float(np.degrees(random.uniform(-0.2, 0.2)))],
+                interpolation=transforms.InterpolationMode.BILINEAR,
+            )
+        image = image.resize(self.size, Image.Resampling.BILINEAR)
+        array = np.asarray(image, dtype=np.float32) / 255.0
+        if self.augment:
+            array = array + random.uniform(-20.0, 20.0) / 255.0
+        array = (array - self.mean).astype(np.float32)
+        return torch.from_numpy(array).unsqueeze(0).repeat(3, 1, 1)
+
+
 class BreadmTransform:
     """Prepare a BreaDM img9Se array while preserving its nine slice channels."""
     def __init__(self, size=224, augment=False):
