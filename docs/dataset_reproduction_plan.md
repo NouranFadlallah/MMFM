@@ -705,6 +705,33 @@ remaps `backbone.layer.*` to `backbone.model.layer.*` for transformers 5.
 Training our own MST (5 folds, Pre + Sub_1 + T2) waits on access to the gated
 `facebook/dinov3-vits16-pretrain-lvd1689m` weights.
 
+## 15. BreastDCEDL-ISPY2 pCR (treatment response)
+
+Fridman et al. 2025, [arXiv 2506.12190](https://arxiv.org/abs/2506.12190). Recipe and
+target per [new_datasets_training_plan.md](new_datasets_training_plan.md) R4. Labels
+and splits come from the authors' `BreastDCEDL_metadata.csv` (I-SPY2: 784 train /
+99 val / 99 test patients; the `test` column codes 0 = train, 1 = val, 2 = test,
+confirmed against the paper's 177/176 validation/test counts and pCR rates).
+
+Ran (2026-10-16): `python3 scripts/reproduce_breastdcedl_pcr.py train`. Input:
+37,826 tumour slices as RGB fusions of the pre, early and late DCE timepoints.
+Model: ImageNet ViT-B/16, AdamW 2e-5, batch 32, 10 epochs. The patient score is
+the mean slice probability, and the checkpoint is the best validation patient AUC.
+
+| | Test AUC | Accuracy | Sensitivity | Specificity |
+|---|---|---|---|---|
+| Paper, I-SPY2 test (image only) | 0.78 | 0.73 | 0.28 | 0.94 |
+| Ours, I-SPY2 test (n = 99) | **0.608** | 0.677 | 0.281 | 0.866 |
+
+**Not reproduced.** Slice-level training loss reached 0.02 by epoch 4, while
+validation patient AUC peaked at 0.573 (epoch 3). Each patient contributes about
+38 near-identical slices, so the ViT memorizes patients. Two known gaps
+against the paper: it also trained on Duke and I-SPY1 (1,099 patients vs. our
+784), and it gives no ViT hyperparameters, so ours are guesses. Next to try:
+sample a few slices per patient per epoch, use stronger augmentation, and
+lower the learning rate.
+Results: `runs/run-4/ispy2_pcr_vit_results.json`.
+
 ## Execution Order
 
 1. Resolve BUSI completeness and recover BrEaST labels/metadata.
