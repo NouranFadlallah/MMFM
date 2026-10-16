@@ -308,13 +308,14 @@ def main(argv=None):
         p = sub.add_parser(name)
         p.add_argument('--fold', type=int, choices=range(5), default=0)
         p.add_argument('--device', default='cuda')
-        p.add_argument('--batch-size', type=int, default=2)
+        p.add_argument('--batch-size', type=int, default=1)
     train_parser = sub.choices['train']
     train_parser.add_argument('--sequences', nargs='+', default=list(SEQUENCES), choices=SEQUENCES)
-    train_parser.add_argument('--accumulate', type=int, default=4, help='2 x 4 = the paper\'s batch size 8')
+    train_parser.add_argument('--accumulate', type=int, default=8,
+                              help='1 x 8 = the paper\'s batch size 8 (batch 2 needs more than 12 GB)')
     train_parser.add_argument('--lr', type=float, default=1e-5)
-    train_parser.add_argument('--max-epochs', type=int, default=50)
-    train_parser.add_argument('--patience', type=int, default=10)
+    train_parser.add_argument('--max-epochs', type=int, default=30)
+    train_parser.add_argument('--patience', type=int, default=5)
     train_parser.add_argument('--seed', type=int, default=42)
     train_parser.add_argument('--run-name', default=None)
     args = parser.parse_args(argv)
