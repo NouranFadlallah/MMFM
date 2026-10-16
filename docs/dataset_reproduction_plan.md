@@ -765,6 +765,22 @@ sample a few slices per patient per epoch, use stronger augmentation, and
 lower the learning rate.
 Results: `runs/run-4/ispy2_pcr_vit_results.json`.
 
+**Rerun with slice sampling (2026-10-17): worse.** `--slices-per-patient 4
+--strong-augment --lr 1e-5 --epochs 20` gave test AUC **0.499** (accuracy
+0.636, sensitivity 0.094, specificity 0.896). Validation AUC stayed at chance
+(0.46-0.55) for all 20 epochs.
+Results: `runs/run-4/ispy2_pcr_vit_b16_sampled_results.json`.
+
+**Likely cause: the target, not the training.** The paper's Table 2 caption
+reads "pCR prediction results using radiomic features and machine learning",
+and its Figure 4 is a random forest whose top features are tumour volume,
+bounding-box volume and deep-learning features. So the I-SPY2 0.78 most likely
+comes from ViT features *plus* tumour-size features in a random forest, not
+from the ViT alone. With only 99 validation patients (32 pCR), AUC noise is
+also about +/-0.06. The next attempt, if any, would be a random forest on
+pooled ViT features + `tum_vol` + mask bounding-box volume from the metadata
+CSV, rather than more ViT tuning.
+
 ## Execution Order
 
 1. Resolve BUSI completeness and recover BrEaST labels/metadata.
