@@ -723,6 +723,21 @@ the paper exactly on this data, the gap is in training length and selection,
 not in data handling.
 Results: `runs/run-4/odelia_mst_fold0_results.json`.
 
+**Rerun with validation-AUC selection (2026-10-17): reproduced.**
+`python3 scripts/reproduce_odelia.py train --fold 0` now selects and
+early-stops on validation macro AUC (patience 10, up to 50 epochs). It trained
+40 epochs and kept epoch 30.
+
+| | Macro AUC | Micro AUC | Benign vs. malignant AUC |
+|---|---|---|---|
+| Paper, in-distribution | 79.0 overall (81.6 for its fold 1) | 87.4 | not reported |
+| Ours, fold 0 in-distribution test | **81.7** | **87.3** | 0.881 |
+| Paper, RSH (OOD) | 63.1 | 78.3 | not reported |
+| Ours, fold 0 RSH | **63.6** | 72.5 | 0.636 |
+
+Results: `runs/run-4/odelia_mst_fold0_aucsel_results.json`. The
+loss-selected checkpoint is kept as `odelia_mst_fold0_best_valloss.pth`.
+
 ## 15. BreastDCEDL-ISPY2 pCR (treatment response)
 
 Fridman et al. 2025, [arXiv 2506.12190](https://arxiv.org/abs/2506.12190). Recipe and
