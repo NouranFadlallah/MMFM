@@ -1,0 +1,22 @@
+{
+  "test": {
+    "auc_no_lesion": 0.751331651247547,
+    "auc_benign": 0.6351254480286739,
+    "auc_malignant": 0.8331898613103779,
+    "macro_auc": 0.7398823201955329,
+    "micro_auc": 0.83160400390625,
+    "sensitivity_at_90_specificity": 0.38828182366754643,
+    "specificity_at_90_sensitivity": 0.37356820234869015,
+    "benign_vs_malignant_auc": 0.7887413029728021
+  },
+  "ood_rsh": {
+    "auc_no_lesion": 0.7356139795164186,
+    "auc_benign": 0.6069972826086956,
+    "auc_malignant": 0.7509140228800567,
+    "macro_auc": 0.6978417616683904,
+    "micro_auc": 0.7622437499999999,
+    "sensitivity_at_90_specificity": 0.27681982762450574,
+    "specificity_at_90_sensitivity": 0.3261218241668664,
+    "benign_vs_malignant_auc": 0.6567622950819673
+  }
+}

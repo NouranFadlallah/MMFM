@@ -738,6 +738,34 @@ early-stops on validation macro AUC (patience 10, up to 50 epochs). It trained
 Results: `runs/run-4/odelia_mst_fold0_aucsel_results.json`. The
 loss-selected checkpoint is kept as `odelia_mst_fold0_best_valloss.pth`.
 
+### All 5 folds (2026-10-17): reproduced
+
+Same recipe for folds 1-4 (`--fold N`, AUC selection). Per fold (0-4) and
+mean ± sample std:
+
+| | Folds 0-4 | Ours, mean ± std | Paper |
+|---|---|---|---|
+| In-distribution macro AUC | 81.7, 78.9, 83.6, 74.0, 76.9 | **79.0 ± 3.8** | 79.0 ± 1.3 |
+| In-distribution micro AUC | 87.3, 86.7, 91.4, 83.2, 85.1 | **86.7 ± 3.1** | 87.4 ± 0.8 |
+| RSH (OOD) macro AUC | 63.6, 62.9, 64.4, 69.8, 67.8 | **65.7 ± 3.0** | 63.1 ± 3.5 |
+| RSH micro AUC | 72.5, 80.2, 77.6, 76.2, 70.0 | 75.3 ± 4.1 | 78.3 ± 2.8 |
+| Benign vs. malignant (lesion breasts), in-distribution | 88.1, 76.2, 85.2, 78.9, 79.8 | 81.6 ± 4.9 | not reported |
+| Benign vs. malignant, RSH | 63.6, 60.0, 58.7, 65.7, 74.5 | 64.5 ± 6.3 | not reported |
+
+The paper's ± values are bootstrap std of the pooled estimate; ours are
+across-fold std, so ours are expected to be wider. Results:
+`runs/run-4/odelia_mst_fold{0..4}_aucsel_results.json`.
+
+### For the fusion model's MRI branch
+
+`scripts/preprocess_odelia_mri.py` writes each benign / malignant breast as a
+9-channel BreaDM-style array (central slice +/-1 for Pre, Sub_1, T2) under
+`datasets/MRI/ODELIA/cls/img9Se/{train,val,test,test_rsh}` (fold 0 split; RSH
+held out). This is used by `--dataset odelia --single-mode` and as an MRI
+source in `--dataset combined`. Picking the slice with the most Sub_1
+enhancement was tried first, but it selected the enhancing heart / chest wall
+rather than lesions.
+
 ## 15. BreastDCEDL-ISPY2 pCR (treatment response)
 
 Fridman et al. 2025, [arXiv 2506.12190](https://arxiv.org/abs/2506.12190). Recipe and

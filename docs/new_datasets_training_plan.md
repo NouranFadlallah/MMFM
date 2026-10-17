@@ -107,6 +107,12 @@ interval or within ±0.03 AUC when the paper gives no interval.
 
 ## Phase 2 — Add them to `--dataset combined`
 
+**Status (2026-10-17): wired in.** `--dataset combined` now adds CBIS-DDSM
+crops and full BCS-DBT (mammography), BUS-CoT's de-duplicated clinical subset
+(ultrasound: 2,036 images from TFUSL, TUHD, BUDIAT) and ODELIA (MRI). For D3,
+ODELIA uses a 9-channel stack: the central slice ±1 for Pre, Sub_1 and T2. The
+ResNet-18 warm-starts and the combined run are queued in `runs/queue/jobs.txt`.
+
 The paper recipes use ResNet-50, ViT and DINOv3. `combined` warm-starts branches
 from single-mode checkpoints with a matching architecture (`_warm_start_branch`).
 So for each new dataset, **also** run one ResNet-18 single-mode training with the
