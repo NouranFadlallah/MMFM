@@ -625,6 +625,13 @@ epoch 8: **val accuracy 0.75** (sensitivity 0.667, specificity 1.0, AUC 1.0;
 With only 8 validation samples this is barely more than a sanity check — don't
 read it as a stable estimate.
 
+**Paper reproduction: not attempted (2026-10-17).** Buda et al. report a
+detection result (60% sensitivity at 2 false positives per volume on
+validation), but never released trained weights: the GitHub repo has no
+releases or weights link. Retraining their detector was skipped, so BCS-DBT
+is used for benign/malignant classification only (`--dataset bcsdbt` /
+`bcsdbt_full`, and the mammography branch of `--dataset combined`).
+
 ## 12. BUS-CoT (BUS-Lesion classification set)
 
 Yu et al. 2025, [arXiv 2509.17046](https://arxiv.org/abs/2509.17046). Recipe and

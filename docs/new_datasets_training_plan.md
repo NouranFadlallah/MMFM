@@ -78,6 +78,13 @@ interval or within ±0.03 AUC when the paper gives no interval.
 
 ### R3. BCS-DBT, full benign/cancer set (mammography, DBT)
 
+**Decision (2026-10-17): skipped, BCS-DBT stays classification-only.** The
+authors never released trained weights: `mateuszbuda/duke-dbt-detection` has
+no releases, and its README only refers to a local `./yolo.pt`. So R3a cannot
+run, and R3b (retraining their detector: about 3 h of porting, about 50 GB of
+slice export, 4-6 h of GPU) was judged not worth it for a detection result the
+fusion model doesn't use. The original plan is kept below for reference.
+
 - **Paper:** Buda et al. 2021, *JAMA Netw Open*, [arXiv 2011.07995](https://arxiv.org/abs/2011.07995). This is a **detection** paper.
 - **Target:** **60% sensitivity at 2 false positives per DBT volume on the validation set.** We hold the whole validation partition locally (280 patients, normal views included), so this number is reproducible. The test number (42% / volume, 65% / breast) is not, because the test partition's normal views are not local.
 - **Step R3a, about 30 min:** run the authors' released model (`mateuszbuda/duke-dbt-detection`) on our validation partition and check we get about 60%. This proves our data loading and FROC evaluation are correct before we train anything.
@@ -141,11 +148,11 @@ Steps:
 |---|---|---|---|
 | 1 | Phase 0 (P0.1–P0.6) | CPU only | about 6 h of work |
 | 2 | R1 BUS-CoT | GPU | 1 h |
-| 3 | R3a BCS-DBT released-model check | GPU | 30 min |
+| 3 | ~~R3a BCS-DBT released-model check~~ (skipped: no released weights) | – | – |
 | 4 | R2 CBIS-DDSM | GPU | 1.5 h |
 | 5 | R4 ISPY2 pCR | GPU, D2 | 1.5 h |
 | 6 | R5 ODELIA (overnight) | GPU, D4 | 10–15 h |
-| 7 | R3b BCS-DBT retrain | GPU | up to 4 h |
+| 7 | ~~R3b BCS-DBT retrain~~ (skipped) | – | – |
 | 8 | ResNet-18 warm-start runs (5 datasets) | GPU | 2 h |
 | 9 | Phase 2 combined | GPU | 4–5 h |
 
