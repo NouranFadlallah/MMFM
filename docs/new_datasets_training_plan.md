@@ -120,6 +120,18 @@ crops and full BCS-DBT (mammography), BUS-CoT's de-duplicated clinical subset
 ODELIA uses a 9-channel stack: the central slice ±1 for Pre, Sub_1 and T2. The
 ResNet-18 warm-starts and the combined run are queued in `runs/queue/jobs.txt`.
 
+**First Phase 2 run (2026-10-17) and the pending rerun.** The combined run
+(`combined_fusion_resnet18_phase2_best.pth`) stopped after 7 epochs and kept
+epoch 2 by lowest validation loss (mammography accuracy 0.611, ultrasound
+0.731, MRI 0.985). By epochs 6-7 mammography had reached 0.665 and ultrasound
+0.803. Overall accuracy is inflated by ISPY2's malignant-only MRI validation
+slices.
+
+**TODO (rerun, about 70 min of GPU):** in `_train_model` for `--dataset
+combined`, report AUC per source (CBIS-DDSM, BCS-DBT, MIAS, each ultrasound
+set, BreaDM, ISPY2, ODELIA) and select the checkpoint on mean per-branch AUC
+instead of validation loss. Then rerun with the same warm-starts.
+
 The paper recipes use ResNet-50, ViT and DINOv3. `combined` warm-starts branches
 from single-mode checkpoints with a matching architecture (`_warm_start_branch`).
 So for each new dataset, **also** run one ResNet-18 single-mode training with the
