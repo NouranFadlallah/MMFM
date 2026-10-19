@@ -165,3 +165,67 @@ Findings:
    channel stacks would repeat or pad phases per centre (the same problem as
    ISPY2's img9Se). → Use Pre, Sub_1 and T2, which every centre has (the
    ODELIA paper's own input choice).
+
+## AMBL — Advanced-MRI-Breast-Lesions (audit run 2026-10-19)
+
+The 99 AMBL patients with a DICOM SEG (IDC v25: original DCE multiphase, axial
+T2 and SEG; 297 series, 34.4 GB; GE 1.5 T, 5 DCE timepoints, 512×512,
+0.66 mm × 0.66 mm × 2 mm). Clinical XLSX (Sep 2024): 200 patients with
+per-lesion tumour/benign, side and pathology. Module `audit/ambl.py`; outputs
+in `analysis/ambl/` (`cases.parquet` has one row per lesion,
+`lesions_resolved.csv` the resolved labels).
+
+| | Count |
+|---|---|
+| Patients / SEG segments | 99 / 165 |
+| Clinical lesions for these patients | 166 (83 tumour / 83 benign) |
+| Lesion count matches SEG | 98 of 99 patients (AMBL-024: 3 in XLSX, 2 segments) |
+| **Labels resolvable from metadata** | **138 lesions (70 malignant / 68 benign), 92 patients** |
+| Ambiguous (tumour and benign in the same breast) | 27 lesions |
+| Load errors | 0 |
+
+Findings:
+
+1. **The SEG does not carry the labels, and its order is not reliable.**
+   - The segmentation references the *registered* DCE series. That series
+     shares the original's slice grid (positions and orientation agree to
+     float32 rounding on every checked patient), so masks map onto the
+     original DCE without the extra 30 GB download.
+   - Every segment is labelled "Mass". The XLSX data dictionary says segments
+     list tumours first, then benign lesions.
+   - Checked against each lesion's L/R position, that rule puts the mask in
+     the wrong breast for 20% of lesions (tumour and benign swapped, e.g.
+     AMBL-008, AMBL-011), and it disagrees with side-resolved labels for 17%.
+   - → Labels are resolved per patient (`resolve_labels`):
+     - one label for all of a patient's lesions (109 lesions);
+     - otherwise by the mask's side when each breast holds one label (29);
+     - otherwise excluded as ambiguous (27).
+2. **Benign labels are not all pathology-confirmed.** The dictionary says
+   benign lesions not biopsied were called benign after at least 1 year of
+   follow-up. → Treat as *partially* confirmed, like BrEaST and ODELIA.
+3. **The resolved labels behave like real malignancy.**
+   - Malignant lesions enhance faster: initial enhancement median 1.01 vs.
+     0.61, AUC 0.77 on its own.
+   - Most benign lesions keep enhancing to the last phase (46 of 68 peak at
+     phase 4, vs. 23 of 70 malignant).
+   - Lesion-to-surroundings contrast: AUC 0.73.
+4. **Size alone separates the classes (AUC 0.83).** Malignant lesions are
+   median 2.8 ml over 10 slices, benign 0.37 ml over 4 slices. A classifier on
+   fixed-size crops can learn size, so report size-matched results or a
+   size-only baseline next to any AMBL model.
+5. **Masks are fragmented.** Median connected components are 15 (malignant)
+   and 4 (benign), from the thresholded annotation (subtraction > 75), like
+   ISPY2's. → Per-slice crops should use the lesion's bounding box over all
+   components, not the largest component.
+6. **Six patients (7 lesions, all malignant) are post-neoadjuvant scans**
+   (referral reason 6). The tumours are imaged after treatment. → Exclude them
+   from a diagnosis benchmark, or flag them.
+7. **No duplicates.** The thumbnail detector grouped 142 of 165 lesion slices
+   (SSIM ≥ 0.95 at 64 px), but full-resolution SSIM of the closest pairs is
+   0.47–0.62. Single-scanner whole-breast slices look alike when downsampled.
+   → For MRI, run duplicate checks at full resolution or on the lesion crop.
+8. **The labels differ from the BreastDCEDL_AMBL benchmark**, which reports
+   88 patients / 133 lesions with 89 benign and 44 malignant. Our 99 patients
+   give 166 clinical lesions (83/83), so their selection or label mapping
+   differs from the TCIA release. → Compare against their numbers only after
+   matching their patient list (Zenodo 17189101).

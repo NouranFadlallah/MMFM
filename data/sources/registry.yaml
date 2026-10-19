@@ -267,7 +267,7 @@ ambl:
   name: Advanced-MRI-Breast-Lesions (AMBL), 99 patients with lesion segmentations
   modality: mri
   license: CC BY 4.0
-  pathology_confirmed: yes (clinical XLSX gives tumor/benign + pathology per lesion)
+  pathology_confirmed: partial (tumours by biopsy/surgery; benign by biopsy or >=1 year follow-up)
   raw_dir: /mnt/data/mmfm_datasets/MRI/ambl/dicom
   extra_files:
     - /mnt/data/mmfm_datasets/MRI/ambl/clinical/Advanced-MRI-Breast-Lesions-DA-Clinical-Sep2024.xlsx

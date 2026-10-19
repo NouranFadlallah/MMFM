@@ -34,6 +34,7 @@ DATASET_ROOTS = {
     'bcsdbt_extra': 'datasets/mammography/bcsdbt_extra',
     'odelia': '/mnt/data/mmfm_datasets/MRI/odelia',
     'bus_cot': 'datasets/ultrasound/bus_cot/extracted/BUSCoT',
+    'ambl': '/mnt/data/mmfm_datasets/MRI/ambl/dicom',
 }
 MODALITY = {
     'busbra': 'ultrasound', 'busi': 'ultrasound', 'busc': 'ultrasound', 'breast': 'ultrasound',
@@ -41,6 +42,7 @@ MODALITY = {
     'breamdm': 'mri', 'ispy2': 'mri', 'cbis_ddsm': 'mammography', 'bcsdbt_extra': 'mammography',
     'odelia': 'mri',
     'bus_cot': 'ultrasound',
+    'ambl': 'mri',
 }
 CBIS_LABELS = Path('/mnt/data/mmfm_datasets/mammography/CBIS-DDSM-labels')
 ISPY2_RAW_ROOT = Path('/mnt/data/mmfm_datasets/MRI/PKG - BreastDCEDL_ISPY2/BreastDCEDL_ISPY2')
@@ -489,6 +491,7 @@ ADAPTERS = {
     'cbis_ddsm': cbis_ddsm, 'bcsdbt_extra': bcsdbt_extra,
     'odelia': None,  # parquet volumes: handled by audit/odelia.py, not per-file samples
     'bus_cot': bus_cot,
+    'ambl': lambda root: __import__('audit.ambl', fromlist=['samples']).samples(root),
 }
 
 
@@ -496,6 +499,8 @@ def case_dirs(dataset):
     """Patient-level volume folders for the 3D case analysis (MRI only)."""
     if dataset == 'ispy2':
         return sorted(p for p in ISPY2_RAW_ROOT.iterdir() if p.is_dir()) if ISPY2_RAW_ROOT.exists() else []
+    if dataset == 'ambl':
+        return sorted(p for p in Path(DATASET_ROOTS['ambl']).iterdir() if p.is_dir())
     if dataset == 'breamdm':
         return sorted(Path(DATASET_ROOTS['breamdm'], 'seg3D').glob('*/images/*'))
     return []
