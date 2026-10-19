@@ -816,6 +816,44 @@ also about +/-0.06. The next attempt, if any, would be a random forest on
 pooled ViT features + `tum_vol` + mask bounding-box volume from the metadata
 CSV, rather than more ViT tuning.
 
+## 16. AMBL (Advanced-MRI-Breast-Lesions) baseline
+
+Data and labels per the AMBL audit in [dataset_audit.md](dataset_audit.md):
+131 lesions in 86 patients with side-checked labels, excluding ambiguous
+lesions and post-neoadjuvant scans. Crops are 9-channel, made with the ISPY2
+rule (`scripts/preprocess_ambl_mri.py`).
+
+**The BreastDCEDL_AMBL paper (lesion AUC 0.92) cannot be matched like for
+like.** Its Zenodo record (17189101) holds only a 20 MB SegFormer checkpoint
+and a PDF, with no patient list, labels or split. Its counts (88 patients,
+133 lesions, 89 benign / 44 malignant) also differ from the TCIA clinical
+file for the segmented patients (166 lesions, 83 / 83). Its model was further
+trained on ISPY1/ISPY2 tumour masks, which we don't hold.
+
+Ran (2026-10-19): `python3 scripts/ambl_baseline.py`, 5-fold patient-level
+cross validation (stratified on whether a patient has a malignant lesion;
+next fold = validation, checkpoint = best validation lesion AUC). ImageNet
+ResNet-18 adapted to 9 channels, Adam 1e-4, batch 32, 30 epochs.
+- Lesion score: mean slice probability.
+- Patient score: most suspicious lesion.
+- Size baseline: lesion volume from the audit, on the same lesions.
+
+| | Lesion AUC (pooled, 95% CI) | Per-fold mean ± std | Patient AUC |
+|---|---|---|---|
+| ResNet-18 | 0.715 (0.61-0.81) | 0.723 ± 0.088 | 0.640 |
+| **Lesion volume only** | **0.854 (0.79-0.92)** | 0.857 ± 0.042 | 0.818 |
+
+Model minus size: -0.14 (95% CI -0.23 to -0.06; size better in 99.9% of
+paired bootstrap resamples, and in all five folds).
+
+**Why:** every crop is resized to 224 x 224 (`BreadmTransform`), which
+removes absolute lesion size, the strongest single cue here (malignant median
+2.8 ml vs. benign 0.37 ml). Next: crop a fixed physical window around each
+lesion (e.g. 64 mm) so size stays visible. The dataset audit already
+recommends this for the ISPY2/BreaDM crop-size shortcut. Alternatively, feed
+the size to the model as an extra input. Results: `runs/run-4/ambl_cv_results.json`
+and `ambl_cv_results_lesions.csv` (out-of-fold lesion scores).
+
 ## Execution Order
 
 1. Resolve BUSI completeness and recover BrEaST labels/metadata.
