@@ -127,10 +127,29 @@ epoch 2 by lowest validation loss (mammography accuracy 0.611, ultrasound
 0.803. Overall accuracy is inflated by ISPY2's malignant-only MRI validation
 slices.
 
-**TODO (rerun, about 70 min of GPU):** in `_train_model` for `--dataset
-combined`, report AUC per source (CBIS-DDSM, BCS-DBT, MIAS, each ultrasound
-set, BreaDM, ISPY2, ODELIA) and select the checkpoint on mean per-branch AUC
-instead of validation loss. Then rerun with the same warm-starts.
+**Rerun with per-source AUC and mean-branch-AUC selection (2026-10-19).**
+`combined_fusion_resnet18_phase2_auc_best.pth`, same warm-starts. Branch AUCs
+pool only sources with both classes, so ISPY2 (malignant-only) is excluded
+from the MRI AUC; pooling it had inflated MRI to 0.97.
+
+| Epoch | Mammography AUC | Ultrasound AUC | MRI AUC | Mean | Train loss |
+|---|---|---|---|---|---|
+| **1 (kept)** | 0.679 | **0.888** | 0.782 | **0.783** | 0.48 |
+| 2 | 0.699 | 0.823 | 0.814 | 0.779 | 0.32 |
+| 6 (early stop) | 0.663 | 0.853 | 0.790 | 0.769 | 0.12 |
+
+Per source at epoch 1: MIAS 0.375 (n = 10), BCS-DBT 0.680, CBIS-DDSM 0.677,
+BUS-BRA 0.908, BUSI 0.922, BUSC 1.000, BrEaST 0.960, BUS-CoT 0.791,
+BreaDM 0.847, ODELIA 0.699, ISPY2 accuracy 0.959 (no AUC: malignant only).
+Full table: `runs/run-4/combined_fusion_resnet18_phase2_auc_best_source_metrics.json`.
+
+**Finding: joint training does not improve on the warm-started branches.**
+Training loss falls from 0.48 to 0.12 while validation AUC drifts down
+(ultrasound 0.888 -> 0.82-0.85), so the best checkpoint is epoch 1, which is
+essentially the warm-starts. The likely cause is lr 1e-4 on all parameters
+wiping pretrained features. The next experiment should be a lower lr (1e-5)
+or frozen backbones with only the projections, heads and fusion weights
+trained.
 
 The paper recipes use ResNet-50, ViT and DINOv3. `combined` warm-starts branches
 from single-mode checkpoints with a matching architecture (`_warm_start_branch`).
