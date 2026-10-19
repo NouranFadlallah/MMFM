@@ -151,6 +151,18 @@ wiping pretrained features. The next experiment should be a lower lr (1e-5)
 or frozen backbones with only the projections, heads and fusion weights
 trained.
 
+**Follow-up runs (2026-10-19).** Same sources and warm-starts:
+
+| Variant | Kept epoch | Mammography | Ultrasound | MRI | Mean |
+|---|---|---|---|---|---|
+| lr 1e-4, all trained | 1 | 0.679 | 0.888 | 0.782 | 0.783 |
+| lr 1e-5, all trained (`--lr 1e-5`) | 9 of 10 | 0.717 | 0.868 | 0.841 | 0.809 |
+| Frozen backbones (`--freeze-backbones`) | 1 (stopped at 6) | 0.747 | 0.881 | 0.824 | 0.817 |
+
+Frozen backbones score highest but peak at epoch 1, then plateau at 0.80-0.815.
+lr 1e-5 was still improving at its 10-epoch cap. Source metrics are in
+`runs/run-4/combined_fusion_resnet18_phase2_{lr1e-5,frozen}_best_source_metrics.json`.
+
 The paper recipes use ResNet-50, ViT and DINOv3. `combined` warm-starts branches
 from single-mode checkpoints with a matching architecture (`_warm_start_branch`).
 So for each new dataset, **also** run one ResNet-18 single-mode training with the

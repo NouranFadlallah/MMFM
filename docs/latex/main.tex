@@ -85,7 +85,8 @@ target. BreastDCEDL's pCR result is not reproduced, most likely because it
 includes tumour-size features. BCS-DBT detection cannot be checked because no
 weights were released. Adding these sources to the fusion model
 (Section~\ref{sec:phase2}) shows that joint training at the default learning
-rate erodes the warm-started branches.
+rate erodes the warm-started branches. A lower learning rate or frozen
+backbones avoids this (mean branch AUC 0.809 and 0.817, against 0.783).
 \end{abstract}
 
 \section{Datasets and Task}
@@ -1472,6 +1473,38 @@ epoch, which is essentially the warm-started branches. At that epoch the
 weakest sources are mini-MIAS (0.375, only 10 validation samples), CBIS-DDSM
 (0.677), BCS-DBT (0.680), ODELIA (0.699) and BUS-CoT (0.791). BUS-BRA, BUSI,
 BUSC and BrEaST score 0.91--1.00.
+
+\paragraph{Protecting the warm-started branches.} Two follow-up runs keep the
+same sources and warm-starts (Table~\ref{tab:phase2-variants}):
+\begin{itemize}
+  \item \textbf{Learning rate $10^{-5}$}, all parameters trained.
+  \item \textbf{Frozen backbones} (weights and BatchNorm statistics), training
+    only the projections, classifier heads and fusion weights (0.79\,M
+    parameters).
+\end{itemize}
+Both beat the first run. Freezing scores highest (mean 0.817, mammography
+0.747) but peaks at its first epoch and then plateaus between 0.80 and 0.815.
+The $10^{-5}$ run was still improving at its 10-epoch cap (0.809 at epoch 9).
+Per source the two trade off. Freezing is better on CBIS-DDSM (0.761 vs.\
+0.725) and BUS-CoT (0.897 vs.\ 0.829); the lower learning rate is better on
+BUSI (0.936 vs.\ 0.858), BrEaST (1.000 vs.\ 0.790) and ODELIA (0.733 vs.\
+0.647). With 10--200 validation samples per source, most of these per-source
+differences are within noise.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Combined model variants, validation AUC at the kept epoch (branch AUCs exclude ISPY2).}
+  \label{tab:phase2-variants}
+  \begin{tabular}{@{}l c c c c c@{}}
+    \toprule
+    Variant & Kept epoch & Mammography & Ultrasound & MRI & Mean \\
+    \midrule
+    lr $10^{-4}$, all trained & 1 & 0.679 & \textbf{0.888} & 0.782 & 0.783 \\
+    lr $10^{-5}$, all trained & 9 & 0.717 & 0.868 & \textbf{0.841} & 0.809 \\
+    Frozen backbones, lr $10^{-4}$ & 1 & \textbf{0.747} & 0.881 & 0.824 & \textbf{0.817} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
 \section{Optional Ultrasound Preprocessing}
 \label{sec:us-preprocessing}
