@@ -48,7 +48,11 @@ slices can be distinguished from BreastDM malignant slices with an AUC of
 datasets, BUS-CoT turns out to contain every BUSI and BUS-BRA image already
 used here, and in ODELIA the acquiring centre is identifiable from simple image
 statistics (\odeliaCentreAcc\% accuracy) while also predicting benign versus
-malignant (AUC \odeliaCentreOnlyAUC), a centre shortcut.
+malignant (AUC \odeliaCentreOnlyAUC), a centre shortcut. Preparing the data
+for training added two further findings: a classical line-removal step
+rewrites most of each speckled image, and a style-transfer model trained
+towards BUS-BRA reproduces its burnt-in calipers and text, which confirms
+these annotations as a learnable image property.
 \end{abstract}
 
 \section{Introduction}
@@ -672,6 +676,76 @@ checked). Burnt-in film labels appear outside the breast on \cbisFullLabels{} of
 duplicates or patient overlap with the validation release, from the same
 single vendor (Hologic Selenia Dimensions).
 
+\subsection{Findings from preparing the data for training}
+\label{sec:prep}
+
+Preparing the new datasets for training (16--19 October 2026) surfaced
+further properties of the data. None of them changes the counts above.
+
+\paragraph{ODELIA's subtraction volumes are padded with a negative constant.}
+Outside the breast, \texttt{Sub\_1} is filled with a large negative value that
+differs by centre (for example $-891$ in Cambridge, $-821$ in Aachen and
+$-1{,}997$ in Utrecht), and the pre-contrast and T2 volumes start at 0. A
+percentile intensity window over the whole volume therefore maps tissue with
+no enhancement to mid-grey, differently per centre. The MRI-branch conversion
+windows \texttt{Sub\_1} to $[0,\,\text{99.5th percentile of positive voxels}]$
+instead. Picking the axial slice with the most enhancement, as a mask-free
+lesion locator, mostly selected the heart and chest wall at the image edge,
+so the central slice is used. The cached volumes are faithful to the release:
+the authors' published classifier, scored on our cache, reproduces their
+reported macro AUC exactly (81.6 in distribution, 63.1 on the Valencia centre).
+
+\paragraph{BUS-CoT's classification set and its new clinical part.} The
+\texttt{BUS-Lesion} set the paper benchmarks holds 5,163 lesion images (2,694
+benign, 2,469 malignant) with an official patient-level split of 4,338
+\emph{trainval} and 825 \emph{test} images; no patient appears in both.
+Restricted to the new clinical sources and de-duplicated with the audit's
+duplicate groups (one image kept per group, groups with conflicting labels
+dropped), it leaves 2,036 images: TFUSL 1,575, Thammasat 349 and UDIAT 112.
+STU-Hospital and the BI-RADS ultrasound set do not appear in \texttt{BUS-Lesion}.
+
+\paragraph{ISPY2 response labels.} The BreastDCEDL metadata file supplies the
+pathologic complete response (pCR) label for all 982 ISPY2 patients (32\%
+pCR) and the authors' fixed split, which for ISPY2 is 784 / 99 / 99
+patients. Its split column is coded 0/1/2; across all three cohorts, codes 1
+and 2 hold 177 and 176 patients at 29.9\% and 30.1\% pCR, which identifies
+them as the paper's validation and test sets. These labels describe treatment
+response, not benign versus malignant, so ISPY2 stays malignant-only in the
+fusion model.
+
+\paragraph{Patient-level splits for CBIS-DDSM and BCS-DBT.} All 2,006 CBIS-DDSM
+crops converted without loss of any sample. Shen's 85/15 patient split with a
+10\% validation hold-out gives 823 / 91 / 161 patients with none shared. The
+three BCS-DBT releases together give 396 biopsied views from 201 patients. The
+BCS-DBT detection baseline cannot be checked on this data: its authors never
+released trained weights.
+
+\paragraph{Ultrasound preprocessing changes more than intended.} Two classical
+steps from the project's earlier preprocessing work were measured on BUS-BRA
+and BrEaST samples. Morphological line removal (top-hat and black-hat
+responses thresholded with Otsu's method, then inpainted) altered 15--91\% of
+the pixels at both of its tested settings, because speckle passes the
+threshold as ``lines''. The narrower caliper-cross removal altered 2--22\%.
+The earlier intensity-normalization step mapped 0--255 to 0--255 with
+clipping, which leaves 8-bit images unchanged.
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=\textwidth]{figures/cyclegan_calipers.png}
+  \caption{Four BrEaST images (left of each pair) and their CycleGAN translation towards BUS-BRA's appearance (right). The translations gain caliper crosses on the lesions and measurement text near the bottom edge, which are absent from the BrEaST originals.}
+  \label{fig:cyclegan}
+\end{figure}
+
+\paragraph{A style-transfer model learns the burnt-in annotations.} A CycleGAN
+trained to translate BrEaST images into BUS-BRA's appearance adds caliper
+crosses and measurement text to the translated BrEaST images, placed on or
+next to the lesion (Figure~\ref{fig:cyclegan}). BrEaST has no burnt-in annotations
+(Section~\ref{sec:artifacts}), so the generator learned BUS-BRA's annotations
+as part of its ``style''. This is direct evidence that the BUS-BRA annotations
+are a consistent, learnable image property. A classifier could use them the
+same way, which strengthens the case for the annotation-shortcut experiments
+below.
+
 \section{Recommendations}
 \label{sec:recommendations}
 
@@ -701,7 +775,21 @@ single vendor (Hologic Selenia Dimensions).
   \item \textbf{Split CBIS-DDSM by patient} when mass and calcification crops
   are used together, and report results with and without the
   BENIGN\_WITHOUT\_CALLBACK crops.
+  \item \textbf{Avoid morphological line removal on B-mode images}; use the
+  caliper-cross removal or a learned marker remover, and inspect a preview
+  before training on any preprocessed set.
+  \item \textbf{Remove annotations before training a style-transfer model} on
+  BUS-BRA (or any annotated source), otherwise the translated images inherit
+  calipers and text placed on the lesion.
 \end{enumerate}
+
+\paragraph{Status (19 October 2026).} Recommendations 6--8 are in place in
+training: only BUS-CoT's de-duplicated clinical part enters the fusion
+model; ODELIA is trained and tested per fold with Valencia held out and
+uses pre-contrast, subtraction and T2; CBIS-DDSM is split by patient, with
+BENIGN\_WITHOUT\_CALLBACK excluded by default. In the fusion model, MRI is
+now reported per source, so ISPY2 no longer hides inside a pooled MRI
+score. Recommendations 1--5 and 9--10 are still open.
 
 \section{Limitations}
 
