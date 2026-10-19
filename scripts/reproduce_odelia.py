@@ -32,9 +32,11 @@ import pandas as pd
 import torch
 import torch.nn.functional as F
 
-ODELIA_ROOT = Path('/mnt/data/mmfm_datasets/MRI/odelia')
-CACHE_DIR = ODELIA_ROOT / 'npz'
-SPLIT_CSV = ODELIA_ROOT / 'split_unilateral.csv'
+ODELIA_ROOT = Path('/mnt/data/mmfm_datasets/MRI/odelia')   # raw release (parquet), re-fetchable
+# prepared copy kept outside the raw folder so the raw parquet can be pruned
+PREPARED_ROOT = Path('/mnt/data/mmfm_datasets/MRI/odelia_prepared')
+CACHE_DIR = PREPARED_ROOT / 'npz'
+SPLIT_CSV = PREPARED_ROOT / 'split_unilateral.csv'
 SEQUENCES = ('Pre', 'Sub_1', 'T2')
 OOD_CENTRE = 'RSH'
 LESION_NAMES = ('no lesion', 'benign', 'malignant')

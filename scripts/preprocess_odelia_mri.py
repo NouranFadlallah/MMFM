@@ -26,7 +26,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-ODELIA_ROOT = Path('/mnt/data/mmfm_datasets/MRI/odelia')
+PREPARED_ROOT = Path('/mnt/data/mmfm_datasets/MRI/odelia_prepared')   # npz cache + split_unilateral.csv
 SEQUENCES = ('Pre', 'Sub_1', 'T2')
 CLASS_NAMES = {1: 'Benign', 2: 'Malignant'}
 OOD_CENTRE = 'RSH'
@@ -63,9 +63,9 @@ def main(argv=None):
     parser.add_argument('--fold', type=int, default=0)
     args = parser.parse_args(argv)
 
-    cache = ODELIA_ROOT / 'npz'
+    cache = PREPARED_ROOT / 'npz'
     meta = pd.read_csv(cache / 'meta.csv')
-    splits = pd.read_csv(ODELIA_ROOT / 'split_unilateral.csv')
+    splits = pd.read_csv(PREPARED_ROOT / 'split_unilateral.csv')
     split_of = dict(splits[splits['Fold'] == args.fold][['UID', 'Split']].itertuples(index=False))
     counts = {}
     for row in meta[meta['Lesion'].isin(CLASS_NAMES)].itertuples(index=False):

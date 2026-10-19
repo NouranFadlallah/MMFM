@@ -167,6 +167,10 @@ ispy2:
   prepare: >-
     .venv/bin/python scripts/preprocess_ispy2_mri.py --source "<raw_dir>"
     --dest datasets/MRI/ISPY2/cls/img9Se
+  prepared_extra:   # pCR reproduction inputs (scripts/reproduce_breastdcedl_pcr.py)
+    - /mnt/data/mmfm_datasets/MRI/ispy2_pcr_rgb
+    - datasets/MRI/BreastDCEDL_metadata/BreastDCEDL_metadata.csv
+  prepare_extra: .venv/bin/python scripts/reproduce_breastdcedl_pcr.py slices
   source:
     type: manual
     landing: https://www.cancerimagingarchive.net/analysis-result/breastdcedl-ispy2/
@@ -185,7 +189,8 @@ cbis_ddsm:
     - /mnt/data/mmfm_datasets/mammography/CBIS-DDSM-labels/mass_case_description_test_set.csv
     - /mnt/data/mmfm_datasets/mammography/CBIS-DDSM-labels/calc_case_description_train_set.csv
     - /mnt/data/mmfm_datasets/mammography/CBIS-DDSM-labels/calc_case_description_test_set.csv
-  prepared: null
+  prepared: datasets/mammography/cbis_ddsm_png   # 2,006 8-bit crop PNGs + metadata.csv
+  prepare: .venv/bin/python scripts/prepare_mammography_cache.py cbis_ddsm
   source:
     type: idc
     collection: cbis_ddsm
@@ -197,7 +202,10 @@ cbis_ddsm:
       (~/CBIS-DDSM-cropped.tcia: 2,006 "cropped images" series, 31.6 GB;
       ~/CBIS-DDSM-full-sample.tcia: 188 stratified full mammograms, 6.1 GB).
       Label CSVs from https://wiki.cancerimagingarchive.net/download/attachments/22516629/
-  backup: null   # 38 GB raw, re-fetchable from IDC by series list; back up prepared crops later
+  backup: noe95/mmfm-cbis-ddsm   # CC BY 3.0 allows re-hosting; prepared crops + label CSVs
+  backup_paths:
+    - datasets/mammography/cbis_ddsm_png
+    - /mnt/data/mmfm_datasets/mammography/CBIS-DDSM-labels
 
 bcsdbt_extra:
   name: Breast-Cancer-Screening-DBT training + test (Benign/Cancer views only)
@@ -205,7 +213,8 @@ bcsdbt_extra:
   license: CC BY-NC 4.0
   pathology_confirmed: yes for Benign/Cancer
   raw_dir: datasets/mammography/bcsdbt_extra
-  prepared: null
+  prepared: datasets/mammography/bcsdbt_png   # box-cropped slices, shared with the bcsdbt validation release
+  prepare: .venv/bin/python scripts/prepare_mammography_cache.py bcsdbt_full
   source:
     type: idc
     collection: breast_cancer_screening_dbt
@@ -222,7 +231,13 @@ odelia:
   license: CC BY-NC 4.0
   pathology_confirmed: not stated (dataset card); check the challenge paper
   raw_dir: /mnt/data/mmfm_datasets/MRI/odelia
-  prepared: null
+  prepared: /mnt/data/mmfm_datasets/MRI/odelia_prepared   # npz/ (Pre, Sub_1, T2 per breast) + split_unilateral.csv
+  prepare: >-
+    .venv/bin/python scripts/reproduce_odelia.py cache &&
+    cp "<raw_dir>/split_unilateral.csv" /mnt/data/mmfm_datasets/MRI/odelia_prepared/ &&
+    .venv/bin/python scripts/preprocess_odelia_mri.py
+  prepared_extra:   # 9-channel arrays for the fusion model's MRI branch
+    - datasets/MRI/ODELIA/cls/img9Se
   source:
     type: manual
     landing: https://huggingface.co/datasets/ODELIA-AI/ODELIA-Challenge-2025
