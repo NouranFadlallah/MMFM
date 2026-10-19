@@ -204,8 +204,11 @@ def train_one_epoch(model, loader, opt, device, modality_dropout_prob=0.0, crite
     return total_loss / len(loader.dataset)
 
 
-def validate(model, loader, device, criterion=None):
+def validate(model, loader, device, criterion=None, return_outputs=False):
+    """(loss, accuracy, per-branch accuracy); with return_outputs also the
+    malignant probabilities and labels of every sample, in loader order."""
     model.eval()
+    all_probs, all_labels = [], []
     total = 0
     correct = 0
     total_loss = 0.0
@@ -223,6 +226,9 @@ def validate(model, loader, device, criterion=None):
             pres = pres.to(device)
             fused, branch_logits, weights = model(x1,x2,x3,pres)
             total_loss += criterion(fused, y).item() * y.size(0)
+            if return_outputs:
+                all_probs.append(torch.softmax(fused.float(), dim=1)[:, 1].cpu())
+                all_labels.append(y.cpu())
             preds = fused.argmax(dim=1)
             total += y.size(0)
             correct += (preds == y).sum().item()
@@ -235,7 +241,42 @@ def validate(model, loader, device, criterion=None):
         (branch_correct[i] / branch_total[i]) if branch_total[i] else None
         for i in range(3)
     ]
+    if return_outputs:
+        return (total_loss / total, correct / total, branch_accuracy,
+                torch.cat(all_probs).numpy(), torch.cat(all_labels).numpy())
     return total_loss / total, correct / total, branch_accuracy
+
+
+BRANCH_NAMES = ('mammography', 'ultrasound', 'mri')
+
+
+def source_metrics(probs, labels, segments):
+    """AUC / accuracy / n per combined source and per branch from in-order
+    validation outputs. `segments` is [(source name, branch index, length)] in
+    ConcatDataset order. AUC is None for a single-class pool (ISPY2 is
+    malignant-only). Branch AUCs pool only sources that contain both classes:
+    pooling ISPY2's easily recognised malignant slices with BreaDM / ODELIA
+    inflated the MRI AUC to 0.97 against 0.88 / 0.74 for the sources with benign
+    cases. `mean_branch_auc` averages the branches that have an AUC."""
+    from sklearn.metrics import roc_auc_score
+
+    def summarize(p, y):
+        auc = float(roc_auc_score(y, p)) if len(set(y.tolist())) > 1 else None
+        return {'n': int(len(y)), 'accuracy': float(((p >= 0.5) == y).mean()), 'auc': auc}
+
+    result, by_branch, start = {'sources': {}, 'branches': {}}, {}, 0
+    for name, branch, length in segments:
+        p, y = probs[start:start + length], labels[start:start + length]
+        result['sources'][name] = summarize(p, y)
+        if result['sources'][name]['auc'] is not None:
+            by_branch.setdefault(branch, []).append((p, y))
+        start += length
+    for branch, parts in sorted(by_branch.items()):
+        result['branches'][BRANCH_NAMES[branch]] = summarize(
+            np.concatenate([p for p, _ in parts]), np.concatenate([y for _, y in parts]))
+    aucs = [m['auc'] for m in result['branches'].values() if m['auc'] is not None]
+    result['mean_branch_auc'] = float(np.mean(aucs)) if aucs else None
+    return result
 
 
 def collect_predictions(model, loader, device):
@@ -940,8 +981,10 @@ def _ultrasound_frame(name, args):
     return train_frame, validation_frame, train_transform, validation_transform
 
 
-def _branch_dataset_source(train_ds, val_ds, labels, branch_index):
+def _branch_dataset_source(train_ds, val_ds, labels, branch_index, name=None):
     return {
+        'name': name or f'branch{branch_index}_source',
+        'branch': branch_index,
         'train': SingleModalityBranchDataset(train_ds, branch_index, BRANCH_CHANNELS),
         'val': SingleModalityBranchDataset(val_ds, branch_index, BRANCH_CHANNELS),
         'labels': list(labels),
@@ -960,7 +1003,7 @@ def _build_combined_sources(args):
     train_ds = _make_dataset(train_frame, train_transform)
     val_ds = _make_dataset(validation_frame, validation_transform)
     sources_by_branch[MAMMOGRAPHY_BRANCH].append(
-        _branch_dataset_source(train_ds, val_ds, train_frame['label'], MAMMOGRAPHY_BRANCH)
+        _branch_dataset_source(train_ds, val_ds, train_frame['label'], MAMMOGRAPHY_BRANCH, 'mias')
     )
 
     # mammography branch: BCS-DBT (box-cropped Benign/Cancer slices; optional,
@@ -976,7 +1019,7 @@ def _build_combined_sources(args):
         sources_by_branch[MAMMOGRAPHY_BRANCH].append(_branch_dataset_source(
             _make_dataset(dbt_train_frame, MiasTransform(size=args.image_size, augment=True)),
             _make_dataset(dbt_validation_frame, MiasTransform(size=args.image_size, augment=False)),
-            dbt_train_frame['label'], MAMMOGRAPHY_BRANCH,
+            dbt_train_frame['label'], MAMMOGRAPHY_BRANCH, 'bcsdbt_full',
         ))
     elif dbt_labels_path.exists():
         dbt_train_frame, dbt_validation_frame = _dbt_frame(
@@ -992,7 +1035,7 @@ def _build_combined_sources(args):
         dbt_train_ds = _make_dataset(dbt_train_frame, dbt_train_transform)
         dbt_val_ds = _make_dataset(dbt_validation_frame, dbt_validation_transform)
         sources_by_branch[MAMMOGRAPHY_BRANCH].append(
-            _branch_dataset_source(dbt_train_ds, dbt_val_ds, dbt_train_frame['label'], MAMMOGRAPHY_BRANCH)
+            _branch_dataset_source(dbt_train_ds, dbt_val_ds, dbt_train_frame['label'], MAMMOGRAPHY_BRANCH, 'bcsdbt')
         )
 
     # mammography branch: CBIS-DDSM ROI crops (BENIGN / MALIGNANT, Shen's
@@ -1005,7 +1048,7 @@ def _build_combined_sources(args):
         sources_by_branch[MAMMOGRAPHY_BRANCH].append(_branch_dataset_source(
             _make_dataset(cbis_train_frame, MiasTransform(size=args.image_size, augment=True)),
             _make_dataset(cbis_validation_frame, MiasTransform(size=args.image_size, augment=False)),
-            cbis_train_frame['label'], MAMMOGRAPHY_BRANCH,
+            cbis_train_frame['label'], MAMMOGRAPHY_BRANCH, 'cbis_ddsm',
         ))
 
     # ultrasound branch: one or more of busbra/busi/busc/breast/bus_cot, concatenated
@@ -1014,7 +1057,7 @@ def _build_combined_sources(args):
         train_ds = _make_dataset(train_frame, train_transform)
         val_ds = _make_dataset(validation_frame, validation_transform)
         sources_by_branch[ULTRASOUND_BRANCH].append(
-            _branch_dataset_source(train_ds, val_ds, train_frame['label'], ULTRASOUND_BRANCH)
+            _branch_dataset_source(train_ds, val_ds, train_frame['label'], ULTRASOUND_BRANCH, name)
         )
 
     # MRI branch: BreaDM
@@ -1025,7 +1068,7 @@ def _build_combined_sources(args):
     val_ds = BreaDMDataset(breamdm_root, 'val', validation_transform)
     labels = [label for _, label in train_ds.samples]
     sources_by_branch[MRI_BRANCH].append(
-        _branch_dataset_source(train_ds, val_ds, labels, MRI_BRANCH)
+        _branch_dataset_source(train_ds, val_ds, labels, MRI_BRANCH, 'breamdm')
     )
 
     # MRI branch: BreastDCEDL-ISPY2 (malignant-only augmentation; I-SPY2 is a
@@ -1039,7 +1082,7 @@ def _build_combined_sources(args):
         ispy2_val_ds = BreaDMDataset(ispy2_root, 'val', validation_transform)
         ispy2_labels = [label for _, label in ispy2_train_ds.samples]
         sources_by_branch[MRI_BRANCH].append(
-            _branch_dataset_source(ispy2_train_ds, ispy2_val_ds, ispy2_labels, MRI_BRANCH)
+            _branch_dataset_source(ispy2_train_ds, ispy2_val_ds, ispy2_labels, MRI_BRANCH, 'ispy2')
         )
 
     # MRI branch: ODELIA benign / malignant breasts as 9-channel whole-breast
@@ -1049,7 +1092,7 @@ def _build_combined_sources(args):
         odelia_train_ds = BreaDMDataset(odelia_root, 'train', train_transform)
         odelia_val_ds = BreaDMDataset(odelia_root, 'val', validation_transform)
         sources_by_branch[MRI_BRANCH].append(_branch_dataset_source(
-            odelia_train_ds, odelia_val_ds, [label for _, label in odelia_train_ds.samples], MRI_BRANCH
+            odelia_train_ds, odelia_val_ds, [label for _, label in odelia_train_ds.samples], MRI_BRANCH, 'odelia'
         ))
     return sources_by_branch
 
@@ -1080,6 +1123,11 @@ def _build_combined_datasets(args):
 
     train_dataset = ConcatDataset(train_parts)
     validation_dataset = ConcatDataset(val_parts)
+    # (name, branch, length) per source in concatenation order, for source_metrics
+    validation_dataset.segments = [
+        (source['name'], source['branch'], len(source['val']))
+        for sources in sources_by_branch.values() for source in sources
+    ]
     sampler = WeightedRandomSampler(train_weights, num_samples=len(train_weights), replacement=True)
     return train_dataset, validation_dataset, sampler
 
@@ -1619,6 +1667,7 @@ def _train_model(args, device, loader, val_loader, test_loader=None, class_weigh
 
     best_validation_loss = float('inf')
     best_validation_accuracy = -1.0
+    best_mean_branch_auc, best_sources = -1.0, None
     epochs_without_improvement = 0
     # the papers train a fixed epoch budget with no early stopping, only
     # snapshotting the lowest-val-loss epoch; --paper-match reproduces that
@@ -1636,8 +1685,15 @@ def _train_model(args, device, loader, val_loader, test_loader=None, class_weigh
         dropout_prob = 0.0 if (args.single_mode or args.dataset == 'combined') else cfg.modality_dropout_prob
         loss = train_one_epoch(model, loader, opt, device, modality_dropout_prob=dropout_prob,
                                criterion=criterion, scheduler=scheduler)
-        validation_loss, acc, branch_accuracy = validate(model, val_loader, device, criterion=criterion)
-        branch_names = ('mammography', 'ultrasound', 'mri')
+        segments = getattr(val_loader.dataset, 'segments', None)
+        sources = None
+        if segments:
+            validation_loss, acc, branch_accuracy, probs, labels = validate(
+                model, val_loader, device, criterion=criterion, return_outputs=True)
+            sources = source_metrics(probs, labels, segments)
+        else:
+            validation_loss, acc, branch_accuracy = validate(model, val_loader, device, criterion=criterion)
+        branch_names = BRANCH_NAMES
         branch_summary = ' '.join(
             f'{name}_acc={value:.4f}' if value is not None else f'{name}_acc=n/a'
             for name, value in zip(branch_names, branch_accuracy)
@@ -1647,12 +1703,31 @@ def _train_model(args, device, loader, val_loader, test_loader=None, class_weigh
         for name, value in zip(branch_names, branch_accuracy):
             if value is not None:
                 log_payload[f'validation/{name}_accuracy'] = value
+        if sources is not None:
+            def fmt(m):
+                return f"auc={m['auc']:.3f}" if m['auc'] is not None else f"acc={m['accuracy']:.3f}"
+            print('  per source: ' + ' '.join(f'{k}:{fmt(m)}' for k, m in sources['sources'].items()))
+            print('  per branch: ' + ' '.join(f'{k}:{fmt(m)}' for k, m in sources['branches'].items())
+                  + f"  mean_branch_auc={sources['mean_branch_auc']:.4f}")
+            for group in ('sources', 'branches'):
+                for name, m in sources[group].items():
+                    for key in ('auc', 'accuracy'):
+                        if m[key] is not None:
+                            log_payload[f'validation/{group}/{name}_{key}'] = m[key]
+            log_payload['validation/mean_branch_auc'] = sources['mean_branch_auc']
         run.log(log_payload)
         select_on_accuracy = recipe is not None and recipe.get('select_on') == 'accuracy'
-        improved = acc > best_validation_accuracy if select_on_accuracy else validation_loss < best_validation_loss
+        if sources is not None and sources['mean_branch_auc'] is not None:
+            # combined: ISPY2's malignant-only MRI slices dominate the pooled loss
+            # and accuracy, so select on the mean of the per-branch AUCs
+            improved = sources['mean_branch_auc'] > best_mean_branch_auc
+        else:
+            improved = acc > best_validation_accuracy if select_on_accuracy else validation_loss < best_validation_loss
         if improved:
             best_validation_loss = validation_loss
             best_validation_accuracy = acc
+            if sources is not None:
+                best_mean_branch_auc, best_sources = sources['mean_branch_auc'], dict(sources, epoch=epoch + 1)
             epochs_without_improvement = 0
             torch.save(model.state_dict(), args.checkpoint_path)
             print(f'  checkpoint saved (epoch {epoch+1})')
@@ -1663,6 +1738,12 @@ def _train_model(args, device, loader, val_loader, test_loader=None, class_weigh
                 break
 
     result = {'best_validation_loss': best_validation_loss}
+    if best_sources is not None:
+        result['source_metrics'] = best_sources
+        metrics_path = Path(args.checkpoint_path).with_name(Path(args.checkpoint_path).stem + '_source_metrics.json')
+        metrics_path.write_text(json.dumps(best_sources, indent=2))
+        run.summary['best/mean_branch_auc'] = best_mean_branch_auc
+        print(f"best epoch {best_sources['epoch']}: mean_branch_auc={best_mean_branch_auc:.4f} -> {metrics_path}")
     if args.single_mode:
         model.load_state_dict(torch.load(args.checkpoint_path, map_location=device))
         validation_metrics = evaluate_full_metrics(model, val_loader, device)
