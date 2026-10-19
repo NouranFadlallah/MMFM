@@ -168,6 +168,25 @@ benchmark; where no canonical training recipe exists, this plan says so.
 5. Download Breast-MRI-NACT-Pilot for a small statistical DCE/SER reproduction, not an unsupported DL benchmark.
 6. Hold the video, eight-diagnosis, and ambiguous lesions entries pending primary provenance. They are research leads, not approved datasets.
 
+## Next Downloads (2026-10-19)
+
+Chosen for what the fusion model lacks most. Its MRI branch has only two
+small sources with benign cases (BreaDM, ODELIA) next to the malignant-only
+ISPY2, and its mammography branch has the lowest AUC (0.68).
+
+| Priority | Dataset | Modality | Why | Access / size | Reproduction target |
+|---|---|---|---|---|---|
+| 1 | Advanced-MRI-Breast-Lesions (AMBL), TCIA | DCE-MRI + T2 | Benign **and** malignant lesions with pathology, clinical XLSX for 200 patients, CC BY 4.0; also used by the ODELIA challenge winners | Open, but the full collection is 646 G: fetch only the 200 labelled patients' DCE + T2 series via IDC (measure the manifest first) | BreastDCEDL_AMBL (arXiv 2509.26440): 133 lesions (89 benign / 44 malignant), lesion-level AUC 0.92 |
+| 2 | DMID, Figshare | Full-field digital mammography | New population (India), 510 images (300 with findings), masks, DICOM/TIFF, radiology reports | Open, research-only licence, 11.7 G | Oza et al. 2024, *Biomed. Eng. Lett.*; confirm the benign/malignant label source |
+| 3 | BUS-UCLM, Mendeley | Ultrasound | New scanner (Siemens S2000), 174 benign / 90 malignant lesion images, 38 patients, masks | Open, small | Segmentation dataset; confirm label source before inclusion |
+| 4 | CSAW-CC, Karolinska | Screening mammography | Large case-control set with cancer outcomes | Request access now (weeks) | Published screening-detection benchmarks |
+| 5 | VinDr-Mammo, PhysioNet | Mammography | 5,000 exams | Credentialed PhysioNet access; BI-RADS labels, pathology only for a subset, so weaker for this task | BI-RADS / finding detection |
+
+Not recommended now:
+- Duke-Breast-Cancer-MRI and MAMA-MIA are malignant-only, the same problem as ISPY2.
+- BUSI_WHU (927 ultrasound images) does not state how its labels were confirmed.
+- Mammo-MX (75 G) can wait until after items 1-3.
+
 ## Exit Criteria Before Study Inclusion
 
 - A source-versioned manifest joins every training item to its target and split.
