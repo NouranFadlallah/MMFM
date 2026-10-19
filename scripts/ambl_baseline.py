@@ -66,7 +66,8 @@ def patient_folds(frame, n_folds, seed):
 class CropDataset(torch.utils.data.Dataset):
     def __init__(self, frame, augment):
         self.frame = frame.reset_index(drop=True)
-        self.transform = BreadmTransform(size=224, augment=augment)
+        channels = np.load(self.frame.iloc[0]['path'], mmap_mode='r').shape[-1]
+        self.transform = BreadmTransform(size=224, augment=augment, channels=channels)
 
     def __len__(self):
         return len(self.frame)
@@ -122,8 +123,9 @@ def bootstrap(lesions, n=1000, seed=0):
 def train_fold(train, val, args, device, run, fold):
     torch.manual_seed(args.seed + fold)
     random.seed(args.seed + fold)
+    channels = np.load(train.iloc[0]['path'], mmap_mode='r').shape[-1]   # 9, or 10 with a mask channel
     model = SingleBackboneClassifier('resnet18', pretrained=True, embedding_dim=512, num_classes=2,
-                                     input_channels=9).to(device)
+                                     input_channels=channels).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     loader = torch.utils.data.DataLoader(CropDataset(train, augment=True), batch_size=args.batch_size,
                                          shuffle=True, num_workers=4, drop_last=True)

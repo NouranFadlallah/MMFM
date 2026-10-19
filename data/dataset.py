@@ -149,14 +149,16 @@ class ShenTransform:
 
 
 class BreadmTransform:
-    """Prepare a BreaDM img9Se array while preserving its nine slice channels."""
-    def __init__(self, size=224, augment=False):
+    """Prepare a BreaDM img9Se array while preserving its slice channels (9, or
+    10 when a lesion-mask channel is appended, e.g. AMBL --with-mask crops)."""
+    def __init__(self, size=224, augment=False, channels=9):
         self.size = (size, size)
         self.augment = augment
+        self.channels = channels
 
     def __call__(self, array):
-        if array.ndim != 3 or array.shape[-1] != 9:
-            raise ValueError(f'Expected BreaDM array with shape [H,W,9], got {array.shape}')
+        if array.ndim != 3 or array.shape[-1] != self.channels:
+            raise ValueError(f'Expected array with shape [H,W,{self.channels}], got {array.shape}')
         array = np.asarray(array, dtype=np.float32) / 255.0
         tensor = torch.from_numpy(array).permute(2, 0, 1)
         tensor = torch.nn.functional.interpolate(

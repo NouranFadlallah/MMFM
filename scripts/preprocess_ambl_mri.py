@@ -77,8 +77,9 @@ def _window(rows, cols, size):
     return centre_r - size // 2, centre_c - size // 2
 
 
-def lesion_crops(data, mask, window_mm=None):
-    """Yield (z, (h, w, 9) uint8) for each slice of one lesion."""
+def lesion_crops(data, mask, window_mm=None, with_mask=False):
+    """Yield (z, (h, w, 9) uint8) for each slice of one lesion; with_mask appends
+    the lesion mask (255 inside) as a 10th channel."""
     phase_index = np.round(np.linspace(0, len(data['files']) - 1, NUM_PHASES)).astype(int)
     slices = [z for z in np.where(mask.any(axis=(1, 2)))[0] if mask[z].sum() >= MIN_LESION_PIXELS]
     if not slices:
@@ -94,11 +95,17 @@ def lesion_crops(data, mask, window_mm=None):
             r0, c0 = _window(rows, cols, size)
             padded = [np.pad(by_phase[p][k], size) for p in phase_index]   # zero pad so edge windows fit
             channels = [_to_uint8(v[r0 + size:r0 + 2 * size, c0 + size:c0 + 2 * size], low, high) for v in padded]
+            if with_mask:
+                window = np.pad(mask[z], size)[r0 + size:r0 + 2 * size, c0 + size:c0 + 2 * size]
+                channels.append(window.astype(np.uint8) * 255)
             yield int(z), np.stack(channels, axis=-1)
             continue
         r0, r1 = max(rows.min() - BBOX_MARGIN, 0), min(rows.max() + BBOX_MARGIN + 1, height)
         c0, c1 = max(cols.min() - BBOX_MARGIN, 0), min(cols.max() + BBOX_MARGIN + 1, width)
-        yield int(z), np.stack([_to_uint8(by_phase[p][k, r0:r1, c0:c1], low, high) for p in phase_index], axis=-1)
+        channels = [_to_uint8(by_phase[p][k, r0:r1, c0:c1], low, high) for p in phase_index]
+        if with_mask:
+            channels.append(mask[z, r0:r1, c0:c1].astype(np.uint8) * 255)
+        yield int(z), np.stack(channels, axis=-1)
 
 
 def main(argv=None):
@@ -107,6 +114,8 @@ def main(argv=None):
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--window-mm', type=float, default=None,
                         help='fixed physical crop size centred on the lesion (default: mask bounding box + 6 px)')
+    parser.add_argument('--with-mask', action='store_true',
+                        help='append the lesion mask as a 10th channel (tells the model which pixels are the lesion)')
     args = parser.parse_args(argv)
 
     resolved = pd.read_csv(RESOLVED)
@@ -122,7 +131,7 @@ def main(argv=None):
             out_dir = args.dest / split / class_name / f'{patient}_lesion{k}'
             out_dir.mkdir(parents=True, exist_ok=True)
             n = 0
-            for z, array in lesion_crops(data, data['masks'][k - 1], args.window_mm):
+            for z, array in lesion_crops(data, data['masks'][k - 1], args.window_mm, args.with_mask):
                 np.save(out_dir / f'p-{z:03d}.npy', array)
                 n += 1
             rows.append({'patient': patient, 'segment': k, 'label': int(lesion['label']), 'split': split,

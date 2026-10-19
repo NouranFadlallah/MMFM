@@ -860,6 +860,7 @@ and `ambl_cv_results_lesions.csv` (out-of-fold lesion scores).
 |---|---|---|
 | Bounding-box crops (above) | 0.715 | 0.640 |
 | Fixed 64 mm window crops (`--window-mm 64`) | 0.552 | 0.450 |
+| 64 mm windows + lesion-mask channel (`--with-mask`, 10 channels) | 0.576 | 0.497 |
 | Bounding-box CNN score + log volume, stacked across folds | 0.843 | – |
 | Lesion volume only | **0.854** | **0.818** |
 
@@ -877,6 +878,12 @@ and `ambl_cv_results_lesions.csv` (out-of-fold lesion scores).
   windowed crops plus the mask), or pool AMBL with the other MRI sources
   through the fusion model rather than training on AMBL alone.
   Results: `runs/run-4/ambl_cv_results_64mm.json`.
+- **The mask channel does not rescue it** (0.576), although the mask's area
+  *is* the lesion size. Best validation lesion AUC ranges 0.54-0.92 across
+  folds, so checkpoint selection on about 15 validation patients is mostly
+  noise. Three crop variants failing the same way points at the training
+  set size (about 670 crops, 86 patients) rather than the crop rule.
+  Results: `runs/run-4/ambl_cv_results_64mm_mask.json`.
 
 ## Execution Order
 
