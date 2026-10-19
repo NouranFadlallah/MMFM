@@ -262,3 +262,27 @@ bus_cot:
     landing: https://doi.org/10.6084/m9.figshare.30838715
     note: single BUSCoT.zip (6.94 GB), unzipped into raw_dir/extracted
   backup: null   # open Figshare download with an md5; re-fetchable
+
+ambl:
+  name: Advanced-MRI-Breast-Lesions (AMBL), 99 patients with lesion segmentations
+  modality: mri
+  license: CC BY 4.0
+  pathology_confirmed: yes (clinical XLSX gives tumor/benign + pathology per lesion)
+  raw_dir: /mnt/data/mmfm_datasets/MRI/ambl/dicom
+  extra_files:
+    - /mnt/data/mmfm_datasets/MRI/ambl/clinical/Advanced-MRI-Breast-Lesions-DA-Clinical-Sep2024.xlsx
+  prepared: null
+  source:
+    type: idc
+    collection: advanced_mri_breast_lesions
+    series_list: data/sources/series/ambl_seg99.txt
+    landing: https://www.cancerimagingarchive.net/collection/advanced-mri-breast-lesions/
+    note: >-
+      IDC v25. For each of the 99 patients with a DICOM SEG ("ROI"): the original
+      (non-registered) "AX Sen Vibrant MultiPhase" DCE series, "Ax T2 FSE" and the
+      SEG: 297 series, 36.1 GB. SEG segment labels tumor1..n then benign1..n match
+      the lesion order in the clinical XLSX (its Data Dictionary sheet). Clinical
+      XLSX (version 2, Sep 2024) from
+      https://www.cancerimagingarchive.net/wp-content/uploads/Advanced-MRI-Breast-Lesions-DA-Clinical-Sep2024.xlsx
+      The remaining 101 labelled patients have no SEG (about 36 GB more).
+  backup: null   # re-fetchable from IDC by series list; back up the prepared lesion crops once they exist
