@@ -158,17 +158,19 @@ def main(argv=None):
     parser.add_argument('--device', default='cuda')
     parser.add_argument('--no-wandb', action='store_true')
     parser.add_argument('--out', type=Path, default=Path('runs/run-4/ambl_cv_results.json'))
+    parser.add_argument('--crops', type=Path, default=CROPS, help='img9Se root (e.g. the 64 mm window crops)')
+    parser.add_argument('--run-name', default='ambl_resnet18_cv5')
     args = parser.parse_args(argv)
 
     device = torch.device(args.device)
-    frame = crop_frame()
+    frame = crop_frame(args.crops)
     frame['fold'] = patient_folds(frame, args.n_folds, args.seed)
     print(f'{frame.lesion.nunique()} lesions, {frame.patient.nunique()} patients, {len(frame)} crops, '
           f'{args.n_folds} patient-level folds')
     run = None
     if not args.no_wandb:
         import wandb
-        run = wandb.init(project='mmfm-ambl', name='ambl_resnet18_cv5', config=vars(args))
+        run = wandb.init(project='mmfm-ambl', name=args.run_name, config=vars(args))
 
     per_fold, out_of_fold = [], []
     for fold in range(args.folds or args.n_folds):

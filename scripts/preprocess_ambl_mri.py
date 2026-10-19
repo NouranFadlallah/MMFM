@@ -16,8 +16,14 @@ malignant lesion: 70 / 15 / 15 with a fixed seed. Writes
 <dest>/{train,val,test}/{Benign,Malignant}/<patient>_lesion<k>/p-<z>.npy and
 <dest>/lesions.csv.
 
+--window-mm instead crops a fixed physical square (e.g. 64 mm) centred on the
+lesion's bounding box in each slice, zero-padded at the image edge, so every
+crop has the same scale and lesion size survives the resize to 224 px (the
+bounding-box crop loses it; docs/dataset_reproduction_plan.md section 16).
+
 Usage:
     python3 scripts/preprocess_ambl_mri.py --dest datasets/MRI/AMBL/cls/img9Se
+    python3 scripts/preprocess_ambl_mri.py --window-mm 64 --dest datasets/MRI/AMBL/cls/img9Se_64mm
 """
 import argparse
 import sys
@@ -65,7 +71,13 @@ def patient_splits(lesions, seed=42, fractions=(0.70, 0.15, 0.15)):
     return split_of
 
 
-def lesion_crops(data, mask):
+def _window(rows, cols, size):
+    """Top-left (row, col) of a size x size window centred on the lesion's bounding box."""
+    centre_r, centre_c = (rows.min() + rows.max()) // 2, (cols.min() + cols.max()) // 2
+    return centre_r - size // 2, centre_c - size // 2
+
+
+def lesion_crops(data, mask, window_mm=None):
     """Yield (z, (h, w, 9) uint8) for each slice of one lesion."""
     phase_index = np.round(np.linspace(0, len(data['files']) - 1, NUM_PHASES)).astype(int)
     slices = [z for z in np.where(mask.any(axis=(1, 2)))[0] if mask[z].sum() >= MIN_LESION_PIXELS]
@@ -75,8 +87,15 @@ def lesion_crops(data, mask):
     low, high = _intensity_range(pre)
     by_phase = {p: ambl._slices(data['files'][p], slices) for p in sorted(set(phase_index))}
     height, width = mask.shape[1:]
+    size = int(round(window_mm / data['spacing'][1])) if window_mm else None
     for k, z in enumerate(slices):
         rows, cols = np.where(mask[z])
+        if size:
+            r0, c0 = _window(rows, cols, size)
+            padded = [np.pad(by_phase[p][k], size) for p in phase_index]   # zero pad so edge windows fit
+            channels = [_to_uint8(v[r0 + size:r0 + 2 * size, c0 + size:c0 + 2 * size], low, high) for v in padded]
+            yield int(z), np.stack(channels, axis=-1)
+            continue
         r0, r1 = max(rows.min() - BBOX_MARGIN, 0), min(rows.max() + BBOX_MARGIN + 1, height)
         c0, c1 = max(cols.min() - BBOX_MARGIN, 0), min(cols.max() + BBOX_MARGIN + 1, width)
         yield int(z), np.stack([_to_uint8(by_phase[p][k, r0:r1, c0:c1], low, high) for p in phase_index], axis=-1)
@@ -86,6 +105,8 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--dest', type=Path, default=Path('datasets/MRI/AMBL/cls/img9Se'))
     parser.add_argument('--seed', type=int, default=42)
+    parser.add_argument('--window-mm', type=float, default=None,
+                        help='fixed physical crop size centred on the lesion (default: mask bounding box + 6 px)')
     args = parser.parse_args(argv)
 
     resolved = pd.read_csv(RESOLVED)
@@ -101,7 +122,7 @@ def main(argv=None):
             out_dir = args.dest / split / class_name / f'{patient}_lesion{k}'
             out_dir.mkdir(parents=True, exist_ok=True)
             n = 0
-            for z, array in lesion_crops(data, data['masks'][k - 1]):
+            for z, array in lesion_crops(data, data['masks'][k - 1], args.window_mm):
                 np.save(out_dir / f'p-{z:03d}.npy', array)
                 n += 1
             rows.append({'patient': patient, 'segment': k, 'label': int(lesion['label']), 'split': split,

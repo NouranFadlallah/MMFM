@@ -854,6 +854,30 @@ recommends this for the ISPY2/BreaDM crop-size shortcut. Alternatively, feed
 the size to the model as an extra input. Results: `runs/run-4/ambl_cv_results.json`
 and `ambl_cv_results_lesions.csv` (out-of-fold lesion scores).
 
+**Follow-ups (2026-10-19): the image adds nothing beyond size at this scale.**
+
+| Variant (same folds, 131 lesions) | Lesion AUC (pooled) | Patient AUC |
+|---|---|---|
+| Bounding-box crops (above) | 0.715 | 0.640 |
+| Fixed 64 mm window crops (`--window-mm 64`) | 0.552 | 0.450 |
+| Bounding-box CNN score + log volume, stacked across folds | 0.843 | – |
+| Lesion volume only | **0.854** | **0.818** |
+
+- **Fixed physical windows are worse.** They keep size, but nothing marks
+  which spot is the lesion: a 10 mm benign lesion is a few pixels among other
+  enhancing tissue. The bounding-box crops implicitly locate it. With about
+  670 training crops the CNN cannot learn to find it.
+- **Stacking adds nothing.** Combining the CNN's out-of-fold score with log
+  volume, fit on the other folds and applied to the held-out fold, gives
+  0.843 vs. 0.854 for size alone (difference -0.011, 95% CI -0.029 to 0.004).
+  The CNN score already correlates 0.54 with log volume.
+- **Conclusion:** on 131 lesions a ResNet-18 learns no benign/malignant signal
+  beyond lesion size. Report size-only as the reference for any AMBL model.
+  Worth trying next: give the model the lesion mask as an extra channel (the
+  windowed crops plus the mask), or pool AMBL with the other MRI sources
+  through the fusion model rather than training on AMBL alone.
+  Results: `runs/run-4/ambl_cv_results_64mm.json`.
+
 ## Execution Order
 
 1. Resolve BUSI completeness and recover BrEaST labels/metadata.
