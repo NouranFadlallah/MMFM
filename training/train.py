@@ -172,8 +172,23 @@ class SingleBackboneClassifier(nn.Module):
         return self.classifier(self.projection(features)), None, None
 
 
+def _freeze_backbones(model):
+    """Stop gradients into every backbone and keep them in eval mode, so their
+    BatchNorm running statistics stay as warm-started too (train_one_epoch
+    re-applies eval() after model.train())."""
+    backbones = list(model.backbones) if hasattr(model, 'backbones') else [model.backbone]
+    for backbone in backbones:
+        for parameter in backbone.parameters():
+            parameter.requires_grad = False
+    model.frozen_modules = backbones
+    trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(f'frozen {len(backbones)} backbone(s); {trainable:,} trainable parameters left')
+
+
 def train_one_epoch(model, loader, opt, device, modality_dropout_prob=0.0, criterion=None, scheduler=None):
     model.train()
+    for module in getattr(model, 'frozen_modules', []):
+        module.eval()
     total_loss = 0.0
     criterion = criterion or nn.CrossEntropyLoss()
     for batch in tqdm(loader):
@@ -613,6 +628,13 @@ def _cmmd_metadata(dicom_root, clinical_data_path, cache_dir):
     headers alone carry no diagnosis). Converts each matched DICOM to a cached
     PNG on first use, since this repo's image loading is PIL-based."""
     dicom_root = Path(dicom_root)
+    # the PNG cache carries its own index, so training works after the raw
+    # DICOMs are pruned (docs/storage_management_plan.md)
+    index_path = Path(cache_dir) / 'metadata.csv'
+    if index_path.exists():
+        metadata = pd.read_csv(index_path)
+        metadata['image'] = metadata['image'].map(Path)
+        return metadata
     clinical = pd.read_excel(clinical_data_path, sheet_name='Sheet1')
     label_map = {'Benign': 0, 'Malignant': 1}
     labels = {
@@ -635,6 +657,7 @@ def _cmmd_metadata(dicom_root, clinical_data_path, cache_dir):
     metadata = pd.DataFrame(rows)
     if metadata.empty:
         raise ValueError(f'No labeled CMMD DICOMs found under {dicom_root} matching {clinical_data_path}')
+    metadata.to_csv(index_path, index=False)
     return metadata
 
 
@@ -1200,6 +1223,11 @@ def main(argv=None):
         help='Backbone for the MRI (breamdm) branch in --dataset combined. Defaults to --backbone.'
     )
     parser.add_argument('--epochs', type=int, default=cfg.epochs)
+    parser.add_argument('--lr', type=float, default=None,
+                        help=f'Adam learning rate (default {cfg.lr}); ignored by --paper-match recipes, which set their own.')
+    parser.add_argument('--freeze-backbones', action='store_true',
+                        help='Freeze every backbone (weights and BatchNorm statistics); train only projections, '
+                             'classifier heads and fusion weights. Meant for warm-started --dataset combined runs.')
     parser.add_argument('--max-samples', type=int, default=None)
     parser.add_argument('--batch-size', type=int, default=cfg.batch_size)
     parser.add_argument('--num-workers', type=int, default=4)
@@ -1658,7 +1686,9 @@ def _train_model(args, device, loader, val_loader, test_loader=None, class_weigh
         raise ValueError(f'the {args.dataset} --paper-match recipe unfreezes in stages and needs --single-mode')
     scheduler = None
     if recipe is None:
-        opt = optim.Adam(model.parameters(), lr=cfg.lr)
+        if getattr(args, 'freeze_backbones', False):
+            _freeze_backbones(model)
+        opt = optim.Adam([p for p in model.parameters() if p.requires_grad], lr=args.lr or cfg.lr)
     elif not stages:
         opt = _make_optimizer(recipe, model.parameters(), recipe['lr'])
         if recipe.get('schedule') == 'cosine':

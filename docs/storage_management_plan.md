@@ -208,6 +208,16 @@ trained on, and a registry entry (`scripts/datasets.py status`).
 | 7 | BreaDM `seg3D` float64 → uint8 | about 6.8 G | root | same arrays, lossless cast | decision 1 below (cast only, no deletion) | GitHub |
 | 8 | HF cache | up to 9 G | root | `hf cache scan`, drop models no longer used | confirm MedGemma is done | automatic |
 
+**Done 2026-10-19 (items 1-4):** checksums recorded, CBIS-DDSM prepared copy
+backed up to the private repo `noe95/mmfm-cbis-ddsm`, then the four raw folders
+moved (renamed, same drive) to `/mnt/data/mmfm_datasets/_trash_2026-10-19/`.
+Empty that folder from 2026-10-26 to actually free the 137 G. Before the move,
+the ODELIA cache and split CSV were moved to `MRI/odelia_prepared/`, CMMD's
+label spreadsheet to `mammography/cmmd_labels/`, and CMMD training was changed
+to read a cached index (`cmmd_png/metadata.csv`) instead of raw DICOM headers.
+Every training path, and all 11 `combined` sources, were verified to load
+without the raw folders.
+
 Result: `/mnt/data` 54 G → about 189 G free (items 1-4); `/` 12 G → about
 50-60 G free (items 5-8; item 6 moves rather than deletes). Same procedure
 as above: stage to a trash folder for a week, then empty. Each item still

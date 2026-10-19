@@ -116,7 +116,7 @@ cmmd:
   backup: noe95/mmfm-cmmd
   backup_paths:
     - datasets/mammography/cmmd_png
-    - /mnt/data/mmfm_datasets/mammography/cmmd/CMMD_clinicaldata_revision.xlsx
+    - /mnt/data/mmfm_datasets/mammography/cmmd_labels/CMMD_clinicaldata_revision.xlsx
 
 bcsdbt:
   name: Breast-Cancer-Screening-DBT (validation release)
