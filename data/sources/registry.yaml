@@ -271,7 +271,10 @@ ambl:
   raw_dir: /mnt/data/mmfm_datasets/MRI/ambl/dicom
   extra_files:
     - /mnt/data/mmfm_datasets/MRI/ambl/clinical/Advanced-MRI-Breast-Lesions-DA-Clinical-Sep2024.xlsx
-  prepared: null
+  prepared: datasets/MRI/AMBL/cls/img9Se   # 9-channel lesion crops + lesions.csv (131 lesions, 86 patients)
+  prepare: >-
+    .venv/bin/python scripts/analyze_datasets.py --dataset ambl &&
+    .venv/bin/python scripts/preprocess_ambl_mri.py
   source:
     type: idc
     collection: advanced_mri_breast_lesions
