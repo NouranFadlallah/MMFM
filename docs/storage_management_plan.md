@@ -211,7 +211,7 @@ trained on, and a registry entry (`scripts/datasets.py status`).
 **Done 2026-10-19 (items 1-4):** checksums recorded, CBIS-DDSM prepared copy
 backed up to the private repo `noe95/mmfm-cbis-ddsm`, then the four raw folders
 moved (renamed, same drive) to `/mnt/data/mmfm_datasets/_trash_2026-10-19/`.
-Empty that folder from 2026-10-26 to actually free the 137 G. Before the move,
+Emptied early on 2026-10-19 at the user's request, to make room for the next downloads. Before the move,
 the ODELIA cache and split CSV were moved to `MRI/odelia_prepared/`, CMMD's
 label spreadsheet to `mammography/cmmd_labels/`, and CMMD training was changed
 to read a cached index (`cmmd_png/metadata.csv`) instead of raw DICOM headers.
