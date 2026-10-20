@@ -163,6 +163,23 @@ Frozen backbones score highest but peak at epoch 1, then plateau at 0.80-0.815.
 lr 1e-5 was still improving at its 10-epoch cap. Source metrics are in
 `runs/run-4/combined_fusion_resnet18_phase2_{lr1e-5,frozen}_best_source_metrics.json`.
 
+**Adding AMBL as a 4th MRI source (2026-10-20).** Same frozen-backbone setup:
+
+| | With AMBL (kept epoch 4) | Without (kept epoch 1) |
+|---|---|---|
+| Mean branch AUC | 0.808 | 0.817 |
+| MRI branch (sources with both classes) | 0.816 | 0.824 |
+| BreaDM | 0.885 | 0.904 |
+| ODELIA | 0.693 | 0.647 |
+| AMBL (validation slices) | 0.806 | - |
+
+Roughly neutral: ODELIA gains and BreaDM loses by amounts within the noise of
+their small validation sets. The mammography and ultrasound sources, which
+AMBL cannot affect directly, also shift, because a different epoch was kept.
+This shows how much single-run numbers move here. AMBL stays in the combined
+model. Its single-dataset reference remains lesion size (lesion AUC 0.854;
+`dataset_reproduction_plan.md` section 16).
+
 The paper recipes use ResNet-50, ViT and DINOv3. `combined` warm-starts branches
 from single-mode checkpoints with a matching architecture (`_warm_start_branch`).
 So for each new dataset, **also** run one ResNet-18 single-mode training with the
