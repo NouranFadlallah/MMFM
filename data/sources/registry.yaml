@@ -289,3 +289,39 @@ ambl:
       https://www.cancerimagingarchive.net/wp-content/uploads/Advanced-MRI-Breast-Lesions-DA-Clinical-Sep2024.xlsx
       The remaining 101 labelled patients have no SEG (about 36 GB more).
   backup: null   # re-fetchable from IDC by series list; back up the prepared lesion crops once they exist
+
+dmid:
+  name: Digital Mammography Dataset for Breast Cancer Diagnosis Research (DMID)
+  modality: mammography (full-field digital)
+  license: CC BY 4.0
+  pathology_confirmed: to check (Oza et al. 2024, Biomed. Eng. Lett. 14:317-330)
+  raw_dir: /mnt/data/mmfm_datasets/mammography/dmid
+  prepared: null
+  source:
+    type: figshare
+    article: 24522883
+    landing: https://figshare.com/articles/dataset/_b_Digital_mammography_Dataset_for_Breast_Cancer_Diagnosis_Research_DMID_b_DMID_rar/24522883
+    files: [DICOM Images.zip, ROI Masks.zip, Pixel-level annotation.zip, Reports.zip, Metadata.xlsx]
+    note: >-
+      Version 2. TIFF Images.zip (4.32 GB) is skipped: the same mammograms as the
+      DICOMs in another format. About 6.6 GB with the files above.
+  backup: null   # open Figshare download, md5-checked; re-fetchable
+
+bus_uclm:
+  name: BUS-UCLM breast ultrasound lesion segmentation dataset
+  modality: ultrasound
+  license: CC BY 4.0
+  pathology_confirmed: to check (dataset page gives benign / malignant / normal masks)
+  raw_dir: /mnt/data/mmfm_datasets/ultrasound/bus_uclm
+  prepared: null
+  source:
+    type: mendeley
+    dataset: 7fvgj4jsp7
+    version: 3
+    landing: https://data.mendeley.com/datasets/7fvgj4jsp7/3
+    note: >-
+      Mendeley Data v3 (27 Jan 2025): 38 patients, 683 images (174 benign, 90
+      malignant, 419 normal), Siemens ACUSON S2000; RGB masks, green = benign,
+      red = malignant. Fetched file by file (1,367 files: BUS-UCLM/images,
+      BUS-UCLM/masks, INFO.csv); the dataset zip endpoint returns 403 to scripts.
+  backup: null   # open Mendeley download; re-fetchable
