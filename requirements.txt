@@ -18,3 +18,6 @@ pyarrow>=14.0
 # dataset re-download (scripts/datasets.py fetch, IDC sources)
 idc-index>=0.8
 pyyaml>=6.0
+pylibjpeg>=2.0  # JPEG Lossless DICOM (DMID)
+pylibjpeg-libjpeg>=2.1
+imagecodecs  # LZW TIFF masks (DMID)
