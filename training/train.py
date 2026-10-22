@@ -30,7 +30,7 @@ from utils.metrics import classification_metrics
 # branch order used throughout combined (multi-modality) training
 MAMMOGRAPHY_BRANCH, ULTRASOUND_BRANCH, MRI_BRANCH = 0, 1, 2
 BRANCH_CHANNELS = (3, 3, 9)
-ULTRASOUND_DATASET_CHOICES = ('busbra', 'busi', 'busc', 'breast', 'bus_cot')
+ULTRASOUND_DATASET_CHOICES = ('busbra', 'busi', 'busc', 'breast', 'bus_cot', 'bus_uclm')
 ULTRASOUND_DATASETS = ULTRASOUND_DATASET_CHOICES
 
 
@@ -876,6 +876,64 @@ def _cbis_ddsm_frames(root, seed=42, include_bwc=False, test_fraction=0.15, vali
     return train, validation, test
 
 
+DMID_ROOT = Path('/mnt/data/mmfm_datasets/mammography/dmid/extracted')
+# second copies of pixel-identical pairs (IMG021/IMG319, IMG034/IMG172); IMG019's
+# twin IMG318 stays, since IMG019 is labelled "undefined" and unused anyway
+DMID_DUPLICATES = ('IMG319', 'IMG172')
+
+
+def _dmid_metadata(root=DMID_ROOT, cache_dir=Path('datasets/mammography/dmid_png'), margin=0.2, min_side=256):
+    """DMID lesion crops as cached 8-bit PNGs, one per benign / malignant image
+    (malignant if any finding is M). The box comes from audit/sources.py's dmid
+    adapter (ROI mask, else the metadata circles), widened by `margin` per side
+    and to at least `min_side` px. Images are mirrored so the breast is always on
+    the left, because side alone predicts the label (AUC 0.61). No patient IDs:
+    each image is its own group (docs/dataset_audit.md)."""
+    cache_dir = Path(cache_dir)
+    index_path = cache_dir / 'metadata.csv'
+    if index_path.exists():
+        metadata = pd.read_csv(index_path)
+    else:
+        from PIL import Image
+        import pydicom
+        from audit.sources import dmid
+
+        rows = []
+        for sample in dmid(root):
+            if not sample.used or sample.box is None or sample.sample_id in DMID_DUPLICATES:
+                continue
+            array = pydicom.dcmread(sample.native_path).pixel_array
+            array = array[..., 0] if array.ndim == 3 else array
+            height, width = array.shape
+            left, top, right, bottom = sample.box
+            side = 'L' if array[:, :width // 2].mean() >= array[:, width // 2:].mean() else 'R'
+            if side == 'R':
+                array = array[:, ::-1]
+                left, right = width - right, width - left
+            box_w, box_h = right - left, bottom - top
+            pad_w = max(margin * box_w, (min_side - box_w) / 2, 0)
+            pad_h = max(margin * box_h, (min_side - box_h) / 2, 0)
+            crop = array[max(0, int(top - pad_h)):min(height, int(bottom + pad_h)),
+                         max(0, int(left - pad_w)):min(width, int(right + pad_w))]
+            out_path = cache_dir / f'{sample.sample_id}.png'
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            Image.fromarray(np.ascontiguousarray(crop).astype(np.uint8)).save(out_path)
+            rows.append({'image': str(out_path), 'label': sample.label, 'patient': sample.sample_id,
+                         'side': side, 'view': sample.extra['view'], 'roi_mask': sample.extra['roi_mask']})
+        metadata = pd.DataFrame(rows)
+        if metadata.empty:
+            raise ValueError(f'No labelled DMID images found under {root}')
+        metadata.to_csv(index_path, index=False)
+    metadata['image'] = metadata['image'].map(Path)
+    return metadata
+
+
+def _dmid_frame(root=DMID_ROOT, seed=42, validation_fraction=0.1):
+    """Image-level hold-out (DMID has no patient IDs, so a patient's CC and MLO
+    views can land on both sides)."""
+    return _patient_split(_dmid_metadata(root), 'patient', seed, validation_fraction)
+
+
 def _bus_cot_metadata(root):
     """BUS-CoT's BUS-Lesion classification set (Yu et al. 2025): one cropped
     lesion image per entry of lesion_dataset.json, with its official patient-level
@@ -922,6 +980,35 @@ def _bus_cot_clinical_frame(root, seed=42, validation_fraction=0.1):
         drop = (set(members['record']) - keep) | conflicted
         metadata = metadata[~metadata['record'].isin(drop)]
     return _patient_split(metadata.reset_index(drop=True), 'patient', seed, validation_fraction)
+
+
+# BUS-UCLM (37 patients) and DMID (273 images) are small enough that 10% gives a
+# 3-patient / 27-image validation set, so they hold out at least this much
+SMALL_SOURCE_VALIDATION_FRACTION = 0.2
+BUS_UCLM_ROOT = Path('/mnt/data/mmfm_datasets/ultrasound/bus_uclm/BUS-UCLM')
+# CHCO_000-003 are pixel-identical to CHVI frames: one patient (docs/dataset_audit.md)
+BUS_UCLM_PATIENT_ALIASES = {'CHCO': 'CHVI'}
+
+
+def _bus_uclm_metadata(root=BUS_UCLM_ROOT):
+    """BUS-UCLM benign / malignant images (normals dropped), patient = filename
+    prefix with the CHCO/CHVI alias merged."""
+    root = Path(root)
+    info = pd.read_csv(root / 'INFO.csv', sep=';', encoding='utf-8-sig')
+    info['Label'] = info['Label'].astype(str).str.strip()
+    info = info[info['Label'].isin(('Benign', 'Malignant'))]
+    names = info['Image'].astype(str).str.strip()
+    prefixes = names.str.split('_').str[0]
+    return pd.DataFrame({
+        'image': [root / 'images' / name for name in names],
+        'label': (info['Label'] == 'Malignant').astype(int).to_numpy(),
+        'patient': prefixes.replace(BUS_UCLM_PATIENT_ALIASES).to_numpy(),
+    })
+
+
+def _bus_uclm_frame(root=BUS_UCLM_ROOT, seed=42, validation_fraction=0.1):
+    """Patient-level hold-out over BUS-UCLM (38 patients, 37 after the merge)."""
+    return _patient_split(_bus_uclm_metadata(root), 'patient', seed, validation_fraction)
 
 
 def _assign_stratified_group_folds(metadata, group_col, num_folds, seed):
@@ -995,6 +1082,10 @@ def _ultrasound_frame(name, args):
     elif name == 'bus_cot':
         frame = _bus_cot_clinical_frame(Path('datasets/ultrasound/bus_cot/extracted/BUSCoT'),
                                         args.seed, args.validation_fraction)
+        transform_cls = PadToSquareTransform
+    elif name == 'bus_uclm':
+        frame = _bus_uclm_frame(BUS_UCLM_ROOT, args.seed,
+                                max(args.validation_fraction, SMALL_SOURCE_VALIDATION_FRACTION))
         transform_cls = PadToSquareTransform
     else:
         raise ValueError(f'Unknown ultrasound dataset {name}')
@@ -1072,6 +1163,18 @@ def _build_combined_sources(args):
             _make_dataset(cbis_train_frame, MiasTransform(size=args.image_size, augment=True)),
             _make_dataset(cbis_validation_frame, MiasTransform(size=args.image_size, augment=False)),
             cbis_train_frame['label'], MAMMOGRAPHY_BRANCH, 'cbis_ddsm',
+        ))
+
+    # mammography branch: DMID lesion crops (image-level split, breast mirrored
+    # to the left). Optional: skipped if the raw release isn't on /mnt/data.
+    if not getattr(args, 'no_dmid', False) and ((DMID_ROOT / 'DICOM Images').exists()
+                             or Path('datasets/mammography/dmid_png/metadata.csv').exists()):
+        dmid_train_frame, dmid_validation_frame = _dmid_frame(
+            DMID_ROOT, args.seed, max(args.validation_fraction, SMALL_SOURCE_VALIDATION_FRACTION))
+        sources_by_branch[MAMMOGRAPHY_BRANCH].append(_branch_dataset_source(
+            _make_dataset(dmid_train_frame, MiasTransform(size=args.image_size, augment=True)),
+            _make_dataset(dmid_validation_frame, MiasTransform(size=args.image_size, augment=False)),
+            dmid_train_frame['label'], MAMMOGRAPHY_BRANCH, 'dmid',
         ))
 
     # ultrasound branch: one or more of busbra/busi/busc/breast/bus_cot, concatenated
@@ -1265,6 +1368,8 @@ def main(argv=None):
         default=list(ULTRASOUND_DATASET_CHOICES),
         help='Which ultrasound datasets to concatenate into the ultrasound branch for --dataset combined.'
     )
+    parser.add_argument('--no-dmid', action='store_true',
+                        help='Leave DMID out of the mammography branch for --dataset combined.')
     parser.add_argument('--mammography-init-checkpoint', type=Path, default=None)
     parser.add_argument('--ultrasound-init-checkpoint', type=Path, default=None)
     parser.add_argument('--mri-init-checkpoint', type=Path, default=None)

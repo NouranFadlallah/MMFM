@@ -62,3 +62,42 @@ def test_mean_gray_is_pixel_weighted(tmp_path):
     Image.fromarray(np.full((3, 1), 255, dtype=np.uint8)).save(large)
 
     assert _mean_gray([small, large]) == 0.75
+
+
+def test_bus_uclm_drops_normals_and_merges_chco_into_chvi(tmp_path):
+    from training.train import _bus_uclm_metadata
+
+    pd.DataFrame({'Image': ['CHCO_000.png', 'CHVI_005.png', 'ALWI_001.png', 'ALWI_002.png'],
+                  'Label': ['Benign', 'Benign ', 'Malignant', 'Normal']}).to_csv(tmp_path / 'INFO.csv', sep=';', index=False)
+
+    metadata = _bus_uclm_metadata(tmp_path)
+
+    assert list(metadata.label) == [0, 0, 1]
+    assert list(metadata.patient) == ['CHVI', 'CHVI', 'ALWI']
+
+
+def test_dmid_mirrors_right_breasts_and_skips_duplicates(tmp_path, monkeypatch):
+    import types
+    import pydicom
+    import audit.sources
+    from audit.sample import Sample
+    from training.train import _dmid_metadata
+
+    image = np.zeros((400, 600), dtype=np.uint8)
+    image[:, 300:] = 200            # breast on the right
+    image[100:150, 500:550] = 255   # lesion
+
+    def sample(sample_id, label):
+        return Sample(sample_id=sample_id, dataset='dmid', modality='mammography', label_name='x', label=label,
+                      used=True, group=sample_id, split=None, fold=None, native_kind='dicom',
+                      native_path='unused.dcm', box=(500, 100, 550, 150), extra={'view': 'CC', 'roi_mask': 'ok'})
+
+    monkeypatch.setattr(audit.sources, 'dmid', lambda root: [sample('IMG001', 1), sample('IMG319', 0)])
+    monkeypatch.setattr(pydicom, 'dcmread', lambda path: types.SimpleNamespace(pixel_array=image))
+
+    metadata = _dmid_metadata(tmp_path, cache_dir=tmp_path / 'cache', margin=0.2, min_side=60)
+
+    assert list(metadata.patient) == ['IMG001'] and metadata.side[0] == 'R'
+    crop = np.asarray(Image.open(metadata.image[0]))
+    assert crop.shape == (70, 70)
+    assert crop[10:60, 10:60].min() == 255   # lesion centred after mirroring
