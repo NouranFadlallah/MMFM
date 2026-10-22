@@ -87,6 +87,9 @@ weights were released. Adding these sources to the fusion model
 (Section~\ref{sec:phase2}) shows that joint training at the default learning
 rate erodes the warm-started branches. A lower learning rate or frozen
 backbones avoids this (mean branch AUC 0.809 and 0.817, against 0.783).
+On AMBL (Section~\ref{sec:ambl}), lesion size alone (AUC 0.854) beats every
+image model we trained (best 0.715), so AMBL enters the fusion model only as
+an extra MRI source, where its effect is neutral.
 \end{abstract}
 
 \section{Datasets and Task}
@@ -1241,8 +1244,9 @@ BreastDCEDL-ISPY2 \citep{fridman2025breastdcedl} (DCE-MRI). For each, we
 copied the source paper's preprocessing and training recipe and aimed for its
 reported number. A result counts as reproduced when it lands inside the
 paper's confidence interval or within $\pm$0.03 AUC of it.
-Table~\ref{tab:new-repro} summarizes the outcomes. All runs used one RTX 3060
-(12\,GB).
+A sixth, AMBL (Advanced-MRI-Breast-Lesions, DCE-MRI), was added later and
+is covered in Section~\ref{sec:ambl}. Table~\ref{tab:new-repro} summarizes the
+outcomes. All runs used one RTX 3060 (12\,GB).
 
 \begin{table}[htbp]
   \centering
@@ -1258,11 +1262,13 @@ Table~\ref{tab:new-repro} summarizes the outcomes. All runs used one RTX 3060
     CBIS-DDSM & Benign vs.\ malignant ROI crops, ResNet-50 & none for crops$^{a}$ & 0.752 & Reported only \\
     ISPY2 & pCR, ViT-B/16 & 0.78 (I-SPY2 test) & 0.608 & Not reproduced \\
     BCS-DBT & Lesion detection & 60\% sens.\ at 2 FP/volume & -- & Not attempted$^{b}$ \\
+    AMBL & Benign vs.\ malignant lesions, SegFormer & 0.92 (lesion level) & 0.715; size alone 0.854 & Not comparable$^{c}$ \\
     \bottomrule
   \end{tabular}}
   \par\smallskip\footnotesize
   $^{a}$Shen et al.'s whole-image AUC of 0.88 needs 2,478 full mammograms; 187 are held locally.
   $^{b}$The authors never released trained weights.
+  $^{c}$The paper's patient list, labels and split are not released, and its label counts differ from the TCIA clinical file (Section~\ref{sec:ambl}).
 \end{table}
 
 \subsection{BUS-CoT}
@@ -1411,6 +1417,83 @@ malignant classification of box-cropped slices only, now over all 396
 biopsied views (201 patients) of the three public releases. A ResNet-18
 reaches a validation AUC of 0.725 on 42 views.
 
+\subsection{AMBL (Advanced-MRI-Breast-Lesions)}
+\label{sec:ambl}
+
+AMBL is the only public breast DCE-MRI collection with lesion masks for both
+benign and malignant lesions. We downloaded the 99 patients that have DICOM
+SEG masks (DCE with five timepoints, axial T2, 34\,GB).
+
+\paragraph{Labels.} Every mask segment is labelled only ``Mass''. The
+documented order (all tumours first, then benign lesions) puts 20\% of
+masks in the wrong breast when checked against the clinical sheet's lesion
+sides. Labels were therefore resolved per patient: by the patient's single
+label where all lesions agree, otherwise by the mask's side. Lesions where
+both labels share a breast were excluded. After also excluding six
+post-chemotherapy scans, 131 lesions in 86 patients remain (the full analysis
+is in the companion dataset report).
+
+\paragraph{Why the paper's 0.92 cannot be matched.} BreastDCEDL\_AMBL reports
+a lesion-level AUC of 0.92 for a SegFormer:
+\begin{itemize}
+  \item Its test set is 15 patients, with 23 or 28 lesions (the paper gives
+  both numbers).
+  \item Its Zenodo record holds only the trained weights; the patient list,
+  labels and split are not released.
+  \item Its label counts (133 lesions, 89 benign / 44 malignant) differ from the
+  TCIA clinical file for these patients (166 lesions, 83 / 83).
+  \item It also trained on ISPY1 and ISPY2 tumour masks, which we do not hold.
+\end{itemize}
+We therefore report our own baseline rather than a reproduction.
+
+\paragraph{Baseline: 5-fold patient-level cross validation.} A single 15\%
+test split would hold only 18 lesions, so every patient is tested once
+across five folds stratified on whether the patient has a malignant lesion.
+\begin{itemize}
+  \item \textbf{Model:} ResNet-18 on 9-channel lesion crops, made with the same
+    rule as the ISPY2 crops (mask bounding box plus a 6-pixel margin, DCE phases
+    sampled to 9 channels). Checkpoints are selected on validation lesion AUC.
+  \item \textbf{Scoring:} lesion score is the mean slice probability; patient
+    score is the most suspicious lesion.
+  \item \textbf{Comparison:} lesion volume alone, on the same folds.
+\end{itemize}
+
+\begin{table}[htbp]
+  \centering
+  \caption{AMBL, 5-fold patient-level cross validation (131 lesions, 86 patients). Pooled out-of-fold AUC; 95\% CI from 1,000 patient-level bootstrap resamples.}
+  \label{tab:ambl}
+  \begin{tabular}{@{}l c c@{}}
+    \toprule
+    Model & Lesion AUC & Patient AUC \\
+    \midrule
+    ResNet-18, bounding-box crops & 0.715 (0.61--0.81) & 0.640 \\
+    ResNet-18, fixed 64\,mm window crops & 0.552 & 0.450 \\
+    ResNet-18, 64\,mm windows + lesion-mask channel & 0.576 & 0.497 \\
+    Bounding-box CNN score + log volume (stacked) & 0.843 & -- \\
+    \textbf{Lesion volume only} & \textbf{0.854 (0.79--0.92)} & \textbf{0.818} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Lesion size beats every image model (Table~\ref{tab:ambl}). Against the
+bounding-box CNN the difference is $-$0.14 (95\% CI $-$0.23 to $-$0.06), and
+size is better in all five folds.
+\begin{itemize}
+  \item \textbf{Fixed physical windows do not help.} Resizing every crop to
+    224\,px removes absolute size, but fixed 64\,mm windows that keep it score
+    worse. Without the bounding box nothing marks which spot is the lesion,
+    and the mask channel barely helps (0.576), even though its area \emph{is}
+    the size.
+  \item \textbf{The CNN adds nothing beyond size.} Its score correlates 0.54
+    with lesion volume, and combining the two adds nothing.
+  \item \textbf{Checkpoint selection is noisy.} Best validation AUC ranges
+    0.54--0.92 across folds.
+\end{itemize}
+With about 670 training crops from 86 patients, a ResNet-18 learns no
+benign/malignant signal beyond lesion size. Lesion size is therefore the
+reference result for AMBL, and AMBL is used only as an additional MRI source
+in the fusion model.
+
 \section{Combined Fusion over Eleven Sources}
 \label{sec:phase2}
 
@@ -1439,7 +1522,7 @@ ResNet-18 reaches a test AUC of 0.792 on fold 0.
     \midrule
     Mammography & mini-MIAS 109 (10), BCS-DBT 354 (42), CBIS-DDSM 1,244 (133) \\
     Ultrasound & BUS-BRA 1,689 (186), BUSI 583 (64), BUSC 225 (25), BrEaST 227 (25), BUS-CoT 1,834 (202) \\
-    MRI & BreastDM 1,202 (117), ISPY2 33,475 (3,705; malignant only), ODELIA 263 (76) \\
+    MRI & BreastDM 1,202 (117), ISPY2 33,475 (3,705; malignant only), ODELIA 263 (76), AMBL$^{*}$ 671 (220) \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -1502,9 +1585,20 @@ differences are within noise.
     lr $10^{-4}$, all trained & 1 & 0.679 & \textbf{0.888} & 0.782 & 0.783 \\
     lr $10^{-5}$, all trained & 9 & 0.717 & 0.868 & \textbf{0.841} & 0.809 \\
     Frozen backbones, lr $10^{-4}$ & 1 & \textbf{0.747} & 0.881 & 0.824 & \textbf{0.817} \\
+    Frozen backbones + AMBL$^{*}$ & 4 & 0.728 & 0.879 & 0.816 & 0.808 \\
     \bottomrule
   \end{tabular}
+  \par\smallskip\footnotesize
+  $^{*}$AMBL added as a fourth MRI source in a later run; its validation lesions also enter the MRI branch AUC, so that column is not directly comparable to the rows above.
 \end{table}
+
+\paragraph{Adding AMBL.} With AMBL as a fourth MRI source (frozen backbones,
+same warm-starts), the result is roughly neutral: mean branch AUC 0.808
+against 0.817. ODELIA rises (0.693 vs.\ 0.647) and BreastDM falls (0.885 vs.\
+0.904), both within the noise of their small validation sets. AMBL's own
+slice-level validation AUC is 0.806. The mammography and ultrasound sources,
+which AMBL cannot affect directly, also shift because a different epoch was
+kept, a reminder of how much single-run numbers move here.
 
 \section{Optional Ultrasound Preprocessing}
 \label{sec:us-preprocessing}
@@ -1587,6 +1681,12 @@ None of these steps has yet been used in a reported training run.
     stack per breast.} Without lesion masks, the central slice may miss the
     lesion, so the fusion model's ODELIA score understates what the full 3D
     MST achieves (benign vs.\ malignant 0.70 vs.\ 0.82 averaged over folds).
+  \item \textbf{AMBL is too small for an image-only model} (131 lesions, 86
+    patients): no crop variant beat lesion size. Its labels are resolved
+    from lesion side, which excludes 27 ambiguous lesions.
+  \item \textbf{DMID and BUS-UCLM are downloaded and audited but not trained
+    yet}; their audits (companion dataset report) flag a laterality shortcut
+    in DMID and one patient filed under two IDs in BUS-UCLM.
   \item \textbf{The new reproductions use one seed}, and the combined
     results use a single warm-start per branch. Std is across folds where
     folds exist, and absent otherwise.
