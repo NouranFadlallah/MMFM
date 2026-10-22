@@ -66,6 +66,9 @@ def _case_job(item):
     try:
         if dataset == 'ispy2':
             return volumes.analyze_ispy2_case(path)
+        if dataset == 'ambl':
+            from audit import ambl
+            return ambl.analyze_case(path)   # one row per lesion
         return volumes.analyze_breadm_seg3d_case(path)
     except Exception as error:
         return {'group': Path(path).name, 'load_error': repr(error)}
@@ -119,7 +122,9 @@ def analyze_dataset(name, args):
         dirs = dirs[:max(1, args.limit // 20)]
     if dirs:
         print(f'  case-level volumes: {len(dirs)}')
-        cases = pd.DataFrame(_run_parallel(_case_job, [(name, d) for d in dirs], args.workers, 'cases'))
+        results = _run_parallel(_case_job, [(name, d) for d in dirs], args.workers, 'cases')
+        # AMBL returns one row per lesion; every other dataset one row per case
+        cases = pd.DataFrame([row for r in results for row in (r if isinstance(r, list) else [r])])
         _to_parquet(cases, out_dir / 'cases.parquet')
     return _finish_dataset(name, args, out_dir, frame, thumbs, headers, cases)
 

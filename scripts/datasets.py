@@ -182,6 +182,14 @@ def _content_length(url):
     return int(total) if total.isdigit() else None
 
 
+def _md5(path):
+    digest = hashlib.md5()
+    with open(path, 'rb') as handle:
+        while block := handle.read(CHUNK):
+            digest.update(block)
+    return digest.hexdigest()
+
+
 def _download_ranged(url, dest, md5=None, workers=4):
     """Parallel, resumable download in 64 MB byte ranges. Each range re-requests
     the URL, so short-lived redirect links (e.g. Figshare -> S3, valid ~10 s)
@@ -193,10 +201,13 @@ def _download_ranged(url, dest, md5=None, workers=4):
     if size is None:
         return _download(url, dest)
     dest.parent.mkdir(parents=True, exist_ok=True)
+    done_file = dest.with_name(dest.name + '.done')
+    if md5 and dest.exists() and dest.stat().st_size == size and not done_file.exists() and _md5(dest) == md5:
+        print(f'  {dest.name}: already complete, md5 OK')
+        return
     if not dest.exists() or dest.stat().st_size != size:
         with open(dest, 'wb') as handle:
             handle.truncate(size)
-    done_file = dest.with_name(dest.name + '.done')
     done = set(done_file.read_text().split()) if done_file.exists() else set()
     parts = [(start, min(start + RANGE_CHUNK, size) - 1) for start in range(0, size, RANGE_CHUNK)
              if str(start) not in done]
@@ -227,12 +238,9 @@ def _download_ranged(url, dest, md5=None, workers=4):
             if k % 5 == 0 or k == len(parts):
                 print(f'  {k}/{len(parts)} ranges', flush=True)
     if md5:
-        digest = hashlib.md5()
-        with open(dest, 'rb') as handle:
-            while block := handle.read(CHUNK):
-                digest.update(block)
-        if digest.hexdigest() != md5:
-            raise RuntimeError(f'{dest.name}: md5 mismatch ({digest.hexdigest()} != {md5})')
+        digest = _md5(dest)
+        if digest != md5:
+            raise RuntimeError(f'{dest.name}: md5 mismatch ({digest} != {md5}); delete it and <dest>.done to re-fetch')
         print(f'  {dest.name}: md5 OK')
     done_file.unlink(missing_ok=True)
 
@@ -254,6 +262,60 @@ def cmd_fetch(name, registry, dest=None, used_only=False):
         if archive.name.endswith(('.tar.gz', '.tgz')):
             with tarfile.open(archive) as tar:
                 tar.extractall(resolve(source.get('unpack_to', dest)), filter='data')
+        return
+    if kind == 'figshare':
+        # selected files of one Figshare article, md5-checked, zips unpacked into unpack_dir
+        import json
+        import zipfile
+        with urllib.request.urlopen(f"https://api.figshare.com/v2/articles/{source['article']}") as response:
+            files = json.load(response)['files']
+        wanted = set(source.get('files') or [f['name'] for f in files])
+        for item in files:
+            if item['name'] not in wanted:
+                continue
+            target = dest / 'archives' / item['name']
+            _download_ranged(item['download_url'], target, md5=item.get('computed_md5') or item.get('supplied_md5'))
+            if target.suffix == '.zip':
+                zipfile.ZipFile(target).extractall(dest / source.get('unpack_dir', 'extracted'))
+        return
+    if kind == 'mendeley':
+        # every file of one Mendeley Data version, placed in its folder tree, sha256-checked.
+        # Mendeley answers Python's urllib with 403 but serves curl, so requests go through curl.
+        import json
+        import subprocess
+
+        def curl(url, target=None):
+            command = ['curl', '-sSfL', '--retry', '3', url] + (['-o', str(target)] if target else [])
+            return subprocess.run(command, check=True, capture_output=target is None).stdout
+
+        base = f"https://data.mendeley.com/public-api/datasets/{source['dataset']}"
+        record = json.loads(curl(base))   # the latest version; only this form lists files
+        if int(record['version']) != int(source['version']):
+            raise ValueError(f"Mendeley now serves version {record['version']}, registry pins {source['version']}")
+        files = record['files']
+        folders = {f['id']: f for f in json.loads(curl(f"{base}/folders/{source['version']}"))}
+
+        def folder_path(folder_id):
+            parts = []
+            while folder_id in folders:
+                parts.append(folders[folder_id]['name'])
+                folder_id = folders[folder_id].get('parent_id')
+            return Path(*reversed(parts)) if parts else Path()
+
+        def fetch_one(item):
+            target = dest / folder_path(item['folder_id']) / item['filename']
+            expected = item['content_details']['sha256_hash']
+            if target.exists() and hashlib.sha256(target.read_bytes()).hexdigest() == expected:
+                return 0
+            target.parent.mkdir(parents=True, exist_ok=True)
+            curl(item['content_details']['download_url'], target)
+            if hashlib.sha256(target.read_bytes()).hexdigest() != expected:
+                raise ValueError(f'sha256 mismatch for {target}')
+            return 1
+
+        with ThreadPoolExecutor(8) as pool:
+            fetched = sum(pool.map(fetch_one, files))
+        print(f'  {len(files)} files present ({fetched} downloaded now), sha256 verified')
         return
     if kind == 'zenodo':
         import json

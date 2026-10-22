@@ -1,0 +1,4 @@
+i,j,ahash_dist,dhash_dist,phash_dist,ssim,dataset_a,sample_id_a,label_name_a,label_a,used_a,group_a,split_a,fold_a,dataset_b,sample_id_b,label_name_b,label_b,used_b,group_b,split_b,fold_b,same_group,label_conflict,group_id
+18,317,0,0,0,0.9988903,dmid,IMG019,undefined,,False,IMG019,,,dmid,IMG318,benign,0.0,True,IMG318,,,False,False,0
+20,318,0,0,0,1.0,dmid,IMG021,benign,0.0,True,IMG021,,,dmid,IMG319,benign,0.0,True,IMG319,,,False,False,1
+33,171,0,0,0,0.9997789,dmid,IMG034,malignant,1.0,True,IMG034,,,dmid,IMG172,malignant,1.0,True,IMG172,,,False,False,2

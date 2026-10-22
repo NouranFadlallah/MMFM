@@ -15,6 +15,7 @@ subdirectory — everything lives at repo root:
 - `data/dataset.py` — transforms (`BusbraTransform`, `MiasTransform`, `BreadmTransform`) and datasets (`TripleImageDataset`, `BreaDMDataset`, `SingleModalityBranchDataset`).
 - `data/preprocess.py` — `build_manifest`: builds a `TripleImageDataset`-compatible CSV (img1/img2/img3/label) from a `benign/`/`malignant/` folder tree, replicating one image into all three columns.
 - `training/train.py` — CLI entry point (`python3 training/train.py --dataset ... [--single-mode]`), per-dataset frame builders, the combined multi-dataset sampler, and the train/validate loop. This is the file to read to understand actual current behavior — it has grown organically and is the source of truth over the docs below.
+- `data/us_preprocessing.py` + `models/cyclegan.py` — optional ultrasound preprocessing (histogram methods, line/cross removal, CycleGAN variants), enabled per run with `--us-preprocess`; trained via `scripts/train_cyclegan.py`, helpers in `scripts/preprocess_ultrasound.py`. See `docs/ultrasound_preprocessing.md`.
 - `utils/metrics.py` — just `accuracy()`.
 - `docs/dataset_reproduction_plan.md` — per-dataset paper-reproduction recipe and "local implementation status" (what's actually wired up vs. still a gap). Read this before touching any single-dataset path.
 - `docs/public_dataset_intake_plan.md` — datasets *not* yet downloaded locally; intake/licensing notes only.
@@ -25,7 +26,10 @@ subdirectory — everything lives at repo root:
 
 ## Datasets and how to train each
 
-`training/train.py --dataset {busbra,busi,busc,breast,mias,breamdm,combined} [--single-mode]`.
+`training/train.py --dataset {busbra,busi,busc,breast,mias,cdd_cesm,cmmd,bcsdbt,bcsdbt_full,cbis_ddsm,bus_cot,breamdm,combined} [--single-mode]`.
+`--paper-match` reads the per-dataset recipe in `PAPER_RECIPES` (falls back to the BUS-BRA SGD recipe).
+ODELIA and BreastDCEDL-ISPY2 pCR reproductions live in `scripts/reproduce_odelia.py` and
+`scripts/reproduce_breastdcedl_pcr.py`; see `docs/new_datasets_training_plan.md`.
 Single-mode trains a plain `SingleBackboneClassifier` (one backbone, no fusion,
 no modality dropout — this is the paper-reproduction path). Without
 `--single-mode` on a single dataset, it trains a full 3-branch `FusionLateModel`

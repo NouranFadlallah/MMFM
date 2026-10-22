@@ -1,0 +1,83 @@
+{
+  "dataset": "ambl",
+  "modality": "mri",
+  "reported": null,
+  "on_disk": {
+    "images": 165,
+    "by_label": {
+      "tumor": 83,
+      "benign": 80,
+      "unmatched": 2
+    },
+    "groups": 99,
+    "images_per_group": {
+      "min": 1.0,
+      "median": 1.0,
+      "max": 6.0
+    },
+    "with_mask": 0,
+    "with_box": 165,
+    "by_split": {}
+  },
+  "used_by_loader": {
+    "images": 163,
+    "by_label": {
+      "tumor": 83,
+      "benign": 80
+    },
+    "groups": 98,
+    "images_per_group": {
+      "min": 1.0,
+      "median": 1.0,
+      "max": 6.0
+    },
+    "with_mask": 0,
+    "with_box": 163,
+    "by_split": {}
+  },
+  "load_errors": 0,
+  "unique_sizes": 1,
+  "bits_stored": {
+    "16": 165
+  },
+  "color_images": 0,
+  "file_types": {
+    ".dcm": 165
+  },
+  "flags": {},
+  "multi_lesion_candidates": 0,
+  "duplicates": {
+    "hash_candidates": 8882,
+    "confirmed_pairs": 3942,
+    "groups": 2,
+    "images_in_groups": 142,
+    "label_conflict_pairs": 1951,
+    "split_leak_pairs": 0,
+    "groups_in_multiple_splits": 0
+  },
+  "dicom_Manufacturer": {
+    "GE MEDICAL SYSTEMS": 165
+  },
+  "dicom_ManufacturerModelName": {
+    "Signa HDxt": 165
+  },
+  "dicom_PhotometricInterpretation": {
+    "MONOCHROME2": 165
+  },
+  "dicom_BitsStored": {
+    "16": 165
+  },
+  "cases": {
+    "count": 165,
+    "n_phases": {
+      "min": 5.0,
+      "median": 5.0,
+      "max": 5.0
+    },
+    "enhancement_ratio": {
+      "min": 1.5113543711351192,
+      "median": 2.3309175339476704,
+      "max": 6.376884591022237
+    }
+  }
+}

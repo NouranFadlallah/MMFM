@@ -122,3 +122,30 @@ def test_review_file_keeps_existing_decisions(tmp_path):
     review = pd.read_csv(path)
     assert review.set_index('sample_id').loc['a', 'decision'] == 'exclude'
     assert review.set_index('sample_id').loc['b', 'reasons'] == 'isolation_forest'
+
+
+def test_ambl_resolve_labels_by_side_and_flags_ambiguous():
+    import pandas as pd
+
+    from audit.ambl import resolve_labels
+
+    clinical = ({
+        'P1': [(1, 'L', 1), (0, 'R', 20)],          # mixed labels, one per breast
+        'P2': [(0, 'L', 20), (0, 'R', 21)],          # uniform benign
+        'P3': [(1, 'L', 1), (0, 'L', 20)],           # both labels in the left breast
+    }, {})
+    cases = pd.DataFrame([
+        {'group': 'P1', 'segment': 1, 'side_from_mask': 'R', 'label_tumours_first': 1},
+        {'group': 'P1', 'segment': 2, 'side_from_mask': 'L', 'label_tumours_first': 0},
+        {'group': 'P2', 'segment': 1, 'side_from_mask': 'L', 'label_tumours_first': 0},
+        {'group': 'P2', 'segment': 2, 'side_from_mask': 'R', 'label_tumours_first': 0},
+        {'group': 'P3', 'segment': 1, 'side_from_mask': 'L', 'label_tumours_first': 1},
+        {'group': 'P3', 'segment': 2, 'side_from_mask': 'L', 'label_tumours_first': 0},
+    ])
+
+    resolved = resolve_labels(cases, clinical).set_index(['group', 'segment'])
+
+    assert resolved.loc[('P1', 1), 'label'] == 0 and resolved.loc[('P1', 1), 'label_method'] == 'by_side'
+    assert resolved.loc[('P1', 2), 'label'] == 1 and not resolved.loc[('P1', 2), 'tumours_first_agrees']
+    assert set(resolved.loc['P2', 'label_method']) == {'uniform'}
+    assert set(resolved.loc['P3', 'label_method']) == {'ambiguous'}

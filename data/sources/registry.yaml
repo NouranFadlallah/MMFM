@@ -116,7 +116,7 @@ cmmd:
   backup: noe95/mmfm-cmmd
   backup_paths:
     - datasets/mammography/cmmd_png
-    - /mnt/data/mmfm_datasets/mammography/cmmd/CMMD_clinicaldata_revision.xlsx
+    - /mnt/data/mmfm_datasets/mammography/cmmd_labels/CMMD_clinicaldata_revision.xlsx
 
 bcsdbt:
   name: Breast-Cancer-Screening-DBT (validation release)
@@ -167,6 +167,10 @@ ispy2:
   prepare: >-
     .venv/bin/python scripts/preprocess_ispy2_mri.py --source "<raw_dir>"
     --dest datasets/MRI/ISPY2/cls/img9Se
+  prepared_extra:   # pCR reproduction inputs (scripts/reproduce_breastdcedl_pcr.py)
+    - /mnt/data/mmfm_datasets/MRI/ispy2_pcr_rgb
+    - datasets/MRI/BreastDCEDL_metadata/BreastDCEDL_metadata.csv
+  prepare_extra: .venv/bin/python scripts/reproduce_breastdcedl_pcr.py slices
   source:
     type: manual
     landing: https://www.cancerimagingarchive.net/analysis-result/breastdcedl-ispy2/
@@ -185,7 +189,8 @@ cbis_ddsm:
     - /mnt/data/mmfm_datasets/mammography/CBIS-DDSM-labels/mass_case_description_test_set.csv
     - /mnt/data/mmfm_datasets/mammography/CBIS-DDSM-labels/calc_case_description_train_set.csv
     - /mnt/data/mmfm_datasets/mammography/CBIS-DDSM-labels/calc_case_description_test_set.csv
-  prepared: null
+  prepared: datasets/mammography/cbis_ddsm_png   # 2,006 8-bit crop PNGs + metadata.csv
+  prepare: .venv/bin/python scripts/prepare_mammography_cache.py cbis_ddsm
   source:
     type: idc
     collection: cbis_ddsm
@@ -197,7 +202,10 @@ cbis_ddsm:
       (~/CBIS-DDSM-cropped.tcia: 2,006 "cropped images" series, 31.6 GB;
       ~/CBIS-DDSM-full-sample.tcia: 188 stratified full mammograms, 6.1 GB).
       Label CSVs from https://wiki.cancerimagingarchive.net/download/attachments/22516629/
-  backup: null   # 38 GB raw, re-fetchable from IDC by series list; back up prepared crops later
+  backup: noe95/mmfm-cbis-ddsm   # CC BY 3.0 allows re-hosting; prepared crops + label CSVs
+  backup_paths:
+    - datasets/mammography/cbis_ddsm_png
+    - /mnt/data/mmfm_datasets/mammography/CBIS-DDSM-labels
 
 bcsdbt_extra:
   name: Breast-Cancer-Screening-DBT training + test (Benign/Cancer views only)
@@ -205,7 +213,8 @@ bcsdbt_extra:
   license: CC BY-NC 4.0
   pathology_confirmed: yes for Benign/Cancer
   raw_dir: datasets/mammography/bcsdbt_extra
-  prepared: null
+  prepared: datasets/mammography/bcsdbt_png   # box-cropped slices, shared with the bcsdbt validation release
+  prepare: .venv/bin/python scripts/prepare_mammography_cache.py bcsdbt_full
   source:
     type: idc
     collection: breast_cancer_screening_dbt
@@ -222,7 +231,13 @@ odelia:
   license: CC BY-NC 4.0
   pathology_confirmed: not stated (dataset card); check the challenge paper
   raw_dir: /mnt/data/mmfm_datasets/MRI/odelia
-  prepared: null
+  prepared: /mnt/data/mmfm_datasets/MRI/odelia_prepared   # npz/ (Pre, Sub_1, T2 per breast) + split_unilateral.csv
+  prepare: >-
+    .venv/bin/python scripts/reproduce_odelia.py cache &&
+    cp "<raw_dir>/split_unilateral.csv" /mnt/data/mmfm_datasets/MRI/odelia_prepared/ &&
+    .venv/bin/python scripts/preprocess_odelia_mri.py
+  prepared_extra:   # 9-channel arrays for the fusion model's MRI branch
+    - datasets/MRI/ODELIA/cls/img9Se
   source:
     type: manual
     landing: https://huggingface.co/datasets/ODELIA-AI/ODELIA-Challenge-2025
@@ -247,3 +262,66 @@ bus_cot:
     landing: https://doi.org/10.6084/m9.figshare.30838715
     note: single BUSCoT.zip (6.94 GB), unzipped into raw_dir/extracted
   backup: null   # open Figshare download with an md5; re-fetchable
+
+ambl:
+  name: Advanced-MRI-Breast-Lesions (AMBL), 99 patients with lesion segmentations
+  modality: mri
+  license: CC BY 4.0
+  pathology_confirmed: partial (tumours by biopsy/surgery; benign by biopsy or >=1 year follow-up)
+  raw_dir: /mnt/data/mmfm_datasets/MRI/ambl/dicom
+  extra_files:
+    - /mnt/data/mmfm_datasets/MRI/ambl/clinical/Advanced-MRI-Breast-Lesions-DA-Clinical-Sep2024.xlsx
+  prepared: datasets/MRI/AMBL/cls/img9Se   # 9-channel lesion crops + lesions.csv (131 lesions, 86 patients)
+  prepare: >-
+    .venv/bin/python scripts/analyze_datasets.py --dataset ambl &&
+    .venv/bin/python scripts/preprocess_ambl_mri.py
+  source:
+    type: idc
+    collection: advanced_mri_breast_lesions
+    series_list: data/sources/series/ambl_seg99.txt
+    landing: https://www.cancerimagingarchive.net/collection/advanced-mri-breast-lesions/
+    note: >-
+      IDC v25. For each of the 99 patients with a DICOM SEG ("ROI"): the original
+      (non-registered) "AX Sen Vibrant MultiPhase" DCE series, "Ax T2 FSE" and the
+      SEG: 297 series, 36.1 GB. SEG segment labels tumor1..n then benign1..n match
+      the lesion order in the clinical XLSX (its Data Dictionary sheet). Clinical
+      XLSX (version 2, Sep 2024) from
+      https://www.cancerimagingarchive.net/wp-content/uploads/Advanced-MRI-Breast-Lesions-DA-Clinical-Sep2024.xlsx
+      The remaining 101 labelled patients have no SEG (about 36 GB more).
+  backup: null   # re-fetchable from IDC by series list; back up the prepared lesion crops once they exist
+
+dmid:
+  name: Digital Mammography Dataset for Breast Cancer Diagnosis Research (DMID)
+  modality: mammography (full-field digital)
+  license: CC BY 4.0
+  pathology_confirmed: not stated (radiology reports with BI-RADS; Oza et al. 2024 paywalled)
+  raw_dir: /mnt/data/mmfm_datasets/mammography/dmid
+  prepared: null
+  source:
+    type: figshare
+    article: 24522883
+    landing: https://figshare.com/articles/dataset/_b_Digital_mammography_Dataset_for_Breast_Cancer_Diagnosis_Research_DMID_b_DMID_rar/24522883
+    files: [DICOM Images.zip, ROI Masks.zip, Pixel-level annotation.zip, Reports.zip, Metadata.xlsx]
+    note: >-
+      Version 2. TIFF Images.zip (4.32 GB) is skipped: the same mammograms as the
+      DICOMs in another format. About 6.6 GB with the files above.
+  backup: null   # open Figshare download, md5-checked; re-fetchable
+
+bus_uclm:
+  name: BUS-UCLM breast ultrasound lesion segmentation dataset
+  modality: ultrasound
+  license: CC BY 4.0
+  pathology_confirmed: not stated (Mendeley page gives labels and masks only)
+  raw_dir: /mnt/data/mmfm_datasets/ultrasound/bus_uclm
+  prepared: null
+  source:
+    type: mendeley
+    dataset: 7fvgj4jsp7
+    version: 3
+    landing: https://data.mendeley.com/datasets/7fvgj4jsp7/3
+    note: >-
+      Mendeley Data v3 (27 Jan 2025): 38 patients, 683 images (174 benign, 90
+      malignant, 419 normal), Siemens ACUSON S2000; RGB masks, green = benign,
+      red = malignant. Fetched file by file (1,367 files: BUS-UCLM/images,
+      BUS-UCLM/masks, INFO.csv); the dataset zip endpoint returns 403 to scripts.
+  backup: null   # open Mendeley download; re-fetchable

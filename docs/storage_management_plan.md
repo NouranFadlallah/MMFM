@@ -191,6 +191,39 @@ Expected: ~34 G freed on `/` now (items 1–3; CMMD's 22 G already moved off `/`
 the HF cache; ~127 G on `/mnt/data` (items 6–7, net of the CMMD move adding 22 G there). Use `gio trash` / move-to-staging-folder for a week rather than
 `rm`, then empty.
 
+### Phase 5 update (2026-10-19): make room for the next downloads
+
+Measured free space: `/` 12 G (92% full), `/mnt/data` 54 G. Every candidate
+below now has a prepared copy that training reads and has already been
+trained on, and a registry entry (`scripts/datasets.py status`).
+
+| Order | Item | Frees | Disk | Keep instead | Gate still open | Re-fetch |
+|---|---|---|---|---|---|---|
+| 1 | ODELIA unilateral parquet | 24 G | data | `npz/` cache (8.2 G: Pre, Sub_1, T2) + `split_unilateral.csv` | record checksums | Hugging Face, minutes |
+| 2 | ISPY2 raw NIfTI | 54 G | data | `cls/img9Se` (2.8 G) + pCR RGB slices (4.2 G) | none (checksums done; backup not allowed by licence) | TCIA, about 55 G |
+| 3 | CMMD DICOMs | 21 G | data | `cmmd_png` (2.7 G, lossless 8-bit) | none (checksums + backup done) | TCIA |
+| 4 | CBIS-DDSM DICOMs | 36 G | data | `cbis_ddsm_png` crops (242 M) + label CSVs | record checksums | TCIA. Loses 16-bit depth and the 187 full mammograms |
+| 5 | BUS-CoT zip | 6.5 G | root | the extracted copy | none | Figshare |
+| 6 | BCS-DBT train/test DICOMs | 25 G | root | **move** to `/mnt/data` after items 1-4, repoint the symlink | record checksums | TCIA / IDC |
+| 7 | BreaDM `seg3D` float64 → uint8 | about 6.8 G | root | same arrays, lossless cast | decision 1 below (cast only, no deletion) | GitHub |
+| 8 | HF cache | up to 9 G | root | `hf cache scan`, drop models no longer used | confirm MedGemma is done | automatic |
+
+**Done 2026-10-19 (items 1-4):** checksums recorded, CBIS-DDSM prepared copy
+backed up to the private repo `noe95/mmfm-cbis-ddsm`, then the four raw folders
+moved (renamed, same drive) to `/mnt/data/mmfm_datasets/_trash_2026-10-19/`.
+Emptied early on 2026-10-19 at the user's request, to make room for the next downloads. Before the move,
+the ODELIA cache and split CSV were moved to `MRI/odelia_prepared/`, CMMD's
+label spreadsheet to `mammography/cmmd_labels/`, and CMMD training was changed
+to read a cached index (`cmmd_png/metadata.csv`) instead of raw DICOM headers.
+Every training path, and all 11 `combined` sources, were verified to load
+without the raw folders.
+
+Result: `/mnt/data` 54 G → about 189 G free (items 1-4); `/` 12 G → about
+50-60 G free (items 5-8; item 6 moves rather than deletes). Same procedure
+as above: stage to a trash folder for a week, then empty. Each item still
+needs explicit sign-off. `~/Downloads` (1.9 G) holds the live CDD-CESM files
+behind a symlink, so it must not be cleared blindly.
+
 ## 7. Housekeeping
 
 - Move root-level `*.pth` into `checkpoints/` (gitignored), optionally push the

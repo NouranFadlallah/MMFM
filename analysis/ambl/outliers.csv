@@ -1,0 +1,10 @@
+sample_id,label_name,used,split,max_abs_z,z_reasons,iforest_score,iforest_flag
+AMBL-623/lesion1,tumor,True,,7.0003771070545335,hf_energy_frac(z=+7.0),0.6164473673812044,False
+AMBL-610/lesion1,tumor,True,,5.212937945028193,hf_energy_frac(z=+5.2),0.6256066275401352,False
+AMBL-036/lesion1,tumor,True,,3.5834244136233657,"brightness(z=+3.6),entropy(z=+3.2)",0.6390302274731183,False
+AMBL-590/lesion2,tumor,True,,3.572464072692014,"brightness(z=+3.6),entropy(z=+3.1)",0.6117959974104018,False
+AMBL-590/lesion1,tumor,True,,3.572464072692014,"brightness(z=+3.6),entropy(z=+3.1)",0.6117959974104018,False
+AMBL-625/lesion1,tumor,True,,3.4215991009629256,"brightness(z=+3.4),entropy(z=+3.4),noise_sigma(z=+3.1)",0.6717750230658401,True
+AMBL-026/lesion2,benign,True,,3.179771767955393,brightness(z=+3.2),0.6398268429674528,True
+AMBL-631/lesion1,tumor,True,,3.0188207186193714,hf_energy_frac(z=+3.0),0.4993073614028312,False
+AMBL-631/lesion2,tumor,True,,3.0188207186193714,hf_energy_frac(z=+3.0),0.4993073614028312,False

@@ -27,7 +27,7 @@
   \end{tabular}%
 }
 
-\title{ResNet-18 Baseline Reproductions on Six Public\\Breast-Imaging Datasets: A Results Comparison}
+\title{Baseline Reproductions and Multimodal Fusion on\\Public Breast-Imaging Datasets: A Results Comparison}
 \author{Nouran Fadlallah}
 \date{}
 
@@ -77,6 +77,19 @@ checkpoint, and -- for the first time in this report -- all five
 \textbf{\texttt{FusionLateModel}} checkpoints, via a new
 \textbf{\texttt{FusionBranchGradCAM}} that hooks all three branches at
 once and reads out whichever one a given sample populates.
+Finally, we reproduce the source papers on five newly added datasets
+(Section~\ref{sec:new-repro}). BUS-CoT \citep{yu2025buscot} (AUC 0.849 vs.\
+0.809) and ODELIA \citep{mullerfranzes2025odelia} (5-fold macro AUC 79.0 vs.\
+79.0) are reproduced. CBIS-DDSM crops are reported without a comparable
+target. BreastDCEDL's pCR result is not reproduced, most likely because it
+includes tumour-size features. BCS-DBT detection cannot be checked because no
+weights were released. Adding these sources to the fusion model
+(Section~\ref{sec:phase2}) shows that joint training at the default learning
+rate erodes the warm-started branches. A lower learning rate or frozen
+backbones avoids this (mean branch AUC 0.809 and 0.817, against 0.783).
+On AMBL (Section~\ref{sec:ambl}), lesion size alone (AUC 0.854) beats every
+image model we trained (best 0.715), so AMBL enters the fusion model only as
+an extra MRI source, where its effect is neutral.
 \end{abstract}
 
 \section{Datasets and Task}
@@ -1220,6 +1233,412 @@ needs a cleaner gradient path (e.g.\ full precision for the {CAM} forward
 pass only) before its localization can be trusted, independent of
 whatever MedGemma's underlying classification behavior turns out to be.
 
+\section{Paper Reproductions on Five Newly Added Datasets}
+\label{sec:new-repro}
+
+Five datasets were added after the baselines above: BUS-CoT
+\citep{yu2025buscot} (ultrasound), CBIS-DDSM \citep{lee2017cbisddsm} and the
+full biopsied set of BCS-DBT \citep{buda2021bcsdbt} (mammography and
+tomosynthesis), and ODELIA \citep{mullerfranzes2025odelia} and
+BreastDCEDL-ISPY2 \citep{fridman2025breastdcedl} (DCE-MRI). For each, we
+copied the source paper's preprocessing and training recipe and aimed for its
+reported number. A result counts as reproduced when it lands inside the
+paper's confidence interval or within $\pm$0.03 AUC of it.
+A sixth, AMBL (Advanced-MRI-Breast-Lesions, DCE-MRI), was added later and
+is covered in Section~\ref{sec:ambl}. Table~\ref{tab:new-repro} summarizes the
+outcomes. All runs used one RTX 3060 (12\,GB).
+
+\begin{table}[htbp]
+  \centering
+  \caption{Paper-reproduction outcomes for the five new datasets. AUC unless stated; ODELIA values are macro AUC $\times 100$ over three classes.}
+  \label{tab:new-repro}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{@{}l L{4.2cm} L{3.4cm} l l@{}}
+    \toprule
+    Dataset & Task / model & Paper & Ours & Outcome \\
+    \midrule
+    BUS-CoT & Benign vs.\ malignant, ResNet-50 & 0.8085 (0.781--0.836) & \textbf{0.849 $\pm$ 0.005} & Reproduced (above CI) \\
+    ODELIA & No lesion / benign / malignant, MST & 79.0 $\pm$ 1.3; RSH 63.1 & \textbf{79.0 $\pm$ 3.8}; RSH \textbf{65.7} & Reproduced \\
+    CBIS-DDSM & Benign vs.\ malignant ROI crops, ResNet-50 & none for crops$^{a}$ & 0.752 & Reported only \\
+    ISPY2 & pCR, ViT-B/16 & 0.78 (I-SPY2 test) & 0.608 & Not reproduced \\
+    BCS-DBT & Lesion detection & 60\% sens.\ at 2 FP/volume & -- & Not attempted$^{b}$ \\
+    AMBL & Benign vs.\ malignant lesions, SegFormer & 0.92 (lesion level) & 0.715; size alone 0.854 & Not comparable$^{c}$ \\
+    \bottomrule
+  \end{tabular}}
+  \par\smallskip\footnotesize
+  $^{a}$Shen et al.'s whole-image AUC of 0.88 needs 2,478 full mammograms; 187 are held locally.
+  $^{b}$The authors never released trained weights.
+  $^{c}$The paper's patient list, labels and split are not released, and its label counts differ from the TCIA clinical file (Section~\ref{sec:ambl}).
+\end{table}
+
+\subsection{BUS-CoT}
+
+We train ResNet-50 on the \texttt{BUS-Lesion} classification set (5,163
+lesions) with the paper's recipe:
+\begin{itemize}
+  \item Input: aspect-preserving zero padding to 224 px, with no augmentation.
+  \item Optimizer: AdamW, lr $5\times10^{-5}$ with cosine decay, weight decay
+    0.1, batch 16, 5 epochs.
+  \item Evaluation: 5-fold cross validation within the official
+    \emph{trainval} split, each fold tested on the fixed official 825-image
+    test split.
+\end{itemize}
+The mean test AUC is \textbf{0.849 $\pm$ 0.005}, against the paper's
+0.8085 (95\% CI 0.781--0.836). Accuracy is 0.772 $\pm$ 0.011 (paper 0.738),
+sensitivity 0.747, specificity 0.793. The likely reason for exceeding the
+paper is the data: its five folds appear to span the whole dataset, including
+scraped web and article figures, whereas we train and test on the curated
+\texttt{BUS-Lesion} set. A ResNet-18 trained the same way for the fusion
+warm-start reaches a test AUC of 0.846.
+
+\subsection{CBIS-DDSM}
+
+The dataset paper reports segmentation quality only. The usual reproduction
+target, Shen et al.\ \citep{shen2019endtoend}, is a whole-mammogram classifier
+built on a patch classifier. We hold the ROI crops (2,006) but only 187 of the
+2,478 full mammograms, so we copy the \emph{patch-classifier} recipe:
+\begin{itemize}
+  \item Data: BENIGN vs.\ MALIGNANT crops. BENIGN\_WITHOUT\_CALLBACK crops,
+    which were never biopsied, are excluded.
+  \item Split: Shen's patient-level 85/15 split with 10\% of training patients
+    held out for validation (823 / 91 / 161 patients).
+  \item Model: ImageNet ResNet-50 at 224 px, training-set mean grey level
+    subtracted.
+  \item Training: Adam with a three-stage unfreeze (head at $10^{-3}$ for 3
+    epochs, the last ResNet stage at $10^{-4}$ for 10, everything at
+    $10^{-5}$ to epoch 200), Keras-style flips, rotation $\pm25^\circ$,
+    shear, zoom and brightness shift.
+\end{itemize}
+
+\begin{table}[htbp]
+  \centering
+  \caption{CBIS-DDSM ROI crops (250 test crops) under two checkpoint-selection rules.}
+  \label{tab:cbis}
+  \begin{tabular}{@{}l c c c c c@{}}
+    \toprule
+    Selection & Epoch kept & AUC & Accuracy & Sensitivity & Specificity \\
+    \midrule
+    Lowest validation loss & $\le$3 (head only) & 0.730 & 0.656 & 0.829 & 0.436 \\
+    Best validation accuracy (Shen) & 21 & \textbf{0.752} & \textbf{0.704} & 0.664 & 0.755 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Selecting on validation loss kept a model from the head-only stage
+(Table~\ref{tab:cbis}). Once the whole network is unfrozen, training loss
+falls to 0.03 and validation loss rises, while validation accuracy keeps
+improving. Shen's rule, best validation accuracy, gives AUC 0.752. There is
+no comparable paper number for crops, so this result is reported on its own.
+
+\subsection{ODELIA}
+
+ODELIA labels each breast as no lesion, benign or malignant. The paper's
+baseline is the Medical Slice Transformer (MST): DINOv3-S features per axial
+slice, fused across slices by a transformer.
+\begin{itemize}
+  \item Input: pre-contrast, first subtraction and T2 volumes at
+    224$\times$224$\times$32.
+  \item Training: AdamW at $10^{-5}$, batch 8 (here $1\times8$ gradient
+    accumulation), rotation, flips, noise and random crops.
+  \item Evaluation: the official five folds, never training on the Valencia
+    (RSH) centre and testing on it as an out-of-distribution centre.
+\end{itemize}
+
+\paragraph{Released-weights check.} Scoring the authors' released MST on our
+cached data reproduces their numbers exactly: macro AUC 81.6 in distribution
+(their fold 1: 81.6) and 63.1 on RSH (63.1). This confirms our loading,
+orientation and normalization before any training.
+
+\paragraph{Training our own MST.} The first fold-0 run, selected on validation
+loss, stopped at epoch 10 with macro AUC 71.7 (RSH 50.0). Validation loss had
+bottomed out at epoch 5 while validation AUC was still rising. Selecting and
+early-stopping on validation macro AUC instead (patience 10, at most 50
+epochs) gives the results in Table~\ref{tab:odelia}.
+
+\begin{table}[htbp]
+  \centering
+  \caption{ODELIA, our MST trained per fold with validation-AUC selection. AUC $\times100$; std across folds (the paper's $\pm$ is a bootstrap std of the pooled estimate).}
+  \label{tab:odelia}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{@{}l c c c c c c c@{}}
+    \toprule
+    Metric & Fold 0 & Fold 1 & Fold 2 & Fold 3 & Fold 4 & Ours & Paper \\
+    \midrule
+    In-distribution macro AUC & 81.7 & 78.9 & 83.6 & 74.0 & 76.9 & \textbf{79.0 $\pm$ 3.8} & 79.0 $\pm$ 1.3 \\
+    In-distribution micro AUC & 87.3 & 86.7 & 91.4 & 83.2 & 85.1 & 86.7 $\pm$ 3.1 & 87.4 $\pm$ 0.8 \\
+    RSH macro AUC & 63.6 & 62.9 & 64.4 & 69.8 & 67.8 & \textbf{65.7 $\pm$ 3.0} & 63.1 $\pm$ 3.5 \\
+    RSH micro AUC & 72.5 & 80.2 & 77.6 & 76.2 & 70.0 & 75.3 $\pm$ 4.1 & 78.3 $\pm$ 2.8 \\
+    Benign vs.\ malignant (lesion breasts) & 88.1 & 76.2 & 85.2 & 78.9 & 79.8 & 81.6 $\pm$ 4.9 & -- \\
+    \bottomrule
+  \end{tabular}}
+\end{table}
+
+\subsection{BreastDCEDL-ISPY2: pathologic complete response}
+
+BreastDCEDL's benchmark predicts pathologic complete response (pCR) after
+neoadjuvant chemotherapy, not benign versus malignant. Using the authors'
+metadata file (pCR labels and fixed splits; I-SPY2 784 / 99 / 99 patients),
+we fused the pre-contrast, early and late post-contrast timepoints of every
+tumour slice into an RGB image and fine-tuned an ImageNet ViT-B/16. The
+patient score is the mean slice probability.
+
+\begin{table}[htbp]
+  \centering
+  \caption{I-SPY2 pCR, patient level (test $n = 99$).}
+  \label{tab:pcr}
+  \begin{tabular}{@{}l c c c c@{}}
+    \toprule
+    Run & AUC & Accuracy & Sensitivity & Specificity \\
+    \midrule
+    Paper, I-SPY2 subset & 0.78 & 0.73 & 0.28 & 0.94 \\
+    Ours, all slices (lr $2\times10^{-5}$, 10 epochs) & 0.608 & 0.677 & 0.281 & 0.866 \\
+    Ours, 4 slices per patient per epoch, stronger augmentation & 0.499 & 0.636 & 0.094 & 0.896 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Neither run reproduces the paper (Table~\ref{tab:pcr}). In both, training
+loss approaches zero while validation AUC stays near chance (0.46--0.57). Each
+patient contributes about 38 near-identical slices, so the ViT memorizes
+patients. More importantly, the paper's results table is captioned as
+radiomic features plus machine learning, and its feature-importance analysis
+is led by tumour and bounding-box volume in a random forest. The I-SPY2 0.78
+therefore most likely combines ViT features with tumour-size features, which
+an image-only ViT cannot be expected to match. The paper also trains on Duke
+and I-SPY1 patients (1,099 in total) and gives no ViT hyperparameters.
+
+\subsection{BCS-DBT}
+
+Buda et al.\ \citep{buda2021bcsdbt} report a detection baseline (60\%
+sensitivity at two false positives per volume on the validation partition,
+all of which we hold locally) but never released the trained weights. The
+reproduction was therefore not attempted. BCS-DBT is used for benign-versus-
+malignant classification of box-cropped slices only, now over all 396
+biopsied views (201 patients) of the three public releases. A ResNet-18
+reaches a validation AUC of 0.725 on 42 views.
+
+\subsection{AMBL (Advanced-MRI-Breast-Lesions)}
+\label{sec:ambl}
+
+AMBL is the only public breast DCE-MRI collection with lesion masks for both
+benign and malignant lesions. We downloaded the 99 patients that have DICOM
+SEG masks (DCE with five timepoints, axial T2, 34\,GB).
+
+\paragraph{Labels.} Every mask segment is labelled only ``Mass''. The
+documented order (all tumours first, then benign lesions) puts 20\% of
+masks in the wrong breast when checked against the clinical sheet's lesion
+sides. Labels were therefore resolved per patient: by the patient's single
+label where all lesions agree, otherwise by the mask's side. Lesions where
+both labels share a breast were excluded. After also excluding six
+post-chemotherapy scans, 131 lesions in 86 patients remain (the full analysis
+is in the companion dataset report).
+
+\paragraph{Why the paper's 0.92 cannot be matched.} BreastDCEDL\_AMBL reports
+a lesion-level AUC of 0.92 for a SegFormer:
+\begin{itemize}
+  \item Its test set is 15 patients, with 23 or 28 lesions (the paper gives
+  both numbers).
+  \item Its Zenodo record holds only the trained weights; the patient list,
+  labels and split are not released.
+  \item Its label counts (133 lesions, 89 benign / 44 malignant) differ from the
+  TCIA clinical file for these patients (166 lesions, 83 / 83).
+  \item It also trained on ISPY1 and ISPY2 tumour masks, which we do not hold.
+\end{itemize}
+We therefore report our own baseline rather than a reproduction.
+
+\paragraph{Baseline: 5-fold patient-level cross validation.} A single 15\%
+test split would hold only 18 lesions, so every patient is tested once
+across five folds stratified on whether the patient has a malignant lesion.
+\begin{itemize}
+  \item \textbf{Model:} ResNet-18 on 9-channel lesion crops, made with the same
+    rule as the ISPY2 crops (mask bounding box plus a 6-pixel margin, DCE phases
+    sampled to 9 channels). Checkpoints are selected on validation lesion AUC.
+  \item \textbf{Scoring:} lesion score is the mean slice probability; patient
+    score is the most suspicious lesion.
+  \item \textbf{Comparison:} lesion volume alone, on the same folds.
+\end{itemize}
+
+\begin{table}[htbp]
+  \centering
+  \caption{AMBL, 5-fold patient-level cross validation (131 lesions, 86 patients). Pooled out-of-fold AUC; 95\% CI from 1,000 patient-level bootstrap resamples.}
+  \label{tab:ambl}
+  \begin{tabular}{@{}l c c@{}}
+    \toprule
+    Model & Lesion AUC & Patient AUC \\
+    \midrule
+    ResNet-18, bounding-box crops & 0.715 (0.61--0.81) & 0.640 \\
+    ResNet-18, fixed 64\,mm window crops & 0.552 & 0.450 \\
+    ResNet-18, 64\,mm windows + lesion-mask channel & 0.576 & 0.497 \\
+    Bounding-box CNN score + log volume (stacked) & 0.843 & -- \\
+    \textbf{Lesion volume only} & \textbf{0.854 (0.79--0.92)} & \textbf{0.818} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Lesion size beats every image model (Table~\ref{tab:ambl}). Against the
+bounding-box CNN the difference is $-$0.14 (95\% CI $-$0.23 to $-$0.06), and
+size is better in all five folds.
+\begin{itemize}
+  \item \textbf{Fixed physical windows do not help.} Resizing every crop to
+    224\,px removes absolute size, but fixed 64\,mm windows that keep it score
+    worse. Without the bounding box nothing marks which spot is the lesion,
+    and the mask channel barely helps (0.576), even though its area \emph{is}
+    the size.
+  \item \textbf{The CNN adds nothing beyond size.} Its score correlates 0.54
+    with lesion volume, and combining the two adds nothing.
+  \item \textbf{Checkpoint selection is noisy.} Best validation AUC ranges
+    0.54--0.92 across folds.
+\end{itemize}
+With about 670 training crops from 86 patients, a ResNet-18 learns no
+benign/malignant signal beyond lesion size. Lesion size is therefore the
+reference result for AMBL, and AMBL is used only as an additional MRI source
+in the fusion model.
+
+\section{Combined Fusion over Eleven Sources}
+\label{sec:phase2}
+
+The reproduced datasets were added to the combined three-branch model
+(Table~\ref{tab:phase2-sources}):
+\begin{itemize}
+  \item \textbf{Mammography:} CBIS-DDSM crops and full BCS-DBT.
+  \item \textbf{Ultrasound:} BUS-CoT, restricted to its new clinical sources
+    and de-duplicated, which leaves 2,036 images.
+  \item \textbf{MRI:} ODELIA. Without lesion masks, each benign or malignant
+    breast becomes a nine-channel stack: the central axial slice $\pm$1 of
+    the pre-contrast, subtraction and T2 volumes, matching BreastDM's
+    nine-channel input.
+\end{itemize}
+Each branch was warm-started from a single-dataset ResNet-18: CBIS-DDSM
+(test AUC 0.716), BUS-CoT (0.846) and BreastDM. ODELIA's own nine-channel
+ResNet-18 reaches a test AUC of 0.792 on fold 0.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Training samples per source in the combined model (validation in parentheses).}
+  \label{tab:phase2-sources}
+  \begin{tabular}{@{}l L{11cm}@{}}
+    \toprule
+    Branch & Sources \\
+    \midrule
+    Mammography & mini-MIAS 109 (10), BCS-DBT 354 (42), CBIS-DDSM 1,244 (133) \\
+    Ultrasound & BUS-BRA 1,689 (186), BUSI 583 (64), BUSC 225 (25), BrEaST 227 (25), BUS-CoT 1,834 (202) \\
+    MRI & BreastDM 1,202 (117), ISPY2 33,475 (3,705; malignant only), ODELIA 263 (76), AMBL$^{*}$ 671 (220) \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Evaluation per source.} As in Section~\ref{sec:combined-ispy2},
+pooled accuracy is dominated by ISPY2's malignant-only slices, as is a
+branch AUC that pools them: with ISPY2 included, the MRI branch scores 0.97
+while BreastDM and ODELIA alone score 0.88 and 0.74. We therefore report AUC
+per source, compute each branch's AUC only over sources that contain both
+classes, and select checkpoints on the mean of the three branch AUCs.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Combined model, validation AUC per branch by epoch (learning rate $10^{-4}$, all parameters trained). Branch AUCs exclude ISPY2.}
+  \label{tab:phase2}
+  \begin{tabular}{@{}l c c c c c@{}}
+    \toprule
+    Epoch & Mammography & Ultrasound & MRI & Mean & Train loss \\
+    \midrule
+    1 (kept) & 0.679 & \textbf{0.888} & 0.782 & \textbf{0.783} & 0.48 \\
+    2 & 0.699 & 0.823 & 0.814 & 0.779 & 0.32 \\
+    6 (early stop) & 0.663 & 0.853 & 0.790 & 0.769 & 0.12 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Joint training erodes the warm-started branches.} Training loss
+falls from 0.48 to 0.12 while validation AUC drifts down, mostly in
+ultrasound (Table~\ref{tab:phase2}), so the best checkpoint is the first
+epoch, which is essentially the warm-started branches. At that epoch the
+weakest sources are mini-MIAS (0.375, only 10 validation samples), CBIS-DDSM
+(0.677), BCS-DBT (0.680), ODELIA (0.699) and BUS-CoT (0.791). BUS-BRA, BUSI,
+BUSC and BrEaST score 0.91--1.00.
+
+\paragraph{Protecting the warm-started branches.} Two follow-up runs keep the
+same sources and warm-starts (Table~\ref{tab:phase2-variants}):
+\begin{itemize}
+  \item \textbf{Learning rate $10^{-5}$}, all parameters trained.
+  \item \textbf{Frozen backbones} (weights and BatchNorm statistics), training
+    only the projections, classifier heads and fusion weights (0.79\,M
+    parameters).
+\end{itemize}
+Both beat the first run. Freezing scores highest (mean 0.817, mammography
+0.747) but peaks at its first epoch and then plateaus between 0.80 and 0.815.
+The $10^{-5}$ run was still improving at its 10-epoch cap (0.809 at epoch 9).
+Per source the two trade off. Freezing is better on CBIS-DDSM (0.761 vs.\
+0.725) and BUS-CoT (0.897 vs.\ 0.829); the lower learning rate is better on
+BUSI (0.936 vs.\ 0.858), BrEaST (1.000 vs.\ 0.790) and ODELIA (0.733 vs.\
+0.647). With 10--200 validation samples per source, most of these per-source
+differences are within noise.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Combined model variants, validation AUC at the kept epoch (branch AUCs exclude ISPY2).}
+  \label{tab:phase2-variants}
+  \begin{tabular}{@{}l c c c c c@{}}
+    \toprule
+    Variant & Kept epoch & Mammography & Ultrasound & MRI & Mean \\
+    \midrule
+    lr $10^{-4}$, all trained & 1 & 0.679 & \textbf{0.888} & 0.782 & 0.783 \\
+    lr $10^{-5}$, all trained & 9 & 0.717 & 0.868 & \textbf{0.841} & 0.809 \\
+    Frozen backbones, lr $10^{-4}$ & 1 & \textbf{0.747} & 0.881 & 0.824 & \textbf{0.817} \\
+    Frozen backbones + AMBL$^{*}$ & 4 & 0.728 & 0.879 & 0.816 & 0.808 \\
+    \bottomrule
+  \end{tabular}
+  \par\smallskip\footnotesize
+  $^{*}$AMBL added as a fourth MRI source in a later run; its validation lesions also enter the MRI branch AUC, so that column is not directly comparable to the rows above.
+\end{table}
+
+\paragraph{Adding AMBL.} With AMBL as a fourth MRI source (frozen backbones,
+same warm-starts), the result is roughly neutral: mean branch AUC 0.808
+against 0.817. ODELIA rises (0.693 vs.\ 0.647) and BreastDM falls (0.885 vs.\
+0.904), both within the noise of their small validation sets. AMBL's own
+slice-level validation AUC is 0.806. The mammography and ultrasound sources,
+which AMBL cannot affect directly, also shift because a different epoch was
+kept, a reminder of how much single-run numbers move here.
+
+\section{Optional Ultrasound Preprocessing}
+\label{sec:us-preprocessing}
+
+Classical and generative preprocessing from earlier exploratory work was
+ported into the training pipeline as opt-in steps (\texttt{--us-preprocess}).
+The steps are histogram equalization, histogram matching to a pooled
+training-set reference, fuzzy-c-means histogram specification, percentile
+intensity windowing, line removal and caliper-cross removal. Three CycleGAN
+variants \citep{zhu2017cyclegan} are also available, and a trained generator
+can be applied as a preprocessing step:
+\begin{itemize}
+  \item the original ResNet generator with a PatchGAN discriminator;
+  \item a USenhance-2023 variant with a VGG19 perceptual loss and k-means
+    pseudo-label auxiliary head;
+  \item a multi-task variant with a benign/malignant head on the generator
+    bottleneck.
+\end{itemize}
+Porting the steps exposed three problems in the original versions:
+\begin{itemize}
+  \item The intensity normalization mapped 0--255 to 0--255 with clipping,
+    which leaves 8-bit images unchanged.
+  \item The histogram-specification prototypes were paired with clusters in
+    arbitrary order.
+  \item The multi-task CycleGAN's classifier head was never optimized.
+\end{itemize}
+Two observations matter for later experiments:
+\begin{itemize}
+  \item \textbf{Line removal is destructive.} It alters 15--91\% of the pixels
+    of BUS-BRA and BrEaST images, because speckle passes its threshold.
+  \item \textbf{The CycleGAN copies annotations.} A CycleGAN trained to
+    translate BrEaST towards BUS-BRA's appearance (200 epochs) adds caliper
+    crosses and measurement text to the translated BrEaST images, on or next
+    to the lesion. It has learned BUS-BRA's burnt-in annotations as part of
+    the ``style''. Used as-is, it would plant a label-correlated marker in
+    the images, so annotations must be removed from the target domain before
+    such a model is trained.
+\end{itemize}
+None of these steps has yet been used in a reported training run.
+
 \section{Limitations}
 \label{sec:limitations}
 
@@ -1254,9 +1673,23 @@ whatever MedGemma's underlying classification behavior turns out to be.
     and BiomedCLIP runs, so their MRI and overall accuracies mostly
     measure how often the model predicts malignant. Only the per-source
     numbers, and BreastDM evaluated on its own, measure discrimination.
-  \item \textbf{BCS-DBT has 8 validation images} because only the public
-    validation partition is labeled. Its single-mode metrics and its
-    contribution to the combined mammography branch are not reliable.
+  \item \textbf{BCS-DBT validation is small.} The earlier runs used only the
+    public validation partition (8 validation images). The full biopsied set
+    used in Sections~\ref{sec:new-repro} and~\ref{sec:phase2} raises this
+    to 42 validation views, still too few for a stable estimate.
+  \item \textbf{ODELIA enters the fusion model as one mid-breast slice
+    stack per breast.} Without lesion masks, the central slice may miss the
+    lesion, so the fusion model's ODELIA score understates what the full 3D
+    MST achieves (benign vs.\ malignant 0.70 vs.\ 0.82 averaged over folds).
+  \item \textbf{AMBL is too small for an image-only model} (131 lesions, 86
+    patients): no crop variant beat lesion size. Its labels are resolved
+    from lesion side, which excludes 27 ambiguous lesions.
+  \item \textbf{DMID and BUS-UCLM are downloaded and audited but not trained
+    yet}; their audits (companion dataset report) flag a laterality shortcut
+    in DMID and one patient filed under two IDs in BUS-UCLM.
+  \item \textbf{The new reproductions use one seed}, and the combined
+    results use a single warm-start per branch. Std is across folds where
+    folds exist, and absent otherwise.
   \item \textbf{Grad-CAM is a qualitative, not quantitative, check}
     (Sections~\ref{sec:gradcam},~\ref{sec:gradcam-fusion},
     and~\ref{sec:gradcam-vlm}). It is read on a handful of examples per

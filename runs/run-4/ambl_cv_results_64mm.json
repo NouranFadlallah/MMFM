@@ -1,0 +1,96 @@
+{
+  "config": {
+    "n_folds": "5",
+    "folds": "None",
+    "epochs": "30",
+    "batch_size": "32",
+    "lr": "0.0001",
+    "seed": "42",
+    "device": "cuda",
+    "no_wandb": "False",
+    "out": "runs/run-4/ambl_cv_results_64mm.json",
+    "crops": "datasets/MRI/AMBL/cls/img9Se_64mm",
+    "run_name": "ambl_resnet18_cv5_64mm"
+  },
+  "per_fold": [
+    {
+      "fold": 0,
+      "test_lesions": 24,
+      "test_patients": 18,
+      "best_val_lesion_auc": 0.9495798319327732,
+      "lesion_auc": 0.5804195804195804,
+      "size_lesion_auc": 0.8811188811188811,
+      "patient_auc": 0.48051948051948057,
+      "size_patient_auc": 0.8051948051948052
+    },
+    {
+      "fold": 1,
+      "test_lesions": 31,
+      "test_patients": 18,
+      "best_val_lesion_auc": 0.7976190476190476,
+      "lesion_auc": 0.5840336134453782,
+      "size_lesion_auc": 0.8109243697478992,
+      "patient_auc": 0.4675324675324676,
+      "size_patient_auc": 0.8961038961038961
+    },
+    {
+      "fold": 2,
+      "test_lesions": 26,
+      "test_patients": 18,
+      "best_val_lesion_auc": 0.641025641025641,
+      "lesion_auc": 0.4285714285714286,
+      "size_lesion_auc": 0.8452380952380952,
+      "patient_auc": 0.35064935064935066,
+      "size_patient_auc": 0.7012987012987013
+    },
+    {
+      "fold": 3,
+      "test_lesions": 25,
+      "test_patients": 16,
+      "best_val_lesion_auc": 0.8051948051948051,
+      "lesion_auc": 0.5576923076923077,
+      "size_lesion_auc": 0.9166666666666666,
+      "patient_auc": 0.5666666666666667,
+      "size_patient_auc": 0.9500000000000001
+    },
+    {
+      "fold": 4,
+      "test_lesions": 25,
+      "test_patients": 16,
+      "best_val_lesion_auc": 0.6643356643356644,
+      "lesion_auc": 0.7012987012987013,
+      "size_lesion_auc": 0.8311688311688311,
+      "patient_auc": 0.48333333333333334,
+      "size_patient_auc": 0.7166666666666667
+    }
+  ],
+  "summary": {
+    "lesions": 131,
+    "patients": 86,
+    "pooled_lesion_auc": 0.5522875816993464,
+    "pooled_size_lesion_auc": 0.8541083099906629,
+    "pooled_patient_auc": 0.44997141223556314,
+    "pooled_size_patient_auc": 0.8181818181818182,
+    "lesion_sensitivity_at_0.5": 0.8253968253968254,
+    "lesion_specificity_at_0.5": 0.3382352941176471,
+    "mean_lesion_auc": 0.5704031262854793,
+    "mean_size_lesion_auc": 0.8570233687880746,
+    "mean_patient_auc": 0.4697402597402597,
+    "std_lesion_auc": 0.09707930582446127,
+    "std_size_lesion_auc": 0.042042788314339136,
+    "std_patient_auc": 0.07727096897365349,
+    "model_auc_ci": [
+      0.431716997077232,
+      0.6770523627277327
+    ],
+    "size_auc_ci": [
+      0.7858783088549055,
+      0.9155135592473417
+    ],
+    "difference_ci": [
+      -0.4196507462132463,
+      -0.17685148902821315
+    ],
+    "p_model_not_better": 1.0
+  }
+}

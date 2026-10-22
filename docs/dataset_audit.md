@@ -165,3 +165,155 @@ Findings:
    channel stacks would repeat or pad phases per centre (the same problem as
    ISPY2's img9Se). → Use Pre, Sub_1 and T2, which every centre has (the
    ODELIA paper's own input choice).
+
+## AMBL — Advanced-MRI-Breast-Lesions (audit run 2026-10-19)
+
+The 99 AMBL patients with a DICOM SEG (IDC v25: original DCE multiphase, axial
+T2 and SEG; 297 series, 34.4 GB; GE 1.5 T, 5 DCE timepoints, 512×512,
+0.66 mm × 0.66 mm × 2 mm). Clinical XLSX (Sep 2024): 200 patients with
+per-lesion tumour/benign, side and pathology. Module `audit/ambl.py`; outputs
+in `analysis/ambl/` (`cases.parquet` has one row per lesion,
+`lesions_resolved.csv` the resolved labels).
+
+| | Count |
+|---|---|
+| Patients / SEG segments | 99 / 165 |
+| Clinical lesions for these patients | 166 (83 tumour / 83 benign) |
+| Lesion count matches SEG | 98 of 99 patients (AMBL-024: 3 in XLSX, 2 segments) |
+| **Labels resolvable from metadata** | **138 lesions (70 malignant / 68 benign), 92 patients** |
+| Ambiguous (tumour and benign in the same breast) | 27 lesions |
+| Load errors | 0 |
+
+Findings:
+
+1. **The SEG does not carry the labels, and its order is not reliable.**
+   - The segmentation references the *registered* DCE series. That series
+     shares the original's slice grid (positions and orientation agree to
+     float32 rounding on every checked patient), so masks map onto the
+     original DCE without the extra 30 GB download.
+   - Every segment is labelled "Mass". The XLSX data dictionary says segments
+     list tumours first, then benign lesions.
+   - Checked against each lesion's L/R position, that rule puts the mask in
+     the wrong breast for 20% of lesions (tumour and benign swapped, e.g.
+     AMBL-008, AMBL-011), and it disagrees with side-resolved labels for 17%.
+   - → Labels are resolved per patient (`resolve_labels`):
+     - one label for all of a patient's lesions (109 lesions);
+     - otherwise by the mask's side when each breast holds one label (29);
+     - otherwise excluded as ambiguous (27).
+2. **Benign labels are not all pathology-confirmed.** The dictionary says
+   benign lesions not biopsied were called benign after at least 1 year of
+   follow-up. → Treat as *partially* confirmed, like BrEaST and ODELIA.
+3. **The resolved labels behave like real malignancy.**
+   - Malignant lesions enhance faster: initial enhancement median 1.01 vs.
+     0.61, AUC 0.77 on its own.
+   - Most benign lesions keep enhancing to the last phase (46 of 68 peak at
+     phase 4, vs. 23 of 70 malignant).
+   - Lesion-to-surroundings contrast: AUC 0.73.
+4. **Size alone separates the classes (AUC 0.83).** Malignant lesions are
+   median 2.8 ml over 10 slices, benign 0.37 ml over 4 slices. A classifier on
+   fixed-size crops can learn size, so report size-matched results or a
+   size-only baseline next to any AMBL model.
+5. **Masks are fragmented.** Median connected components are 15 (malignant)
+   and 4 (benign), from the thresholded annotation (subtraction > 75), like
+   ISPY2's. → Per-slice crops should use the lesion's bounding box over all
+   components, not the largest component.
+6. **Six patients (7 lesions, all malignant) are post-neoadjuvant scans**
+   (referral reason 6). The tumours are imaged after treatment. → Exclude them
+   from a diagnosis benchmark, or flag them.
+7. **No duplicates.** The thumbnail detector grouped 142 of 165 lesion slices
+   (SSIM ≥ 0.95 at 64 px), but full-resolution SSIM of the closest pairs is
+   0.47–0.62. Single-scanner whole-breast slices look alike when downsampled.
+   → For MRI, run duplicate checks at full resolution or on the lesion crop.
+8. **The labels differ from the BreastDCEDL_AMBL benchmark**, which reports
+   88 patients / 133 lesions with 89 benign and 44 malignant. Our 99 patients
+   give 166 clinical lesions (83/83), so their selection or label mapping
+   differs from the TCIA release. → Compare against their numbers only after
+   matching their patient list (Zenodo 17189101).
+
+## BUS-UCLM (audit run 2026-10-22)
+
+Mendeley Data v3: 683 ultrasound images (856×606, one scanner, Siemens ACUSON
+S2000), 38 patients by filename prefix. INFO.csv labels: 419 normal, 174 benign,
+90 malignant. Masks are RGB (green benign, red malignant). Adapter
+`bus_uclm` in `audit/sources.py`; outputs in `analysis/bus_uclm/`. No load
+errors.
+
+Findings:
+
+1. **CHCO and CHVI are the same patient.** `CHCO_000`-`003` are pixel-identical
+   (SSIM 1.000) to `CHVI_005/008/009/013`. → Merge the two prefixes into one
+   patient before splitting. The other 10 near-duplicate pairs (SSIM ≥ 0.95)
+   are consecutive frames of one patient, which a patient-level split already
+   handles. No label conflicts.
+2. **Labels and masks agree on every image.** Benign masks are green,
+   malignant red, normal empty.
+3. **Burnt-in calipers are common but carry little label information.** INFO
+   marks them on 52% of benign and 60% of malignant images (AUC 0.54 on its
+   own). Doppler appears on 21% of malignant vs. 10% of benign images (AUC
+   0.56). → Keep them, but report a marks-only baseline.
+4. **Our caliper detector does not recognise this scanner's markers.** It
+   agrees with INFO's `Marks` flag on only 78% of images and fires on almost
+   none. → Use INFO's flags for this dataset.
+5. **Lesion size is a moderate cue.** Bounding-box area alone gives AUC 0.66
+   (malignant median 249×207 px vs. benign 217×131), far weaker than AMBL's
+   0.83.
+6. **Patients contribute several labels.** 5 of 38 patients have both benign
+   and malignant images, and 35 also have normal images. Median 16 images per
+   patient, maximum 39. → Group by patient (with finding 1 merged), and expect
+   only about 18 benign-only and 10 malignant-only patients for stratified
+   splits.
+7. **How labels were confirmed is not stated** on the dataset page, so the
+   labels are treated as "not stated" (like BUSI) until the source paper is
+   checked.
+
+## DMID — Digital Mammography Dataset for Breast Cancer Diagnosis Research (audit run 2026-10-22)
+
+Figshare v2 (CC BY 4.0): 510 full-field mammograms from India, stored as
+8-bit RGB DICOM (three equal channels, JPEG Lossless; decoding needs
+`pylibjpeg` + `pylibjpeg-libjpeg`), about 6000×4750 px, with no vendor or
+pixel-spacing tags. `Metadata.xlsx` lists 647 findings (view, density, finding
+type, class, centre and radius in pixels); one radiology report with BI-RADS
+per image; ROI masks as LZW TIFF (`imagecodecs`). Adapter `dmid` in
+`audit/sources.py`; outputs in `analysis/dmid/`. No load errors.
+
+| Image label (malignant if any finding is M) | Images |
+|---|---|
+| Normal | 200 |
+| Benign | 146 |
+| Malignant | 130 |
+| Undefined (class "N" only) | 34 |
+
+Findings:
+
+1. **Side predicts malignancy.** 62% of malignant images are left breasts vs.
+   40% of benign (normals 57%): AUC 0.61 from laterality alone, chi-square
+   p = 0.0003. Breast orientation shows the side, so a CNN can learn it.
+   → Report a laterality-only baseline, and consider flipping all images to
+   one orientation.
+2. **No patient identifier.** Every image is its own DICOM study with no
+   PatientID, so a patient's CC and MLO views cannot be kept on one side of a
+   split. → Treat DMID results as image-level, with possible cross-view
+   leakage, and say so.
+3. **Three duplicate pairs** (SSIM ≥ 0.999): `IMG021`/`IMG319` and
+   `IMG034`/`IMG172` agree in label; `IMG019`/`IMG318` is labelled undefined
+   in one copy and benign in the other. → Keep one image per pair.
+4. **20 images hold both a benign and a malignant finding.** The image-level
+   label (malignant) hides the benign one. Per-finding labels and circles are
+   in the metadata if lesion-level crops are wanted.
+5. **Lesion size is a moderate cue** (box area AUC 0.70; malignant median
+   834×852 px vs. benign 547×530).
+6. **Masks cover nearly all lesions.** 268 of 276 benign/malignant images have
+   a usable ROI mask; 7 have none and 1 mask file has an all-zero TIFF header
+   and is unreadable (the audit falls back to the metadata circles). This explains
+   the "269 abnormal images" quoted elsewhere: that counts mask files.
+   The "Pixel-level annotation" set is the mammogram with lesion outlines
+   drawn on, not a mask.
+7. **Burnt-in film labels** on 68–82% of images, more on normals (82%) than on
+   lesions (68–71%). A possible shortcut for normal vs. abnormal, not for
+   benign vs. malignant.
+8. **Metadata typos and spacing.** View `CCLRT` (IMG060), abnormality `CLAC`,
+   and leading/trailing spaces in class codes. `dmid_findings()` normalises them.
+9. **Label confirmation is not stated.** The reports are radiology readings
+   with BI-RADS; the dataset paper (Oza et al. 2024, *Biomed. Eng. Lett.*)
+   could not be checked behind its paywall. → Treat as "not stated" until
+   confirmed.

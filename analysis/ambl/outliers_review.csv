@@ -1,0 +1,10 @@
+sample_id,reasons,decision,note
+AMBL-623/lesion1,hf_energy_frac(z=+7.0),,
+AMBL-610/lesion1,hf_energy_frac(z=+5.2),,
+AMBL-036/lesion1,"brightness(z=+3.6),entropy(z=+3.2)",,
+AMBL-590/lesion2,"brightness(z=+3.6),entropy(z=+3.1)",,
+AMBL-590/lesion1,"brightness(z=+3.6),entropy(z=+3.1)",,
+AMBL-625/lesion1,"brightness(z=+3.4),entropy(z=+3.4),noise_sigma(z=+3.1)",,
+AMBL-026/lesion2,brightness(z=+3.2),,
+AMBL-631/lesion1,hf_energy_frac(z=+3.0),,
+AMBL-631/lesion2,hf_energy_frac(z=+3.0),,

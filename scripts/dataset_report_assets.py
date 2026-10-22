@@ -30,16 +30,16 @@ OUT = REPO_ROOT / 'docs' / 'dataset_report'
 GENERATED = OUT / 'generated'
 FIGURES = OUT / 'figures'
 
-DATASETS = ['busbra', 'busi', 'busc', 'breast', 'bus_cot', 'mias', 'cdd_cesm', 'cmmd', 'bcsdbt', 'bcsdbt_extra',
-            'cbis_ddsm', 'breamdm', 'ispy2', 'odelia']
+DATASETS = ['busbra', 'busi', 'busc', 'breast', 'bus_cot', 'bus_uclm', 'mias', 'cdd_cesm', 'cmmd', 'bcsdbt',
+            'bcsdbt_extra', 'cbis_ddsm', 'dmid', 'breamdm', 'ispy2', 'odelia', 'ambl']
 NAMES = {'busbra': 'BUS-BRA', 'busi': 'BUSI', 'busc': 'BUSC', 'breast': 'BrEaST', 'bus_cot': 'BUS-CoT',
          'mias': 'mini-MIAS', 'cdd_cesm': 'CDD-CESM', 'cmmd': 'CMMD', 'bcsdbt': 'BCS-DBT (val)',
          'bcsdbt_extra': 'BCS-DBT (train+test)', 'cbis_ddsm': 'CBIS-DDSM', 'breamdm': 'BreastDM', 'ispy2': 'ISPY2',
-         'odelia': 'ODELIA'}
+         'odelia': 'ODELIA', 'bus_uclm': 'BUS-UCLM', 'dmid': 'DMID', 'ambl': 'AMBL (lesions)'}
 MODALITY = {'busbra': 'US', 'busi': 'US', 'busc': 'US', 'breast': 'US', 'bus_cot': 'US', 'mias': 'MG',
             'cdd_cesm': 'MG', 'cmmd': 'MG', 'bcsdbt': 'MG', 'bcsdbt_extra': 'MG', 'cbis_ddsm': 'MG',
-            'breamdm': 'MRI', 'ispy2': 'MRI', 'odelia': 'MRI'}
-NEW_DATASETS = ['bus_cot', 'bcsdbt_extra', 'cbis_ddsm', 'odelia']
+            'breamdm': 'MRI', 'ispy2': 'MRI', 'odelia': 'MRI', 'bus_uclm': 'US', 'dmid': 'MG', 'ambl': 'MRI'}
+NEW_DATASETS = ['bus_cot', 'bcsdbt_extra', 'cbis_ddsm', 'odelia', 'bus_uclm', 'dmid', 'ambl']
 # validated categorical palette (dataviz skill reference instance, slots 1-4)
 COLORS = {'US': '#2a78d6', 'MG': '#eb6834', 'MRI': '#1baf7a'}
 SERIES = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100']
@@ -79,11 +79,18 @@ def table_counts(frames, summaries):
         u = used(f)
         benign = int((u['label'] == 0).sum())
         malignant = int((u['label'] == 1).sum())
+        used_groups = s['used_by_loader']['groups']
+        if name == 'ambl':
+            # SEG segment order is unreliable; count the side-checked labels instead
+            resolved = pd.read_csv(ANALYSIS / 'ambl' / 'lesions_resolved.csv')
+            u = resolved[resolved['label'].notna()]
+            benign, malignant = int((u['label'] == 0).sum()), int((u['label'] == 1).sum())
+            used_groups = u['group'].nunique()
         rep_cell = f"{fmt(rep.get('images'))} / {fmt(rep.get('patients'))}"
         groups = s['on_disk']['groups']
         lines.append(' & '.join([
             NAMES[name], MODALITY[name], rep_cell, fmt(s['on_disk']['images']), fmt(groups),
-            fmt(len(u)), f'{benign:,} / {malignant:,}', fmt(s['used_by_loader']['groups']),
+            fmt(len(u)), f'{benign:,} / {malignant:,}', fmt(used_groups),
         ]) + r' \\')
     (GENERATED / 'table_counts.tex').write_text('\n'.join(lines) + '\n')
 
@@ -109,8 +116,12 @@ def table_integrity(frames, summaries):
         d = s['duplicates']
         outliers = len(pd.read_csv(ANALYSIS / name / 'outliers.csv'))
         flag = lambda c: f'{int(f[c].fillna(False).astype(bool).sum()):,}' if c in f else '--'
+        dup_cells = [fmt(d['groups']), fmt(d['images_in_groups']), fmt(d['label_conflict_pairs'])]
+        if name == 'ambl':
+            # thumbnail matches of whole-breast slices; all rejected at full resolution (SSIM 0.47-0.62)
+            dup_cells = ['0$^{\\dagger}$', '0$^{\\dagger}$', '0$^{\\dagger}$']
         lines.append(' & '.join([
-            NAMES[name], fmt(d['groups']), fmt(d['images_in_groups']), fmt(d['label_conflict_pairs']),
+            NAMES[name], *dup_cells,
             fmt(d['split_leak_pairs']), flag('marker_flag'), flag('text_flag'),
             flag('burnt_label_flag'), f"{outliers:,} ({100 * outliers / len(f):.0f}\\%)",
         ]) + r' \\')
@@ -224,7 +235,7 @@ def macros(frames, summaries, aucs):
         'breadmTestUnused': f"{int((frames['breamdm']['split'] == 'test').sum()):,}",
         'cmmdUnlabeled': f"{int((~frames['cmmd']['used'].astype(bool)).sum()):,}",
         'cesmMissing': f"{2006 - summaries['cdd_cesm']['on_disk']['images']}",
-        'mgCrossCandidates': '4.1 million',
+        'mgCrossCandidates': '4.7 million',   # scripts/analyze_datasets.py --cross-only, 2026-10-22 (with DMID)
     }
     values.update(table_bus_cot())
     values.update(table_odelia())

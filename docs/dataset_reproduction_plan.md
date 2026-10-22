@@ -625,6 +625,266 @@ epoch 8: **val accuracy 0.75** (sensitivity 0.667, specificity 1.0, AUC 1.0;
 With only 8 validation samples this is barely more than a sanity check — don't
 read it as a stable estimate.
 
+**Paper reproduction: not attempted (2026-10-17).** Buda et al. report a
+detection result (60% sensitivity at 2 false positives per volume on
+validation), but never released trained weights: the GitHub repo has no
+releases or weights link. Retraining their detector was skipped, so BCS-DBT
+is used for benign/malignant classification only (`--dataset bcsdbt` /
+`bcsdbt_full`, and the mammography branch of `--dataset combined`).
+
+## 12. BUS-CoT (BUS-Lesion classification set)
+
+Yu et al. 2025, [arXiv 2509.17046](https://arxiv.org/abs/2509.17046). Recipe and
+target per [new_datasets_training_plan.md](new_datasets_training_plan.md) R1.
+
+Ran (2026-10-16): `python3 training/train.py --dataset bus_cot --single-mode
+--paper-match --kfold 5 --wandb-project mmfm-bus_cot --wandb-run-name
+bus_cot_paper_resnet50`. ImageNet ResNet-50, zero-padded 224 px input, AdamW lr
+5e-5 with cosine decay, weight decay 0.1, batch 16, 5 epochs. Each fold
+validates on one fifth of `trainval` (about 3,500 train / 870 val), and every
+fold is tested on the same official 825-image `test` split.
+
+| | AUROC | Accuracy |
+|---|---|---|
+| Paper, ResNet-50 | 0.8085 (95% CI 0.781–0.836) | 0.738 |
+| Ours, mean ± std over 5 folds | **0.849 ± 0.005** | **0.772 ± 0.011** |
+
+Other metrics: sensitivity 0.747, specificity 0.793, F1 0.750. Checkpoints are
+saved as `bus_cot_single_resnet50_best_fold{1..5}.pth`, and the fold numbers in
+`bus_cot_5fold_resnet50_results.json`.
+
+**Reproduced, and above the paper's CI.** The most likely reason is the data:
+we train on `BUS-Lesion` (5,163 lesions with a fixed test split), while the
+paper's 5-fold CV appears to span the whole dataset (10,019 lesions, including
+scraped web figures). In fold 5, validation loss was lowest at epoch 1 while
+training loss fell to 0.03, so the best-val-loss snapshot can be an early epoch. Treat this as
+the BUS-Lesion number, not a like-for-like copy of Table 2.
+
+## 13. CBIS-DDSM (ROI crops, Shen et al. patch recipe)
+
+There is no comparable paper number for crops (see
+[new_datasets_training_plan.md](new_datasets_training_plan.md) R2 and D1).
+Setup: `python3 training/train.py --dataset cbis_ddsm --single-mode --paper-match`.
+Data: BENIGN vs. MALIGNANT only, with Shen's patient-level split (1,244 train /
+133 val / 250 test crops). Recipe: ImageNet ResNet-50 at 224 px,
+training-set mean gray (0.499) subtracted, 3-stage unfreeze over 200 epochs.
+
+| Checkpoint selection | Selected epoch | Test AUC | Test accuracy | Sensitivity | Specificity |
+|---|---|---|---|---|---|
+| Lowest validation loss (first run) | ≤ 3 (head-only stage) | 0.730 | 0.656 | 0.829 | 0.436 |
+| **Best validation accuracy (Shen's rule)** | 21 | **0.752** | **0.704** | 0.664 | 0.755 |
+
+Selecting on validation loss kept a model from the head-only stage. Once the
+whole network is unfrozen, training loss falls to 0.03 and validation loss
+rises while validation accuracy keeps improving. So the recipe now selects on
+validation accuracy (`select_on: 'accuracy'`), as Shen did. Both selections
+rest on a 133-crop validation set, so the selected epoch is noisy.
+Checkpoints: `cbis_ddsm_single_resnet50_best.pth` (accuracy-selected) and
+`cbis_ddsm_single_resnet50_best_valloss.pth`.
+
+## 14. ODELIA Breast MRI Challenge 2025
+
+Müller-Franzes et al. 2025, [arXiv 2506.00474](https://arxiv.org/abs/2506.00474).
+Recipe and target per [new_datasets_training_plan.md](new_datasets_training_plan.md) R5.
+The unilateral parquet release is cached as one `.npz` per breast (Pre, Sub_1,
+T2; 1,482 breasts, 8.2 GB) under `/mnt/data/mmfm_datasets/MRI/odelia/npz` by
+`scripts/reproduce_odelia.py cache`.
+
+### Released-weights check (2026-10-16)
+
+`python3 scripts/reproduce_odelia.py eval-released --fold 0` scores the
+published `ODELIA-AI/MST` checkpoint (Sub_1 only) on our cached data. The test
+set is fold 0's in-distribution test split, which drops RSH (n = 260); the OOD
+set is every RSH breast (n = 200).
+
+| | Macro AUC | Micro AUC | Benign vs. malignant AUC (lesion breasts only) |
+|---|---|---|---|
+| Paper, fold 1 (in-distribution) | 81.6 | 85.9 | not reported |
+| Released MST on our fold 0 test | **81.6** | **86.0** | 0.905 |
+| Paper, RSH (OOD) | 63.1 | 78.3 | not reported |
+| Released MST on our RSH set | **63.1** | **78.3** | 0.579 |
+
+Exact agreement means our loading, orientation (`tio.Flip((1, 0))`, X/Z
+swap), crop and z-normalization match the authors' pipeline. Note that the
+released checkpoint's state dict uses transformers 4.x key names, so the script
+remaps `backbone.layer.*` to `backbone.model.layer.*` for transformers 5.
+
+### Our own MST, fold 0 (2026-10-16)
+
+`python3 scripts/reproduce_odelia.py train --fold 0`: DINOv3-S, Pre + Sub_1 + T2,
+batch 1 x 8 accumulation, AdamW 1e-5, early stopping on validation loss
+(patience 5). Splits: 816 train / 206 val / 260 in-distribution test / 200 RSH.
+
+| | Macro AUC | Micro AUC | Benign vs. malignant AUC |
+|---|---|---|---|
+| Paper, in-distribution (overall) | 79.0 | 87.4 | not reported |
+| Ours, fold 0 in-distribution test | 71.7 | 82.3 | 0.811 |
+| Paper, RSH (OOD) | 63.1 | 78.3 | not reported |
+| Ours, fold 0 RSH | 50.0 | 74.9 | 0.447 |
+
+**Below the paper, and most likely undertrained.** Validation loss was lowest
+at epoch 5 and stopped training at epoch 10, while validation macro AUC was
+still climbing (0.643 -> 0.658) and training loss was still 0.65. The
+released checkpoint is from epoch 17. Since the released weights reproduce
+the paper exactly on this data, the gap is in training length and selection,
+not in data handling.
+Results: `runs/run-4/odelia_mst_fold0_results.json`.
+
+**Rerun with validation-AUC selection (2026-10-17): reproduced.**
+`python3 scripts/reproduce_odelia.py train --fold 0` now selects and
+early-stops on validation macro AUC (patience 10, up to 50 epochs). It trained
+40 epochs and kept epoch 30.
+
+| | Macro AUC | Micro AUC | Benign vs. malignant AUC |
+|---|---|---|---|
+| Paper, in-distribution | 79.0 overall (81.6 for its fold 1) | 87.4 | not reported |
+| Ours, fold 0 in-distribution test | **81.7** | **87.3** | 0.881 |
+| Paper, RSH (OOD) | 63.1 | 78.3 | not reported |
+| Ours, fold 0 RSH | **63.6** | 72.5 | 0.636 |
+
+Results: `runs/run-4/odelia_mst_fold0_aucsel_results.json`. The
+loss-selected checkpoint is kept as `odelia_mst_fold0_best_valloss.pth`.
+
+### All 5 folds (2026-10-17): reproduced
+
+Same recipe for folds 1-4 (`--fold N`, AUC selection). Per fold (0-4) and
+mean ± sample std:
+
+| | Folds 0-4 | Ours, mean ± std | Paper |
+|---|---|---|---|
+| In-distribution macro AUC | 81.7, 78.9, 83.6, 74.0, 76.9 | **79.0 ± 3.8** | 79.0 ± 1.3 |
+| In-distribution micro AUC | 87.3, 86.7, 91.4, 83.2, 85.1 | **86.7 ± 3.1** | 87.4 ± 0.8 |
+| RSH (OOD) macro AUC | 63.6, 62.9, 64.4, 69.8, 67.8 | **65.7 ± 3.0** | 63.1 ± 3.5 |
+| RSH micro AUC | 72.5, 80.2, 77.6, 76.2, 70.0 | 75.3 ± 4.1 | 78.3 ± 2.8 |
+| Benign vs. malignant (lesion breasts), in-distribution | 88.1, 76.2, 85.2, 78.9, 79.8 | 81.6 ± 4.9 | not reported |
+| Benign vs. malignant, RSH | 63.6, 60.0, 58.7, 65.7, 74.5 | 64.5 ± 6.3 | not reported |
+
+The paper's ± values are bootstrap std of the pooled estimate; ours are
+across-fold std, so ours are expected to be wider. Results:
+`runs/run-4/odelia_mst_fold{0..4}_aucsel_results.json`.
+
+### For the fusion model's MRI branch
+
+`scripts/preprocess_odelia_mri.py` writes each benign / malignant breast as a
+9-channel BreaDM-style array (central slice +/-1 for Pre, Sub_1, T2) under
+`datasets/MRI/ODELIA/cls/img9Se/{train,val,test,test_rsh}` (fold 0 split; RSH
+held out). This is used by `--dataset odelia --single-mode` and as an MRI
+source in `--dataset combined`. Picking the slice with the most Sub_1
+enhancement was tried first, but it selected the enhancing heart / chest wall
+rather than lesions.
+
+## 15. BreastDCEDL-ISPY2 pCR (treatment response)
+
+Fridman et al. 2025, [arXiv 2506.12190](https://arxiv.org/abs/2506.12190). Recipe and
+target per [new_datasets_training_plan.md](new_datasets_training_plan.md) R4. Labels
+and splits come from the authors' `BreastDCEDL_metadata.csv` (I-SPY2: 784 train /
+99 val / 99 test patients; the `test` column codes 0 = train, 1 = val, 2 = test,
+confirmed against the paper's 177/176 validation/test counts and pCR rates).
+
+Ran (2026-10-16): `python3 scripts/reproduce_breastdcedl_pcr.py train`. Input:
+37,826 tumour slices as RGB fusions of the pre, early and late DCE timepoints.
+Model: ImageNet ViT-B/16, AdamW 2e-5, batch 32, 10 epochs. The patient score is
+the mean slice probability, and the checkpoint is the best validation patient AUC.
+
+| | Test AUC | Accuracy | Sensitivity | Specificity |
+|---|---|---|---|---|
+| Paper, I-SPY2 test (image only) | 0.78 | 0.73 | 0.28 | 0.94 |
+| Ours, I-SPY2 test (n = 99) | **0.608** | 0.677 | 0.281 | 0.866 |
+
+**Not reproduced.** Slice-level training loss reached 0.02 by epoch 4, while
+validation patient AUC peaked at 0.573 (epoch 3). Each patient contributes about
+38 near-identical slices, so the ViT memorizes patients. Two known gaps
+against the paper: it also trained on Duke and I-SPY1 (1,099 patients vs. our
+784), and it gives no ViT hyperparameters, so ours are guesses. Next to try:
+sample a few slices per patient per epoch, use stronger augmentation, and
+lower the learning rate.
+Results: `runs/run-4/ispy2_pcr_vit_results.json`.
+
+**Rerun with slice sampling (2026-10-17): worse.** `--slices-per-patient 4
+--strong-augment --lr 1e-5 --epochs 20` gave test AUC **0.499** (accuracy
+0.636, sensitivity 0.094, specificity 0.896). Validation AUC stayed at chance
+(0.46-0.55) for all 20 epochs.
+Results: `runs/run-4/ispy2_pcr_vit_b16_sampled_results.json`.
+
+**Likely cause: the target, not the training.** The paper's Table 2 caption
+reads "pCR prediction results using radiomic features and machine learning",
+and its Figure 4 is a random forest whose top features are tumour volume,
+bounding-box volume and deep-learning features. So the I-SPY2 0.78 most likely
+comes from ViT features *plus* tumour-size features in a random forest, not
+from the ViT alone. With only 99 validation patients (32 pCR), AUC noise is
+also about +/-0.06. The next attempt, if any, would be a random forest on
+pooled ViT features + `tum_vol` + mask bounding-box volume from the metadata
+CSV, rather than more ViT tuning.
+
+## 16. AMBL (Advanced-MRI-Breast-Lesions) baseline
+
+Data and labels per the AMBL audit in [dataset_audit.md](dataset_audit.md):
+131 lesions in 86 patients with side-checked labels, excluding ambiguous
+lesions and post-neoadjuvant scans. Crops are 9-channel, made with the ISPY2
+rule (`scripts/preprocess_ambl_mri.py`).
+
+**The BreastDCEDL_AMBL paper (lesion AUC 0.92) cannot be matched like for
+like.** Its Zenodo record (17189101) holds only a 20 MB SegFormer checkpoint
+and a PDF, with no patient list, labels or split. Its counts (88 patients,
+133 lesions, 89 benign / 44 malignant) also differ from the TCIA clinical
+file for the segmented patients (166 lesions, 83 / 83). Its model was further
+trained on ISPY1/ISPY2 tumour masks, which we don't hold.
+
+Ran (2026-10-19): `python3 scripts/ambl_baseline.py`, 5-fold patient-level
+cross validation (stratified on whether a patient has a malignant lesion;
+next fold = validation, checkpoint = best validation lesion AUC). ImageNet
+ResNet-18 adapted to 9 channels, Adam 1e-4, batch 32, 30 epochs.
+- Lesion score: mean slice probability.
+- Patient score: most suspicious lesion.
+- Size baseline: lesion volume from the audit, on the same lesions.
+
+| | Lesion AUC (pooled, 95% CI) | Per-fold mean ± std | Patient AUC |
+|---|---|---|---|
+| ResNet-18 | 0.715 (0.61-0.81) | 0.723 ± 0.088 | 0.640 |
+| **Lesion volume only** | **0.854 (0.79-0.92)** | 0.857 ± 0.042 | 0.818 |
+
+Model minus size: -0.14 (95% CI -0.23 to -0.06; size better in 99.9% of
+paired bootstrap resamples, and in all five folds).
+
+**Why:** every crop is resized to 224 x 224 (`BreadmTransform`), which
+removes absolute lesion size, the strongest single cue here (malignant median
+2.8 ml vs. benign 0.37 ml). Next: crop a fixed physical window around each
+lesion (e.g. 64 mm) so size stays visible. The dataset audit already
+recommends this for the ISPY2/BreaDM crop-size shortcut. Alternatively, feed
+the size to the model as an extra input. Results: `runs/run-4/ambl_cv_results.json`
+and `ambl_cv_results_lesions.csv` (out-of-fold lesion scores).
+
+**Follow-ups (2026-10-19): the image adds nothing beyond size at this scale.**
+
+| Variant (same folds, 131 lesions) | Lesion AUC (pooled) | Patient AUC |
+|---|---|---|
+| Bounding-box crops (above) | 0.715 | 0.640 |
+| Fixed 64 mm window crops (`--window-mm 64`) | 0.552 | 0.450 |
+| 64 mm windows + lesion-mask channel (`--with-mask`, 10 channels) | 0.576 | 0.497 |
+| Bounding-box CNN score + log volume, stacked across folds | 0.843 | – |
+| Lesion volume only | **0.854** | **0.818** |
+
+- **Fixed physical windows are worse.** They keep size, but nothing marks
+  which spot is the lesion: a 10 mm benign lesion is a few pixels among other
+  enhancing tissue. The bounding-box crops implicitly locate it. With about
+  670 training crops the CNN cannot learn to find it.
+- **Stacking adds nothing.** Combining the CNN's out-of-fold score with log
+  volume, fit on the other folds and applied to the held-out fold, gives
+  0.843 vs. 0.854 for size alone (difference -0.011, 95% CI -0.029 to 0.004).
+  The CNN score already correlates 0.54 with log volume.
+- **Conclusion:** on 131 lesions a ResNet-18 learns no benign/malignant signal
+  beyond lesion size. Report size-only as the reference for any AMBL model.
+  Worth trying next: give the model the lesion mask as an extra channel (the
+  windowed crops plus the mask), or pool AMBL with the other MRI sources
+  through the fusion model rather than training on AMBL alone.
+  Results: `runs/run-4/ambl_cv_results_64mm.json`.
+- **The mask channel does not rescue it** (0.576), although the mask's area
+  *is* the lesion size. Best validation lesion AUC ranges 0.54-0.92 across
+  folds, so checkpoint selection on about 15 validation patients is mostly
+  noise. Three crop variants failing the same way points at the training
+  set size (about 670 crops, 86 patients) rather than the crop rule.
+  Results: `runs/run-4/ambl_cv_results_64mm_mask.json`.
+
 ## Execution Order
 
 1. Resolve BUSI completeness and recover BrEaST labels/metadata.
