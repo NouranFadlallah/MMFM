@@ -265,3 +265,55 @@ Findings:
 7. **How labels were confirmed is not stated** on the dataset page, so the
    labels are treated as "not stated" (like BUSI) until the source paper is
    checked.
+
+## DMID — Digital Mammography Dataset for Breast Cancer Diagnosis Research (audit run 2026-10-22)
+
+Figshare v2 (CC BY 4.0): 510 full-field mammograms from India, stored as
+8-bit RGB DICOM (three equal channels, JPEG Lossless; decoding needs
+`pylibjpeg` + `pylibjpeg-libjpeg`), about 6000×4750 px, with no vendor or
+pixel-spacing tags. `Metadata.xlsx` lists 647 findings (view, density, finding
+type, class, centre and radius in pixels); one radiology report with BI-RADS
+per image; ROI masks as LZW TIFF (`imagecodecs`). Adapter `dmid` in
+`audit/sources.py`; outputs in `analysis/dmid/`. No load errors.
+
+| Image label (malignant if any finding is M) | Images |
+|---|---|
+| Normal | 200 |
+| Benign | 146 |
+| Malignant | 130 |
+| Undefined (class "N" only) | 34 |
+
+Findings:
+
+1. **Side predicts malignancy.** 62% of malignant images are left breasts vs.
+   40% of benign (normals 57%): AUC 0.61 from laterality alone, chi-square
+   p = 0.0003. Breast orientation shows the side, so a CNN can learn it.
+   → Report a laterality-only baseline, and consider flipping all images to
+   one orientation.
+2. **No patient identifier.** Every image is its own DICOM study with no
+   PatientID, so a patient's CC and MLO views cannot be kept on one side of a
+   split. → Treat DMID results as image-level, with possible cross-view
+   leakage, and say so.
+3. **Three duplicate pairs** (SSIM ≥ 0.999): `IMG021`/`IMG319` and
+   `IMG034`/`IMG172` agree in label; `IMG019`/`IMG318` is labelled undefined
+   in one copy and benign in the other. → Keep one image per pair.
+4. **20 images hold both a benign and a malignant finding.** The image-level
+   label (malignant) hides the benign one. Per-finding labels and circles are
+   in the metadata if lesion-level crops are wanted.
+5. **Lesion size is a moderate cue** (box area AUC 0.70; malignant median
+   834×852 px vs. benign 547×530).
+6. **Masks cover nearly all lesions.** 268 of 276 benign/malignant images have
+   a usable ROI mask; 7 have none and 1 mask file has an all-zero TIFF header
+   and is unreadable (the audit falls back to the metadata circles). This explains
+   the "269 abnormal images" quoted elsewhere: that counts mask files.
+   The "Pixel-level annotation" set is the mammogram with lesion outlines
+   drawn on, not a mask.
+7. **Burnt-in film labels** on 68–82% of images, more on normals (82%) than on
+   lesions (68–71%). A possible shortcut for normal vs. abnormal, not for
+   benign vs. malignant.
+8. **Metadata typos and spacing.** View `CCLRT` (IMG060), abnormality `CLAC`,
+   and leading/trailing spaces in class codes. `dmid_findings()` normalises them.
+9. **Label confirmation is not stated.** The reports are radiology readings
+   with BI-RADS; the dataset paper (Oza et al. 2024, *Biomed. Eng. Lett.*)
+   could not be checked behind its paywall. → Treat as "not stated" until
+   confirmed.

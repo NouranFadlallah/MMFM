@@ -36,6 +36,7 @@ DATASET_ROOTS = {
     'bus_cot': 'datasets/ultrasound/bus_cot/extracted/BUSCoT',
     'ambl': '/mnt/data/mmfm_datasets/MRI/ambl/dicom',
     'bus_uclm': '/mnt/data/mmfm_datasets/ultrasound/bus_uclm/BUS-UCLM',
+    'dmid': '/mnt/data/mmfm_datasets/mammography/dmid/extracted',
 }
 MODALITY = {
     'busbra': 'ultrasound', 'busi': 'ultrasound', 'busc': 'ultrasound', 'breast': 'ultrasound',
@@ -45,6 +46,7 @@ MODALITY = {
     'bus_cot': 'ultrasound',
     'ambl': 'mri',
     'bus_uclm': 'ultrasound',
+    'dmid': 'mammography',
 }
 CBIS_LABELS = Path('/mnt/data/mmfm_datasets/mammography/CBIS-DDSM-labels')
 ISPY2_RAW_ROOT = Path('/mnt/data/mmfm_datasets/MRI/PKG - BreastDCEDL_ISPY2/BreastDCEDL_ISPY2')
@@ -519,6 +521,72 @@ def bus_uclm(root):
     return samples
 
 
+DMID_ARCHIVES = Path('/mnt/data/mmfm_datasets/mammography/dmid/archives')
+
+
+def dmid_findings(path=DMID_ARCHIVES / 'Metadata.xlsx'):
+    """DMID Metadata.xlsx -> one row per finding (image, view, tissue, abnormality,
+    class B/M/N/NORM, x, y, radius), with the sheet's stray whitespace and
+    typos normalised."""
+    sheet = pd.read_excel(path, header=None)
+    rows = sheet[sheet[0].astype(str).str.strip().str.match(r'(?i)img\d+$')].iloc[:, :8]
+    rows.columns = ['image', 'view', 'tissue', 'abnormality', 'class', 'x', 'y', 'radius']
+    for column in ('image', 'view', 'tissue', 'abnormality', 'class'):
+        rows[column] = rows[column].astype(str).str.strip().str.upper().replace({'NAN': None})
+    rows['abnormality'] = (rows['abnormality'].str.replace(' ', '', regex=False)
+                           .str.replace('CLAC', 'CALC', regex=False))
+    rows.loc[rows['abnormality'] == 'NORM', 'class'] = 'NORM'
+    return rows.reset_index(drop=True)
+
+
+def dmid(root):
+    """DMID (Figshare v2): 510 full-field mammograms as 8-bit RGB DICOM (JPEG
+    lossless; needs pylibjpeg). No patient ID and one study per image, so every
+    image is its own group. Image label: malignant if any finding is M, benign
+    if any is B, else normal (NORM) or undefined (N only). Lesion box from the
+    ROI mask (LZW TIFF; needs imagecodecs) or, without one, the findings'
+    circles. Not wired into training: "used" = benign/malignant, no split."""
+    import tifffile
+
+    root = Path(root)
+    findings = dmid_findings()
+    samples = []
+    for image, group in findings.groupby('image'):
+        classes = set(group['class'].dropna())
+        label_name = ('malignant' if 'M' in classes else 'benign' if 'B' in classes
+                      else 'normal' if classes == {'NORM'} else 'undefined')
+        mask_path = root / 'ROI Masks' / f'{image}.tif'
+        box, mask_status = None, 'none'
+        if mask_path.exists():
+            try:
+                mask = tifffile.imread(mask_path)
+                mask_status = 'ok'
+            except Exception:   # some released masks are not valid TIFFs (all-zero header)
+                mask, mask_status = None, 'unreadable'
+        if mask_status == 'ok':
+            mask = mask[..., :3].max(axis=-1) > 0 if mask.ndim == 3 else mask > 0
+            if not mask.any():
+                mask_status = 'empty'
+            else:
+                rows, cols = np.where(mask)
+                box = (int(cols.min()), int(rows.min()), int(cols.max()) + 1, int(rows.max()) + 1)
+        circles = group.dropna(subset=['x', 'y', 'radius'])
+        if box is None and len(circles):
+            x, y, r = (circles[c].astype(float) for c in ('x', 'y', 'radius'))
+            box = (int((x - r).min()), int((y - r).min()), int((x + r).max()), int((y + r).max()))
+        samples.append(Sample(
+            sample_id=image, dataset='dmid', modality='mammography', label_name=label_name,
+            label={'benign': 0, 'malignant': 1}.get(label_name), used=label_name in ('benign', 'malignant'),
+            group=image, split=None, fold=None, native_kind='dicom',
+            native_path=str(root / 'DICOM Images' / f'{image}.dcm'), box=box,
+            extra={'view': group['view'].iloc[0], 'tissue': group['tissue'].iloc[0],
+                   'abnormalities': '|'.join(sorted(set(group['abnormality'].dropna()))),
+                   'n_findings': int((group['class'] != 'NORM').sum()), 'classes': ''.join(sorted(classes)),
+                   'roi_mask': mask_status},
+        ))
+    return samples
+
+
 ADAPTERS = {
     'busbra': busbra, 'busi': busi, 'busc': busc, 'breast': breast, 'mias': mias,
     'cdd_cesm': cdd_cesm, 'cmmd': cmmd, 'bcsdbt': bcsdbt, 'breamdm': breamdm, 'ispy2': ispy2,
@@ -526,6 +594,7 @@ ADAPTERS = {
     'odelia': None,  # parquet volumes: handled by audit/odelia.py, not per-file samples
     'bus_cot': bus_cot,
     'bus_uclm': bus_uclm,
+    'dmid': dmid,
     'ambl': lambda root: __import__('audit.ambl', fromlist=['samples']).samples(root),
 }
 

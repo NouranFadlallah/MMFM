@@ -82,10 +82,18 @@ def _load_dicom(path, frame=None):
         frame = frames // 2  # decode only the middle frame of a multi-frame volume
     array = pixel_array(path, index=frame) if frame is not None else pixel_array(path)
     bits = int(getattr(ds, 'BitsStored', 16) or 16)
-    array = apply_voi_lut(array, ds).astype(np.float32)
-    if getattr(ds, 'PhotometricInterpretation', '') == 'MONOCHROME1':
+    photometric = getattr(ds, 'PhotometricInterpretation', '')
+    rgb = None
+    if array.ndim == 3 and photometric in ('RGB', 'YBR_FULL', 'YBR_FULL_422'):
+        # colour DICOMs (e.g. DMID stores grey mammograms as 3 equal RGB channels)
+        rgb = array.astype(np.uint8) if bits <= 8 else None
+        array = array.astype(np.float32).mean(axis=-1)
+    else:
+        array = apply_voi_lut(array, ds)
+    array = np.asarray(array, dtype=np.float32)
+    if photometric == 'MONOCHROME1':
         array = array.max() - array
-    return Loaded(gray=array, rgb=None, bits=bits, header=dicom_header(ds))
+    return Loaded(gray=array, rgb=rgb, bits=bits, header=dicom_header(ds))
 
 
 def _load_npy(path):

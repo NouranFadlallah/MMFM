@@ -294,7 +294,7 @@ dmid:
   name: Digital Mammography Dataset for Breast Cancer Diagnosis Research (DMID)
   modality: mammography (full-field digital)
   license: CC BY 4.0
-  pathology_confirmed: to check (Oza et al. 2024, Biomed. Eng. Lett. 14:317-330)
+  pathology_confirmed: not stated (radiology reports with BI-RADS; Oza et al. 2024 paywalled)
   raw_dir: /mnt/data/mmfm_datasets/mammography/dmid
   prepared: null
   source:
@@ -311,7 +311,7 @@ bus_uclm:
   name: BUS-UCLM breast ultrasound lesion segmentation dataset
   modality: ultrasound
   license: CC BY 4.0
-  pathology_confirmed: to check (dataset page gives benign / malignant / normal masks)
+  pathology_confirmed: not stated (Mendeley page gives labels and masks only)
   raw_dir: /mnt/data/mmfm_datasets/ultrasound/bus_uclm
   prepared: null
   source:
