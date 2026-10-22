@@ -1,0 +1,66 @@
+{
+  "dataset": "bus_uclm",
+  "modality": "ultrasound",
+  "reported": null,
+  "on_disk": {
+    "images": 683,
+    "by_label": {
+      "Normal": 419,
+      "Benign": 174,
+      "Malignant": 90
+    },
+    "groups": 38,
+    "images_per_group": {
+      "min": 3.0,
+      "median": 16.5,
+      "max": 39.0
+    },
+    "with_mask": 0,
+    "with_box": 264,
+    "by_split": {}
+  },
+  "used_by_loader": {
+    "images": 264,
+    "by_label": {
+      "Benign": 174,
+      "Malignant": 90
+    },
+    "groups": 36,
+    "images_per_group": {
+      "min": 1.0,
+      "median": 6.0,
+      "max": 25.0
+    },
+    "with_mask": 0,
+    "with_box": 264,
+    "by_split": {}
+  },
+  "load_errors": 0,
+  "unique_sizes": 13,
+  "bits_stored": {
+    "8": 683
+  },
+  "color_images": 683,
+  "file_types": {
+    ".png": 683
+  },
+  "flags": {
+    "doppler_flag": 6,
+    "paper_doppler_flag": 673,
+    "paper_marker_flag": 666,
+    "caliper_flag": 1,
+    "marker_flag": 1,
+    "text_flag": 8,
+    "dual_panel_flag": 0
+  },
+  "multi_lesion_candidates": 0,
+  "duplicates": {
+    "hash_candidates": 59,
+    "confirmed_pairs": 14,
+    "groups": 14,
+    "images_in_groups": 28,
+    "label_conflict_pairs": 0,
+    "split_leak_pairs": 0,
+    "groups_in_multiple_splits": 0
+  }
+}

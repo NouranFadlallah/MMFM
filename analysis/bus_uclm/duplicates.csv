@@ -1,0 +1,15 @@
+i,j,ahash_dist,dhash_dist,phash_dist,ssim,dataset_a,sample_id_a,label_name_a,label_a,used_a,group_a,split_a,fold_a,dataset_b,sample_id_b,label_name_b,label_b,used_b,group_b,split_b,fold_b,same_group,label_conflict,group_id
+3,4,0,0,0,0.99841607,bus_uclm,ALWI_003,Benign,0.0,True,ALWI,,,bus_uclm,ALWI_004,Benign,0.0,True,ALWI,,,True,False,0
+120,143,0,0,0,1.0,bus_uclm,CHCO_000,Malignant,1.0,True,CHCO,,,bus_uclm,CHVI_005,Malignant,1.0,True,CHVI,,,False,False,1
+121,146,0,0,0,1.0,bus_uclm,CHCO_001,Normal,,False,CHCO,,,bus_uclm,CHVI_008,Normal,,False,CHVI,,,False,False,2
+122,147,0,0,0,1.0,bus_uclm,CHCO_002,Normal,,False,CHCO,,,bus_uclm,CHVI_009,Normal,,False,CHVI,,,False,False,3
+123,151,0,0,0,1.0,bus_uclm,CHCO_003,Normal,,False,CHCO,,,bus_uclm,CHVI_013,Normal,,False,CHVI,,,False,False,4
+139,140,0,0,0,0.9996604,bus_uclm,CHVI_001,Malignant,1.0,True,CHVI,,,bus_uclm,CHVI_002,Malignant,1.0,True,CHVI,,,True,False,5
+246,251,0,0,0,0.99947053,bus_uclm,DAPA_029,Benign,0.0,True,DAPA,,,bus_uclm,DAPA_034,Benign,0.0,True,DAPA,,,True,False,6
+266,267,0,3,2,0.96556383,bus_uclm,FLBA_001,Normal,,False,FLBA,,,bus_uclm,FLBA_002,Normal,,False,FLBA,,,True,False,7
+364,365,1,4,4,0.95169175,bus_uclm,LOTI_007,Malignant,1.0,True,LOTI,,,bus_uclm,LOTI_008,Malignant,1.0,True,LOTI,,,True,False,8
+367,385,0,0,2,0.96699446,bus_uclm,MENE_000,Malignant,1.0,True,MENE,,,bus_uclm,MENE_018,Malignant,1.0,True,MENE,,,True,False,9
+371,372,0,1,2,0.99928606,bus_uclm,MENE_004,Malignant,1.0,True,MENE,,,bus_uclm,MENE_005,Malignant,1.0,True,MENE,,,True,False,10
+571,572,1,2,2,0.9574261,bus_uclm,STSP_003,Benign,0.0,True,STSP,,,bus_uclm,STSP_004,Benign,0.0,True,STSP,,,True,False,11
+587,588,0,1,0,0.9667568,bus_uclm,STSP_019,Benign,0.0,True,STSP,,,bus_uclm,STSP_020,Benign,0.0,True,STSP,,,True,False,12
+649,650,2,4,0,0.96918285,bus_uclm,VITR_003,Benign,0.0,True,VITR,,,bus_uclm,VITR_004,Benign,0.0,True,VITR,,,True,False,13

@@ -229,3 +229,39 @@ Findings:
    give 166 clinical lesions (83/83), so their selection or label mapping
    differs from the TCIA release. → Compare against their numbers only after
    matching their patient list (Zenodo 17189101).
+
+## BUS-UCLM (audit run 2026-10-22)
+
+Mendeley Data v3: 683 ultrasound images (856×606, one scanner, Siemens ACUSON
+S2000), 38 patients by filename prefix. INFO.csv labels: 419 normal, 174 benign,
+90 malignant. Masks are RGB (green benign, red malignant). Adapter
+`bus_uclm` in `audit/sources.py`; outputs in `analysis/bus_uclm/`. No load
+errors.
+
+Findings:
+
+1. **CHCO and CHVI are the same patient.** `CHCO_000`-`003` are pixel-identical
+   (SSIM 1.000) to `CHVI_005/008/009/013`. → Merge the two prefixes into one
+   patient before splitting. The other 10 near-duplicate pairs (SSIM ≥ 0.95)
+   are consecutive frames of one patient, which a patient-level split already
+   handles. No label conflicts.
+2. **Labels and masks agree on every image.** Benign masks are green,
+   malignant red, normal empty.
+3. **Burnt-in calipers are common but carry little label information.** INFO
+   marks them on 52% of benign and 60% of malignant images (AUC 0.54 on its
+   own). Doppler appears on 21% of malignant vs. 10% of benign images (AUC
+   0.56). → Keep them, but report a marks-only baseline.
+4. **Our caliper detector does not recognise this scanner's markers.** It
+   agrees with INFO's `Marks` flag on only 78% of images and fires on almost
+   none. → Use INFO's flags for this dataset.
+5. **Lesion size is a moderate cue.** Bounding-box area alone gives AUC 0.66
+   (malignant median 249×207 px vs. benign 217×131), far weaker than AMBL's
+   0.83.
+6. **Patients contribute several labels.** 5 of 38 patients have both benign
+   and malignant images, and 35 also have normal images. Median 16 images per
+   patient, maximum 39. → Group by patient (with finding 1 merged), and expect
+   only about 18 benign-only and 10 malignant-only patients for stratified
+   splits.
+7. **How labels were confirmed is not stated** on the dataset page, so the
+   labels are treated as "not stated" (like BUSI) until the source paper is
+   checked.

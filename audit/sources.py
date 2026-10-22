@@ -35,6 +35,7 @@ DATASET_ROOTS = {
     'odelia': '/mnt/data/mmfm_datasets/MRI/odelia',
     'bus_cot': 'datasets/ultrasound/bus_cot/extracted/BUSCoT',
     'ambl': '/mnt/data/mmfm_datasets/MRI/ambl/dicom',
+    'bus_uclm': '/mnt/data/mmfm_datasets/ultrasound/bus_uclm/BUS-UCLM',
 }
 MODALITY = {
     'busbra': 'ultrasound', 'busi': 'ultrasound', 'busc': 'ultrasound', 'breast': 'ultrasound',
@@ -43,6 +44,7 @@ MODALITY = {
     'odelia': 'mri',
     'bus_cot': 'ultrasound',
     'ambl': 'mri',
+    'bus_uclm': 'ultrasound',
 }
 CBIS_LABELS = Path('/mnt/data/mmfm_datasets/mammography/CBIS-DDSM-labels')
 ISPY2_RAW_ROOT = Path('/mnt/data/mmfm_datasets/MRI/PKG - BreastDCEDL_ISPY2/BreastDCEDL_ISPY2')
@@ -485,12 +487,45 @@ def bus_cot(root):
     return samples
 
 
+def bus_uclm(root):
+    """BUS-UCLM (Mendeley v3): 683 images of 38 patients (filename prefix), labels and
+    Doppler / caliper-mark / combined-image flags from INFO.csv. Masks are RGB (green
+    benign, red malignant), so the lesion box comes from the coloured pixels instead
+    of the generic grey-threshold mask loader. Not wired into training yet:
+    "used" = benign/malignant, no split."""
+    from PIL import Image
+
+    root = Path(root)
+    info = pd.read_csv(root / 'INFO.csv', sep=';', encoding='utf-8-sig')
+    yes = lambda v: str(v).strip().lower() in ('yes', 'y')   # noqa: E731
+    samples = []
+    for _, row in info.iterrows():
+        name = str(row['Image']).strip()
+        label_name = str(row['Label']).strip()
+        mask = np.asarray(Image.open(root / 'masks' / name).convert('RGB'))
+        lesion = mask.max(axis=2) > 0
+        box = None
+        if lesion.any():
+            rows, cols = np.where(lesion)
+            box = (int(cols.min()), int(rows.min()), int(cols.max()) + 1, int(rows.max()) + 1)
+        samples.append(Sample(
+            sample_id=Path(name).stem, dataset='bus_uclm', modality='ultrasound',
+            label_name=label_name, label={'Benign': 0, 'Malignant': 1}.get(label_name),
+            used=label_name in ('Benign', 'Malignant'), group=name.split('_')[0], split=None, fold=None,
+            native_kind='image', native_path=str(root / 'images' / name), box=box,
+            extra={'doppler': yes(row['Doppler']), 'marks': yes(row['Marks']), 'combined': yes(row['Combined']),
+                   'mask_red_px': int((mask[..., 0] > 0).sum()), 'mask_green_px': int((mask[..., 1] > 0).sum())},
+        ))
+    return samples
+
+
 ADAPTERS = {
     'busbra': busbra, 'busi': busi, 'busc': busc, 'breast': breast, 'mias': mias,
     'cdd_cesm': cdd_cesm, 'cmmd': cmmd, 'bcsdbt': bcsdbt, 'breamdm': breamdm, 'ispy2': ispy2,
     'cbis_ddsm': cbis_ddsm, 'bcsdbt_extra': bcsdbt_extra,
     'odelia': None,  # parquet volumes: handled by audit/odelia.py, not per-file samples
     'bus_cot': bus_cot,
+    'bus_uclm': bus_uclm,
     'ambl': lambda root: __import__('audit.ambl', fromlist=['samples']).samples(root),
 }
 
