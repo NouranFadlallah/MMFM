@@ -38,4 +38,11 @@ REPORTED = {
     'odelia': {'images': 1482, 'patients': 741, 'benign': 195, 'malignant': 309, 'normal': 978,
                'pathology_confirmed': 'Partial (histopathology or 2-year follow-up)', 'license': 'CC BY-NC 4.0',
                'note': 'counts are breasts (unilateral configuration)'},
+    'ambl': {'images': None, 'patients': 632, 'benign': None, 'malignant': None, 'normal': None,
+             'pathology_confirmed': 'Partial (biopsy/surgery, or >=1 year follow-up for unbiopsied benign)',
+             'license': 'CC BY 4.0', 'note': 'collection: 632 patients; clinical labels for 200; SEG for 99'},
+    'bus_uclm': {'images': 683, 'patients': 38, 'benign': 174, 'malignant': 90, 'normal': 419,
+                 'pathology_confirmed': 'Not stated', 'license': 'CC BY 4.0'},
+    'dmid': {'images': 510, 'patients': None, 'benign': None, 'malignant': None, 'normal': None,
+             'pathology_confirmed': 'Not stated', 'license': 'CC BY 4.0'},
 }

@@ -19,7 +19,7 @@
 \input{generated/macros.tex}
 \makeatletter\newcommand{\tableinput}[1]{\@@input #1 }\makeatother
 
-\title{Thirteen Public Breast-Imaging Datasets:\\Provenance, Label Confirmation, and an Image-Level Audit}
+\title{Sixteen Public Breast-Imaging Datasets:\\Provenance, Label Confirmation, and an Image-Level Audit}
 \author{Nouran Fadlallah}
 \date{October 2026}
 
@@ -27,18 +27,18 @@
 \maketitle
 
 \begin{abstract}
-This report audits the thirteen public breast-imaging datasets used or
-considered in the multi-modal fusion project: five ultrasound sets (BUS-BRA,
-BUSI, BUSC, BrEaST, BUS-CoT), five mammography and tomosynthesis sets
-(mini-MIAS, CDD-CESM, CMMD, BCS-DBT, CBIS-DDSM) and three DCE-MRI sets
-(BreastDM, ISPY2 from BreastDCEDL, ODELIA). For each dataset it records the source,
+This report audits the sixteen public breast-imaging datasets used or
+considered in the multi-modal fusion project: six ultrasound sets (BUS-BRA,
+BUSI, BUSC, BrEaST, BUS-CoT, BUS-UCLM), six mammography and tomosynthesis sets
+(mini-MIAS, CDD-CESM, CMMD, BCS-DBT, CBIS-DDSM, DMID) and four DCE-MRI sets
+(BreastDM, ISPY2 from BreastDCEDL, ODELIA, AMBL). For each dataset it records the source,
 citation count, typical use and acquisition, and whether its benign/malignant
 labels were confirmed by pathology. It then reports an audit run on the
 original files: \totalImages{} images, of which \totalUsed{} are used for
 training. The audit covers image-quality statistics, near-duplicate
 detection checked against the actual training splits, burnt-in annotation
 detection, lesion statistics, and MRI volume statistics. Labels in six of the
-thirteen datasets are fully confirmed by biopsy or pathology. Three findings
+sixteen datasets are fully confirmed by biopsy or pathology. Three findings
 change the reported results: near-duplicate images span the train/validation
 split or the folds in BUSI and BUSC, and four BUSI pairs carry opposite labels.
 CMMD contains identical images under different patient IDs, including one
@@ -52,7 +52,12 @@ malignant (AUC \odeliaCentreOnlyAUC), a centre shortcut. Preparing the data
 for training added two further findings: a classical line-removal step
 rewrites most of each speckled image, and a style-transfer model trained
 towards BUS-BRA reproduces its burnt-in calipers and text, which confirms
-these annotations as a learnable image property.
+these annotations as a learnable image property. Of the three most recent
+datasets, AMBL's segmentations do not record which lesion is benign, and
+the documented order puts a fifth of the masks in the wrong breast. DMID's
+laterality alone predicts malignancy (AUC 0.61). BUS-UCLM files one patient
+under two IDs. Section~\ref{sec:planned} lists the planned datasets that have
+not been analysed yet.
 \end{abstract}
 
 \section{Introduction}
@@ -84,7 +89,7 @@ Section~\ref{sec:recommendations} the resulting recommendations.
 \section{Datasets}
 \label{sec:datasets}
 
-Table~\ref{tab:provenance} summarizes the thirteen datasets. Citation counts are
+Table~\ref{tab:provenance} summarizes the sixteen datasets. Citation counts are
 for the paper that introduced each dataset, retrieved from Semantic Scholar on
 7~October 2026. They indicate how widely each dataset is used, not its quality.
 For pathology confirmation, a dataset is marked \emph{Yes} only when its own
@@ -105,6 +110,7 @@ and \emph{Not stated} when the labels come from radiologists' reading.
     BUS-BRA~\citep{gomezflores2024busbra} & US & INCA, Rio de Janeiro; Zenodo & 193 & CC BY 4.0 & Yes (biopsy) \\
     BUS-CoT~\citep{yu2025buscot} & US & Aggregate of public sources; Figshare & 7 & CC BY 4.0 & Inherited per source$^{e}$ \\
     BUSI~\citep{aldhabyani2020busi} & US & Baheya Hospital, Cairo & 2,476 & not stated & Not stated \\
+    BUS-UCLM~\citep{busuclm2025mendeley} & US & Univ.\ of Castilla-La Mancha; Mendeley Data & --$^{g}$ & CC BY 4.0 & Not stated \\
     BUSC~\citep{busc2023mendeley} & US & Mendeley Data (from \citep{rodrigues2017bus}) & 82$^{a}$ & not stated & Not stated \\
     BrEaST~\citep{pawlowska2024breast} & US & Polish medical centres; TCIA & 137 & CC BY 4.0 & Partial (biopsy or follow-up) \\
     mini-MIAS~\citep{suckling1994mias} & MG & UK screening films; PEIPA/Cambridge & 1,528$^{b}$ & CC BY & Not stated \\
@@ -112,9 +118,11 @@ and \emph{Not stated} when the labels come from radiologists' reading.
     CMMD~\citep{cai2023cmmd} & MG & SYSUCC \& Nanhai Hospital; TCIA & 69 & CC BY 4.0 & Yes (core-needle biopsy) \\
     BCS-DBT~\citep{buda2021bcsdbt} & DBT & Duke Health; TCIA & 120 & CC BY-NC 4.0 & Yes for Benign/Cancer$^{c}$ \\
     CBIS-DDSM~\citep{lee2017cbisddsm} & MG & DDSM film archive (US); TCIA & 873 & CC BY 3.0 & Yes, except ``without callback''$^{f}$ \\
+    DMID~\citep{oza2024dmid} & MG & India (DA-IICT); Figshare & --$^{g}$ & CC BY 4.0 & Not stated \\
     BreastDM~\citep{zhao2023breastdm} & MRI & Taizhou Central Hospital; GitHub & 75 & not stated & Yes (histology) \\
     ISPY2~\citep{fridman2026breastdcedl} & MRI & I-SPY2 trial sites; TCIA (BreastDCEDL) & 8$^{d}$ & CC BY-NC-ND 4.0 & Yes (trial entry) \\
     ODELIA~\citep{mullerfranzes2025odelia} & MRI & Six European centres; Hugging Face & 6 & CC BY-NC 4.0 & Partial (histopathology or 2-year follow-up) \\
+    AMBL~\citep{daniels2024ambl} & MRI & Single centre (1.5\,T GE); TCIA & --$^{g}$ & CC BY 4.0 & Partial (biopsy/surgery or 1-year follow-up) \\
     \bottomrule
   \end{tabularx}
   \par\smallskip\footnotesize
@@ -124,6 +132,7 @@ and \emph{Not stated} when the labels come from radiologists' reading.
   $^{d}$BreastDCEDL \emph{Scientific Data} paper (2026); the ISPY2 subset was first described in an arXiv preprint~\citep{fridman2025breastdcedl}.
   $^{e}$Labels come from each source dataset or, for web and article figures, from the accompanying text.
   $^{f}$BENIGN\_WITHOUT\_CALLBACK findings were judged benign without biopsy.
+  $^{g}$Added 19--22 October 2026; citation counts not retrieved.
 \end{table}
 
 \subsection{Ultrasound}
@@ -189,6 +198,15 @@ chain-of-thought reasoning. \emph{Ground truth:} histopathology categories were
 from each source}. \emph{Usage:} vision--language reasoning and
 rare-histology benchmarks.
 
+\paragraph{BUS-UCLM~\citep{busuclm2025mendeley}.}
+\emph{Source:} University of Castilla-La Mancha (Spain); Mendeley Data v3,
+January 2025, CC~BY~4.0. \emph{Collection:} 683 B-mode images (856$\times$606)
+of 38 patients from one scanner (Siemens ACUSON S2000), 2022--2023: 419
+normal, 174 benign and 90 malignant, with RGB segmentation masks (green
+benign, red malignant) and per-image flags for Doppler, caliper marks and
+combined images. \emph{Ground truth:} how labels were confirmed is
+\textbf{not stated}. \emph{Usage:} lesion segmentation.
+
 \subsection{Mammography and tomosynthesis}
 
 \paragraph{mini-MIAS~\citep{suckling1994mias}.}
@@ -251,6 +269,16 @@ labels; the BENIGN\_WITHOUT\_CALLBACK class (\cbisBWC{} of our crops) was not
 biopsied. \emph{Usage:} the standard public mammography lesion-classification
 benchmark (873 citations).
 
+\paragraph{DMID~\citep{oza2024dmid}.}
+\emph{Source:} DA-IICT, Gandhinagar (India); Figshare v2, CC~BY~4.0.
+\emph{Collection:} 510 full-field digital mammograms (CC and MLO, both sides)
+as 8-bit RGB DICOM of about 6000$\times$4750 pixels, with no vendor, spacing
+or patient fields. Each image has a radiology report with BI-RADS. A metadata
+sheet lists 647 findings (type, benign/malignant/undefined class, centre and
+radius), and ROI masks outline the lesions. \emph{Ground truth:} the reports
+are radiology readings; biopsy confirmation is \textbf{not stated}.
+\emph{Usage:} mass segmentation and classification.
+
 \subsection{DCE-MRI}
 
 \paragraph{BreastDM~\citep{zhao2023breastdm}.}
@@ -298,6 +326,17 @@ on histopathological or 2-year follow-up information'' ---
 \textbf{partially pathology-confirmed}. \emph{Usage:} multi-centre
 lesion-classification challenge; Valencia is held out as an
 out-of-distribution test centre.
+
+\paragraph{AMBL (Advanced-MRI-Breast-Lesions)~\citep{daniels2024ambl}.}
+\emph{Source:} a single institution, 1.5\,T GE scanner; TCIA version~2,
+CC~BY~4.0. \emph{Collection:} 632 patients with five-timepoint DCE, T2,
+delayed-contrast and registered series (646\,GB). Clinical data covers 200
+patients, and DICOM SEG lesion masks exist for 99. We downloaded only those
+99 patients' original DCE, axial T2 and SEG series (34\,GB).
+\emph{Ground truth:} tumours by biopsy or surgery; benign lesions by biopsy or
+at least one year of follow-up --- \textbf{partially pathology-confirmed}.
+\emph{Usage:} benign/malignant lesion classification; the BreastDCEDL\_AMBL
+benchmark reports a lesion-level AUC of 0.92 on 133 lesions.
 
 \section{Audit method}
 \label{sec:method}
@@ -442,6 +481,8 @@ between datasets even within one modality:
     \tableinput{generated/table_integrity.tex}
     \bottomrule
   \end{tabular}}
+  \par\smallskip\footnotesize
+  $^{\dagger}$AMBL: the thumbnail detector grouped 142 whole-breast lesion slices, but every candidate pair has a full-resolution SSIM of 0.47--0.62, so none is a duplicate.
 \end{table}
 
 \begin{figure}[!htbp]
@@ -676,6 +717,78 @@ checked). Burnt-in film labels appear outside the breast on \cbisFullLabels{} of
 duplicates or patient overlap with the validation release, from the same
 single vendor (Hologic Selenia Dimensions).
 
+\subsection{Datasets added 19--22 October}
+\label{sec:new2}
+
+Three more datasets were downloaded and audited with the same pipeline:
+AMBL (MRI, the 99 patients with lesion masks), DMID (mammography) and BUS-UCLM
+(ultrasound). Their rows appear in Tables~\ref{tab:counts}--\ref{tab:integrity}.
+BUS-UCLM and DMID share no images with the other datasets of their modality
+(\mgCrossCandidates{} mammography candidate pairs checked); the MRI sets are not
+cross-checked.
+
+\paragraph{AMBL: the masks do not say which lesion is benign.} Every DICOM
+SEG segment is labelled only ``Mass''. The clinical sheet lists each lesion's
+side and benign/malignant outcome, and its data dictionary says the segments
+list all tumours first, then all benign lesions. Checking each mask's side
+against the sheet, that ordering puts 20\% of the masks in the wrong breast
+(tumour and benign swapped, e.g.\ AMBL-008 and AMBL-011). Labels were
+therefore resolved per patient:
+\begin{itemize}
+  \item one label for all of a patient's lesions: 109 lesions;
+  \item otherwise by the mask's side, where each breast holds one label: 29;
+  \item otherwise excluded as ambiguous: 27.
+\end{itemize}
+This leaves 138 lesions (68 benign, 70 malignant) in 92 patients. The
+resolved labels behave like real malignancy. Malignant lesions enhance faster
+(initial enhancement alone gives AUC 0.77), and most benign lesions keep
+enhancing to the last phase (46 of 68, against 23 of 70 malignant). Lesion
+size separates the classes even more strongly (AUC 0.83; median 2.8 vs.\
+0.37\,ml), and it stays the strongest single predictor: on these lesions a
+ResNet-18 reached a lesion-level AUC of 0.72 against 0.85 for size alone.
+Further points:
+\begin{itemize}
+  \item Six patients (7 lesions) are post-chemotherapy scans and should be
+  excluded from a diagnosis benchmark.
+  \item The masks are fragmented: median 15 connected pieces for malignant
+  lesions, from the thresholded annotation.
+  \item The segmentations reference the registered DCE series, which shares
+  the original series' slice grid, so the masks place correctly on the
+  original images.
+  \item The label counts differ from the BreastDCEDL\_AMBL benchmark (133
+  lesions, 89 benign / 44 malignant), so that paper's patient selection or
+  label mapping is not the one in the TCIA clinical file.
+\end{itemize}
+
+\paragraph{DMID: side predicts the label, and there are no patient IDs.}
+\begin{itemize}
+  \item \textbf{Laterality.} 62\% of malignant images are left breasts
+  against 40\% of benign ($p=0.0003$), so laterality alone gives AUC 0.61.
+  Breast orientation reveals the side, so a CNN can learn this shortcut.
+  \item \textbf{No patient identifier.} Every image is its own study and
+  no patient field exists, so a patient's CC and MLO views cannot be kept on
+  one side of a split.
+  \item \textbf{Three duplicate pairs} (SSIM $\geq$ 0.999). One pair is
+  labelled undefined in one copy and benign in the other.
+  \item \textbf{Labels and masks.} 20 images contain both a benign and a
+  malignant finding. 268 of the 276 benign or malignant images have a usable
+  ROI mask: 7 have none and 1 file is corrupt.
+  \item \textbf{Burnt-in film labels} appear on 68--82\% of images, more often
+  on normal ones. This could be a shortcut for normal vs.\ abnormal.
+  \item \textbf{Lesion size} alone gives AUC 0.70.
+\end{itemize}
+
+\paragraph{BUS-UCLM: one patient under two IDs.} Four images of patient
+``CHCO'' are pixel-identical to images of ``CHVI'', so the two prefixes are
+one patient and must be merged before any patient-level split. The other
+duplicate pairs are consecutive frames of the same patient. Mask colours agree
+with the labels on every image. Caliper marks appear on 52\% of benign and
+60\% of malignant images but carry little label information (AUC 0.54), and
+Doppler is weaker still (AUC 0.56). Our caliper detector does not recognise
+this scanner's markers, so the dataset's own flags are used instead. Lesion
+size gives AUC 0.66. Five of 38 patients have both benign and malignant
+images.
+
 \subsection{Findings from preparing the data for training}
 \label{sec:prep}
 
@@ -781,6 +894,14 @@ below.
   \item \textbf{Remove annotations before training a style-transfer model} on
   BUS-BRA (or any annotated source), otherwise the translated images inherit
   calipers and text placed on the lesion.
+  \item \textbf{AMBL:} use the side-checked labels, exclude ambiguous lesions
+  and post-chemotherapy scans, and report lesion size as the baseline any
+  model must beat.
+  \item \textbf{DMID:} report a laterality-only baseline (or flip all images to
+  one side), keep one image per duplicate pair, and state that splits are
+  image-level.
+  \item \textbf{BUS-UCLM:} merge the CHCO and CHVI prefixes before splitting by
+  patient.
 \end{enumerate}
 
 \paragraph{Status (19 October 2026).} Recommendations 6--8 are in place in
@@ -790,6 +911,37 @@ uses pre-contrast, subtraction and T2; CBIS-DDSM is split by patient, with
 BENIGN\_WITHOUT\_CALLBACK excluded by default. In the fusion model, MRI is
 now reported per source, so ISPY2 no longer hides inside a pooled MRI
 score. Recommendations 1--5 and 9--10 are still open.
+
+\section{Planned datasets not yet analysed}
+\label{sec:planned}
+
+The project's intake plan lists further datasets that are not downloaded or
+not yet audited (Table~\ref{tab:planned}). None of the numbers in this report
+cover them.
+
+\begin{table}[!htbp]
+  \centering
+  \footnotesize
+  \caption{Planned datasets not yet analysed (status 22 October 2026).}
+  \label{tab:planned}
+  \begin{tabularx}{\textwidth}{@{}l l Y Y@{}}
+    \toprule
+    Dataset & Mod. & Access & Status / reason not analysed \\
+    \midrule
+    VinDr-Mammo & MG & PhysioNet, restricted: account + data-use agreement & Access request to be submitted; 5,000 four-view exams, BI-RADS labels with pathology for a subset only \\
+    CSAW-CC & MG & Karolinska / Swedish National Data Service, by request & Access request to be submitted; 873 cancers and 7,850 controls, Hologic only \\
+    AMBL, remaining patients & MRI & TCIA / IDC, open & 101 further patients with clinical labels but no lesion masks (about 36\,GB); not downloaded \\
+    I-SPY1 (+ Tumor-SEG) & MRI & TCIA, open (Data Retriever) & Not downloaded; malignant-only, like ISPY2 \\
+    I-SPY2 full collection & MRI & TCIA, open (about 1.75\,TB) & Only the BreastDCEDL subset is held; the full collection exceeds local storage \\
+    Breast-MRI-NACT-Pilot & MRI & TCIA, open (about 19.5\,GB) & Not downloaded; 64 patients, treatment response \\
+    Mammo-MX & MG & Open (about 75\,GB) & Deferred for storage \\
+    UDIAT Dataset B & US & Author page, by request & Not requested; BUS-CoT already includes part of it \\
+    BUSIS & US & Author-distributed & Not requested \\
+    BUID (QAMEBI) & US & Open, separate benign/malignant archives & Not downloaded \\
+    Breast ultrasound videos; ``eight-diagnosis'' database & US & -- & Not identified: no public release matches these names \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
 
 \section{Limitations}
 
