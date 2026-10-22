@@ -235,7 +235,7 @@ def macros(frames, summaries, aucs):
         'breadmTestUnused': f"{int((frames['breamdm']['split'] == 'test').sum()):,}",
         'cmmdUnlabeled': f"{int((~frames['cmmd']['used'].astype(bool)).sum()):,}",
         'cesmMissing': f"{2006 - summaries['cdd_cesm']['on_disk']['images']}",
-        'mgCrossCandidates': '4.1 million',
+        'mgCrossCandidates': '4.7 million',   # scripts/analyze_datasets.py --cross-only, 2026-10-22 (with DMID)
     }
     values.update(table_bus_cot())
     values.update(table_odelia())
