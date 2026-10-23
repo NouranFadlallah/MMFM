@@ -54,7 +54,8 @@ accuracy, we break every model down by \textbf{false-positive vs.\
 false-negative bias} and add a \textbf{Grad-CAM qualitative analysis} that
 checks whether each model attends to the lesion or to background/framing
 cues, directly probing a preprocessing concern raised by the aggregate
-results. We also report \textbf{preliminary smoke-test results} on two
+results, including uncapped Grad-CAM sweeps of every false positive (695)
+and every false negative (425) across twelve trained models. We also report \textbf{preliminary smoke-test results} on two
 newly wired-in mammography sources, CDD-CESM \citep{khaled2022cddcesm} and
 CMMD \citep{cui2021cmmd}, which confirm the pipeline end to end but are not
 yet tuned reproductions, plus a third, BCS-DBT \citep{buda2021bcsdbt},
@@ -671,6 +672,133 @@ mostly stay lesion-plausible (with one exception, BrEaST's
 EfficientNet-B0 run, which diffuses across tissue boundaries instead),
 consistent with Section~\ref{sec:gradcam}'s read that their mask-guided
 crop is doing its job.
+
+\subsection{False-negative sweep across every trained model}
+\label{sec:gradcam-fn}
+
+Missed cancers are the clinically more costly error, so we ran the same
+uncapped sweep restricted to false negatives (true label malignant,
+predicted benign) with
+\texttt{scripts/gradcam\_false\_positives.py --error fn}, over the same
+twelve checkpoints and the same folds or validation splits. This found
+\textbf{425 false negatives total} (Table~\ref{tab:gradcam-fn-counts}),
+saved to \texttt{docs/gradcam\_fn/} with a manifest at
+\texttt{docs/gradcam\_fn\_manifest.json}.
+Figures~\ref{fig:gradcam-fn-us} and~\ref{fig:gradcam-fn-mammo} show the
+single most confident false negative for each model, i.e.\ the malignant
+case with the lowest predicted malignancy probability.
+
+\begin{table}[htbp]
+  \centering
+  \caption{False negatives found per model (no cap, pooled across all folds or the single validation split), with false positives from Table~\ref{tab:gradcam-fp-counts} for comparison. $p_{\min}$ is the lowest malignancy probability the model gave a malignant case.}
+  \label{tab:gradcam-fn-counts}
+  \begin{tabular}{lrrr}
+    \toprule
+    Model & False negatives & False positives & $p_{\min}$ \\
+    \midrule
+    BUS-BRA, ResNet-18 & 109 & 213 & 0.001 \\
+    BUS-BRA, ResNet-50 & 119 & 203 & 0.002 \\
+    BUSI, ResNet-18 & 35 & 41 & 0.001 \\
+    BUSI, EfficientNet-B0 & 27 & 50 & 0.001 \\
+    BUSC, ResNet-18 & 0 & 2 & -- \\
+    BrEaST-Lesions USG, ResNet-18 & 27 & 42 & 0.022 \\
+    BrEaST-Lesions USG, EfficientNet-B0 & 24 & 53 & 0.067 \\
+    mini-MIAS, ResNet-18 & 26 & 22 & 0.015 \\
+    BreastDM, ResNet-18 & 3 & 11 & 0.325 \\
+    CDD-CESM, ResNet-18 & 5 & 17 & 0.448 \\
+    CMMD, ResNet-18 & 48 & 41 & 0.177 \\
+    BCS-DBT, ResNet-18 & 2 & 0 & 0.255 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  % Each pair is (original | Grad-CAM), most confident false negative per model.
+  \includegraphics[width=0.23\textwidth]{gradcam/busbra_resnet18_fn_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/busbra_resnet18_fn.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/busbra_resnet50_fn_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/busbra_resnet50_fn.png}\\
+  \includegraphics[width=0.23\textwidth]{gradcam/busi_resnet18_fn_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/busi_resnet18_fn.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/busi_efficientnet_b0_fn_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/busi_efficientnet_b0_fn.png}\\
+  \includegraphics[width=0.23\textwidth]{gradcam/breast_resnet18_fn_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/breast_resnet18_fn.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/breast_efficientnet_b0_fn_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/breast_efficientnet_b0_fn.png}
+  \caption{Most confident ultrasound false negative per model (original,
+  then Grad-CAM overlay), ResNet-18 unless labeled otherwise. Row 1,
+  BUS-BRA: \textbf{both backbones' worst miss is the same image}
+  (\texttt{bus\_0298-l}, $p_{\text{malignant}} \le 0.002$), a large,
+  well-circumscribed dark mass; both heatmaps sit on its right margin next
+  to a burnt-in caliper marker rather than on the mass body. Row 2, BUSI:
+  again \textbf{the same image for both backbones} (\texttt{malignant (169)},
+  $p{=}0.001$), a round, smooth-bordered mass; ResNet-18 attends to the
+  right margin, EfficientNet-B0 to the caliper cross on the left edge and
+  the image corners. Row 3, BrEaST-Lesions USG: ResNet-18 attends to the
+  upper margin of a heterogeneous mass; EfficientNet-B0's activation lies
+  along the bottom skin/fascia band, entirely outside the large oval
+  lesion.}
+  \label{fig:gradcam-fn-us}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  % Each pair is (original | Grad-CAM), most confident false negative per model.
+  \includegraphics[width=0.23\textwidth]{gradcam/mias_resnet18_fn_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/mias_resnet18_fn.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/breamdm_resnet18_fn_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/breamdm_resnet18_fn.png}\\
+  \includegraphics[width=0.23\textwidth]{gradcam/cdd_cesm_resnet18_fn_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/cdd_cesm_resnet18_fn.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/cmmd_resnet18_fn_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/cmmd_resnet18_fn.png}\\
+  \includegraphics[width=0.23\textwidth]{gradcam/bcsdbt_resnet18_fn_original.png}%
+  \includegraphics[width=0.23\textwidth]{gradcam/bcsdbt_resnet18_fn.png}
+  \caption{Most confident mammography/MRI false negative per model
+  (original, then Grad-CAM overlay), all ResNet-18. Row 1: mini-MIAS
+  ($p{=}0.015$) shows the same blocky, grid-like activation over a
+  near-uniform dense patch as its false positives
+  (Section~\ref{sec:gradcam-fp}), with no focus; BreastDM ($p{=}0.33$)
+  activates on one side of the enhancing region. Row 2: CDD-CESM's only
+  hotspot is in the bottom-left corner at the chest-wall edge, away from
+  breast tissue, and its miss is borderline ($p{=}0.45$); CMMD
+  ($p{=}0.18$) covers the upper half of the breast broadly, with no single
+  focus. Row 3: BCS-DBT ($p{=}0.26$, same case as
+  Figure~\ref{fig:gradcam-fp-mammo} row 4) is a compact hotspot on the
+  centre of the box crop.}
+  \label{fig:gradcam-fn-mammo}
+\end{figure}
+
+Three things stand out. First, \textbf{the four ultrasound models
+miss malignancy with near-total confidence} ($p_{\min} \le 0.07$), while
+the mammography/MRI misses are borderline ($p_{\min} \ge 0.18$, except
+mini-MIAS). A confident miss on a single image is more consistent with
+the image looking benign to the model than with the model being unsure.
+Second, \textbf{on BUS-BRA and BUSI, two different backbones pick the
+same image as their worst miss}. Both are large, round, smooth-bordered
+masses -- the textbook appearance of a benign lesion. These are either
+genuinely atypical malignancies or label errors. BUS-BRA records histology
+and the radiologist's BI-RADS per image: \texttt{bus\_0298-l} is
+biopsy-proven ductal carcinoma in situ that the radiologist rated
+BI-RADS~3 (probably benign), so this is a genuinely benign-looking cancer,
+not a label error. BUSI's labels are
+not stated to be pathology-confirmed, so its case cannot. Third, \textbf{the ultrasound heatmaps sit on lesion margins
+and burnt-in caliper markers}, not on the mass interior. Margin features
+(spiculation, angular edges) are what distinguishes malignant from benign
+in BI-RADS, so attending to a smooth margin and calling it benign is a
+reasonable read of a hard case. The caliper attention is the same
+burnt-in annotation risk the dataset audit flags for BUS-BRA and BUSI;
+it does not show the model uses calipers as a label cue, but it should be
+checked by re-running these cases with the markers inpainted
+(Section~\ref{sec:us-preprocessing}). Among the mammography sources,
+mini-MIAS and CDD-CESM repeat their false-positive pattern -- attention on
+padding or the image edge -- so their misses add to the evidence that
+those two pipelines need a lesion crop before their numbers are trusted.
+BUSC has no false negatives at all, which fits its 0.992 accuracy but,
+given Section~\ref{sec:gradcam}'s border concern, is not evidence that it
+is solving the task correctly.
 
 \section{Mixed-Backbone Multimodal Fusion}
 \label{sec:mixed-fusion}

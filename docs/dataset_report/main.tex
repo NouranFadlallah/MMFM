@@ -338,6 +338,97 @@ at least one year of follow-up --- \textbf{partially pathology-confirmed}.
 \emph{Usage:} benign/malignant lesion classification; the BreastDCEDL\_AMBL
 benchmark reports a lesion-level AUC of 0.92 on 133 lesions.
 
+\subsection{Example images}
+\label{sec:examples}
+
+Figures~\ref{fig:examples-us}--\ref{fig:examples-mri} show one benign and
+one malignant image from each dataset, picked at random (fixed seed) from
+the images the training loader uses, by
+\texttt{scripts/dataset\_examples.py}. Each image is contrast-stretched to
+its own 1st--99.5th intensity percentile and scaled to fit a square tile,
+so relative sizes across datasets are not preserved. Red boxes are the
+lesion box or the bounding box of the lesion mask, where the dataset
+provides one. The examples make several of the audit's findings visible
+before any numbers: burnt-in text and calipers in the ultrasound images
+(Section~\ref{sec:artifacts}), the very different fields of view (whole
+breast for the mammography sources versus small lesion crops for BreastDM
+and CBIS-DDSM), and how much of each mammogram is black background.
+
+\begin{figure}[!htbp]
+  \centering
+  \setlength{\tabcolsep}{1pt}
+  \renewcommand{\arraystretch}{0.6}
+  \begin{tabular}{cccc}
+    \multicolumn{2}{c}{\footnotesize BUS-BRA} & \multicolumn{2}{c}{\footnotesize BUSI} \\
+    \includegraphics[width=0.235\textwidth]{figures/examples/busbra_benign.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/busbra_malignant.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/busi_benign.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/busi_malignant.png} \\
+    {\scriptsize benign} & {\scriptsize malignant} & {\scriptsize benign} & {\scriptsize malignant} \\[3pt]
+    \multicolumn{2}{c}{\footnotesize BUSC} & \multicolumn{2}{c}{\footnotesize BrEaST} \\
+    \includegraphics[width=0.235\textwidth]{figures/examples/busc_benign.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/busc_malignant.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/breast_benign.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/breast_malignant.png} \\
+    {\scriptsize benign} & {\scriptsize malignant} & {\scriptsize benign} & {\scriptsize malignant} \\[3pt]
+    \multicolumn{2}{c}{\footnotesize BUS-CoT} & \multicolumn{2}{c}{\footnotesize BUS-UCLM} \\
+    \includegraphics[width=0.235\textwidth]{figures/examples/bus_cot_benign.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/bus_cot_malignant.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/bus_uclm_benign.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/bus_uclm_malignant.png} \\
+    {\scriptsize benign} & {\scriptsize malignant} & {\scriptsize benign} & {\scriptsize malignant} \\[3pt]
+  \end{tabular}
+  \caption{Ultrasound examples (benign left, malignant right of each pair).}
+  \label{fig:examples-us}
+\end{figure}
+\begin{figure}[!htbp]
+  \centering
+  \setlength{\tabcolsep}{1pt}
+  \renewcommand{\arraystretch}{0.6}
+  \begin{tabular}{cccc}
+    \multicolumn{2}{c}{\footnotesize mini-MIAS} & \multicolumn{2}{c}{\footnotesize CDD-CESM (subtracted)} \\
+    \includegraphics[width=0.235\textwidth]{figures/examples/mias_benign.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/mias_malignant.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/cdd_cesm_benign.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/cdd_cesm_malignant.png} \\
+    {\scriptsize benign} & {\scriptsize malignant} & {\scriptsize benign} & {\scriptsize malignant} \\[3pt]
+    \multicolumn{2}{c}{\footnotesize CMMD} & \multicolumn{2}{c}{\footnotesize BCS-DBT (middle slice)} \\
+    \includegraphics[width=0.235\textwidth]{figures/examples/cmmd_benign.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/cmmd_malignant.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/bcsdbt_benign.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/bcsdbt_malignant.png} \\
+    {\scriptsize benign} & {\scriptsize malignant} & {\scriptsize benign} & {\scriptsize malignant} \\[3pt]
+    \multicolumn{2}{c}{\footnotesize CBIS-DDSM (lesion crop)} & \multicolumn{2}{c}{\footnotesize DMID} \\
+    \includegraphics[width=0.235\textwidth]{figures/examples/cbis_ddsm_benign.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/cbis_ddsm_malignant.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/dmid_benign.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/dmid_malignant.png} \\
+    {\scriptsize benign} & {\scriptsize malignant} & {\scriptsize benign} & {\scriptsize malignant} \\[3pt]
+  \end{tabular}
+  \caption{Mammography and tomosynthesis examples (benign left, malignant right of each pair). CDD-CESM shows the recombined (subtracted) contrast image; BCS-DBT shows the middle slice of the tomosynthesis volume. The DMID malignant box is DMID's own annotation: a circle of radius 2,025 pixels that covers most of the breast, so its circle annotations cannot be used as tight lesion boxes without checking.}
+  \label{fig:examples-mg}
+\end{figure}
+\begin{figure}[!htbp]
+  \centering
+  \setlength{\tabcolsep}{1pt}
+  \renewcommand{\arraystretch}{0.6}
+  \begin{tabular}{cccc}
+    \multicolumn{2}{c}{\footnotesize BreastDM (lesion crop)} & \multicolumn{2}{c}{\footnotesize ISPY2 (lesion crop)} \\
+    \includegraphics[width=0.235\textwidth]{figures/examples/breamdm_benign.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/breamdm_malignant.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/ispy2_ex0.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/ispy2_ex1.png} \\
+    {\scriptsize benign} & {\scriptsize malignant} & {\scriptsize malignant} & {\scriptsize malignant} \\[3pt]
+    \multicolumn{2}{c}{\footnotesize ODELIA (Sub\_1 MIP)} & \multicolumn{2}{c}{\footnotesize AMBL (peak lesion slice)} \\
+    \includegraphics[width=0.235\textwidth]{figures/examples/odelia_benign.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/odelia_malignant.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/ambl_benign.png} &
+    \includegraphics[width=0.235\textwidth]{figures/examples/ambl_malignant.png} \\
+    {\scriptsize benign} & {\scriptsize malignant} & {\scriptsize benign} & {\scriptsize malignant} \\[3pt]
+  \end{tabular}
+  \caption{DCE-MRI examples. BreastDM and ISPY2 are the square tumour crops the loaders read (mean over the nine sequence channels); ODELIA is the maximum-intensity projection of the first subtraction volume of one breast; AMBL is the DCE slice where the lesion mask is largest. ISPY2 has no benign cases, so both its tiles are malignant, from two different patients.}
+  \label{fig:examples-mri}
+\end{figure}
 \section{Audit method}
 \label{sec:method}
 

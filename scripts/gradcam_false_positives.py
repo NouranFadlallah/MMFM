@@ -1,22 +1,26 @@
-"""Grad-CAM restricted to false positives (true label benign, predicted
-malignant) across every trained model in runs/ plus the root-level cdd_cesm
-and cmmd checkpoints -- to look for a shared visual pattern in what each
-model mistakes for malignancy.
+"""Grad-CAM restricted to one error type -- false positives (true label
+benign, predicted malignant; the default) or false negatives (true label
+malignant, predicted benign; --error fn) -- across every trained model in
+runs/ plus the root-level cdd_cesm/cmmd/bcsdbt checkpoints, to look for a
+shared visual pattern in what each model gets wrong.
 
 Unlike scripts/gradcam_all_failures.py (which caps at 3 mixed FP/FN errors
-per fold), this saves every false positive found, since false positives are
-the class of error this sweep exists to inspect.
+per fold), this saves every error of the chosen type found.
 
-Usage: .venv/bin/python3 scripts/gradcam_false_positives.py
-Writes docs/gradcam_fp/<dataset>_<backbone>/fold{N}_*.png (or single-split
-equivalents for breamdm/cdd_cesm/cmmd) and a JSON manifest at
-docs/gradcam_fp_manifest.json.
+Usage: .venv/bin/python3 scripts/gradcam_false_positives.py [--error fn] [--export-figures]
+Writes docs/gradcam_<error>/<dataset>_<backbone>/fold{N}_*.png (or
+single-split equivalents for breamdm/cdd_cesm/cmmd/bcsdbt) and a JSON
+manifest at docs/gradcam_<error>_manifest.json. --export-figures also writes
+the most confident error per model as an (original, overlay) pair to
+docs/latex/gradcam/<dataset>_<backbone>_<error>{_original,}.png.
 """
+import argparse
 import json
 import sys
 from pathlib import Path
 
 import torch
+import numpy as np
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -32,7 +36,27 @@ NUM_FOLDS = 5
 RUN1 = Path('runs/run-1')
 RUN2 = Path('runs/run-2')
 RUN2_EXTRA = Path('runs/run-2/extra-backbones')
+FIGURE_DIR = Path('docs/latex/gradcam')
+
+# Set from the CLI in __main__: which error type the sweep collects.
+ERROR = 'fp'
 OUT_ROOT = Path('docs/gradcam_fp')
+# key -> (confidence in the wrong class, display image [C,H,W], overlay) of
+# the most confident error seen so far, for --export-figures.
+_most_confident = {}
+
+
+def _target_label():
+    """Ground-truth label an error of the current type starts from."""
+    return 0 if ERROR == 'fp' else 1
+
+
+def _record(key, out_dir, fname, display, cam_map, probs):
+    overlay = overlay_heatmap(display, cam_map)
+    Image.fromarray(overlay).save(out_dir / fname)
+    wrong_confidence = float(probs[1 - _target_label()])
+    if key not in _most_confident or wrong_confidence > _most_confident[key][0]:
+        _most_confident[key] = (wrong_confidence, np.asarray(display), overlay)
 
 # (dataset, backbone, checkpoint_for_fold, num_folds, contrast_stretch)
 KFOLD_CONFIGS = [
@@ -47,16 +71,15 @@ KFOLD_CONFIGS = [
 ]
 
 
-def _save_fp(cam, tensor, row_image, true_label, out_dir, tag):
+def _save_error(cam, tensor, row_image, true_label, out_dir, tag, key):
     x1 = tensor.unsqueeze(0).to(DEVICE).requires_grad_(False)
     cam_map, pred_class, probs = cam(x1)
     cam_map, pred_class, probs = cam_map[0], int(pred_class[0]), probs[0]
-    if not (true_label == 0 and pred_class == 1):
-        return None  # correct, or a false negative -- not what this sweep collects
+    if not (true_label == _target_label() and pred_class == 1 - true_label):
+        return None  # correct, or the other error type -- not what this sweep collects
 
-    overlay = overlay_heatmap(tensor.numpy(), cam_map)
-    fname = f'{tag}_FP_p{probs[1]:.2f}_{Path(str(row_image)).stem}.png'
-    Image.fromarray(overlay).save(out_dir / fname)
+    fname = f'{tag}_{ERROR.upper()}_p{probs[1]:.2f}_{Path(str(row_image)).stem}.png'
+    _record(key, out_dir, fname, tensor.numpy(), cam_map, probs)
     return {'image': str(row_image), 'true_label': CLASS_NAMES[true_label],
             'pred_label': CLASS_NAMES[pred_class], 'p_malignant': float(probs[1]), 'file': fname}
 
@@ -77,13 +100,13 @@ def kfold_false_positives(dataset, backbone, ckpt_for_fold, num_folds, contrast_
 
         frame, transform = _test_frame(dataset, fold, num_folds, contrast_stretch)
         for row in frame.to_dict('records'):
-            if int(row['label']) != 0:
-                continue  # false positives only start from a benign ground truth
+            if int(row['label']) != _target_label():
+                continue
             tensor = _load_one_image(row, transform, dataset)
-            result = _save_fp(cam, tensor, row['image'], 0, out_dir, tag=f'fold{fold}')
+            result = _save_error(cam, tensor, row['image'], _target_label(), out_dir, tag=f'fold{fold}', key=key)
             if result is not None:
                 found.append(result)
-    print(f'{key}: {len(found)} false positives -> {out_dir}')
+    print(f'{key}: {len(found)} {ERROR.upper()} -> {out_dir}')
     return found
 
 
@@ -101,21 +124,20 @@ def breamdm_false_positives():
     found = []
     for idx in range(len(dataset)):
         x1, _, _, label, _ = dataset[idx]
-        if int(label) != 0:
+        if int(label) != _target_label():
             continue
         image_path, _ = dataset.samples[idx]
         x1_batched = x1.unsqueeze(0).to(DEVICE)
         cam_map, pred_class, probs = cam(x1_batched)
         cam_map, pred_class, probs = cam_map[0], int(pred_class[0]), probs[0]
-        if pred_class != 1:
+        if pred_class != 1 - _target_label():
             continue
         display = x1.numpy().mean(axis=0, keepdims=True)
-        overlay = overlay_heatmap(display, cam_map)
-        fname = f'FP_p{probs[1]:.2f}_{Path(str(image_path)).stem}.png'
-        Image.fromarray(overlay).save(out_dir / fname)
-        found.append({'image': str(image_path), 'true_label': 'benign', 'pred_label': 'malignant',
-                      'p_malignant': float(probs[1]), 'file': fname})
-    print(f'breamdm_resnet18: {len(found)} false positives -> {out_dir}')
+        fname = f'{ERROR.upper()}_p{probs[1]:.2f}_{Path(str(image_path)).stem}.png'
+        _record('breamdm_resnet18', out_dir, fname, display, cam_map, probs)
+        found.append({'image': str(image_path), 'true_label': CLASS_NAMES[_target_label()],
+                      'pred_label': CLASS_NAMES[pred_class], 'p_malignant': float(probs[1]), 'file': fname})
+    print(f'breamdm_resnet18: {len(found)} {ERROR.upper()} -> {out_dir}')
     return found
 
 
@@ -129,13 +151,13 @@ def _single_split_false_positives(key, checkpoint, validation_frame):
 
     found = []
     for row in validation_frame.to_dict('records'):
-        if int(row['label']) != 0:
+        if int(row['label']) != _target_label():
             continue
         tensor = _load_one_image(row, transform, key)
-        result = _save_fp(cam, tensor, row['image'], 0, out_dir, tag='val')
+        result = _save_error(cam, tensor, row['image'], _target_label(), out_dir, tag='val', key=key)
         if result is not None:
             found.append(result)
-    print(f'{key}: {len(found)} false positives -> {out_dir}')
+    print(f'{key}: {len(found)} {ERROR.upper()} -> {out_dir}')
     return found
 
 
@@ -166,7 +188,25 @@ def bcsdbt_false_positives():
     return _single_split_false_positives('bcsdbt_resnet18', Path('bcsdbt_single_resnet18_best.pth'), validation_frame)
 
 
+def _export_figures():
+    FIGURE_DIR.mkdir(parents=True, exist_ok=True)
+    for key, (confidence, display, overlay) in _most_confident.items():
+        image = np.clip(display, 0.0, 1.0)
+        image = np.repeat(image, 3, axis=0) if image.shape[0] == 1 else image
+        Image.fromarray((image.transpose(1, 2, 0) * 255).astype(np.uint8)).save(
+            FIGURE_DIR / f'{key}_{ERROR}_original.png')
+        Image.fromarray(overlay).save(FIGURE_DIR / f'{key}_{ERROR}.png')
+        print(f'figure: {key} (wrong-class confidence {confidence:.2f})')
+
+
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--error', choices=['fp', 'fn'], default='fp')
+    parser.add_argument('--export-figures', action='store_true')
+    args = parser.parse_args()
+    ERROR = args.error
+    OUT_ROOT = Path(f'docs/gradcam_{ERROR}')
+
     manifest = {}
     for dataset, backbone, ckpt_for_fold, num_folds, contrast_stretch in KFOLD_CONFIGS:
         manifest[f'{dataset}_{backbone}'] = kfold_false_positives(
@@ -182,8 +222,10 @@ if __name__ == '__main__':
     if Path('bcsdbt_single_resnet18_best.pth').exists():
         manifest['bcsdbt_resnet18'] = bcsdbt_false_positives()
 
-    out_path = Path('docs/gradcam_fp_manifest.json')
+    out_path = Path(f'docs/gradcam_{ERROR}_manifest.json')
     out_path.write_text(json.dumps(manifest, indent=2))
+    if args.export_figures:
+        _export_figures()
     total = sum(len(v) for v in manifest.values())
-    print(f'\nsaved {total} false-positive heatmaps total across {len(manifest)} model configs')
+    print(f'\nsaved {total} {ERROR.upper()} heatmaps total across {len(manifest)} model configs')
     print(f'manifest: {out_path}')

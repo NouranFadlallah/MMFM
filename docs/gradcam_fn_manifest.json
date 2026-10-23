@@ -1,0 +1,3000 @@
+{
+  "busbra_resnet18": [
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0050-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.31227609515190125,
+      "file": "fold1_FN_p0.31_bus_0050-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0165-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4483950734138489,
+      "file": "fold1_FN_p0.45_bus_0165-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0231-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3858232796192169,
+      "file": "fold1_FN_p0.39_bus_0231-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0257-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.22903183102607727,
+      "file": "fold1_FN_p0.23_bus_0257-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0257-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.18254713714122772,
+      "file": "fold1_FN_p0.18_bus_0257-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0268-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.48911672830581665,
+      "file": "fold1_FN_p0.49_bus_0268-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0344-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.09468967467546463,
+      "file": "fold1_FN_p0.09_bus_0344-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0460-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2834395468235016,
+      "file": "fold1_FN_p0.28_bus_0460-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0507-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.316662073135376,
+      "file": "fold1_FN_p0.32_bus_0507-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0530-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.23376649618148804,
+      "file": "fold1_FN_p0.23_bus_0530-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0543-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2665051519870758,
+      "file": "fold1_FN_p0.27_bus_0543-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0543-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.28656303882598877,
+      "file": "fold1_FN_p0.29_bus_0543-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0647-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.49731191992759705,
+      "file": "fold1_FN_p0.50_bus_0647-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0647-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.07307569682598114,
+      "file": "fold1_FN_p0.07_bus_0647-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0818-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.012713541276752949,
+      "file": "fold1_FN_p0.01_bus_0818-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0936-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3550141453742981,
+      "file": "fold1_FN_p0.36_bus_0936-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0939-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4148975908756256,
+      "file": "fold1_FN_p0.41_bus_0939-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0947-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3934192955493927,
+      "file": "fold1_FN_p0.39_bus_0947-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0947-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.18550999462604523,
+      "file": "fold1_FN_p0.19_bus_0947-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1014-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.10290507227182388,
+      "file": "fold1_FN_p0.10_bus_1014-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1014-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.1403089016675949,
+      "file": "fold1_FN_p0.14_bus_1014-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0173-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.434814989566803,
+      "file": "fold2_FN_p0.43_bus_0173-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0190-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.09336197376251221,
+      "file": "fold2_FN_p0.09_bus_0190-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0190-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.19330096244812012,
+      "file": "fold2_FN_p0.19_bus_0190-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0230-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.41346776485443115,
+      "file": "fold2_FN_p0.41_bus_0230-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0230-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.27452462911605835,
+      "file": "fold2_FN_p0.27_bus_0230-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0251-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.33714133501052856,
+      "file": "fold2_FN_p0.34_bus_0251-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0251-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3139827847480774,
+      "file": "fold2_FN_p0.31_bus_0251-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0265-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4923415780067444,
+      "file": "fold2_FN_p0.49_bus_0265-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0279-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.12644889950752258,
+      "file": "fold2_FN_p0.13_bus_0279-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0279-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4307199716567993,
+      "file": "fold2_FN_p0.43_bus_0279-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0334-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.0657387524843216,
+      "file": "fold2_FN_p0.07_bus_0334-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0334-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.11864438652992249,
+      "file": "fold2_FN_p0.12_bus_0334-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0434-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.24334552884101868,
+      "file": "fold2_FN_p0.24_bus_0434-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0434-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.01806456968188286,
+      "file": "fold2_FN_p0.02_bus_0434-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0459-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.29735562205314636,
+      "file": "fold2_FN_p0.30_bus_0459-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0602-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3593856990337372,
+      "file": "fold2_FN_p0.36_bus_0602-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0663-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4517829716205597,
+      "file": "fold2_FN_p0.45_bus_0663-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0663-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3324383497238159,
+      "file": "fold2_FN_p0.33_bus_0663-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0858-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2495611310005188,
+      "file": "fold2_FN_p0.25_bus_0858-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0858-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4736340045928955,
+      "file": "fold2_FN_p0.47_bus_0858-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0942-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4689445197582245,
+      "file": "fold2_FN_p0.47_bus_0942-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0967-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.48291662335395813,
+      "file": "fold2_FN_p0.48_bus_0967-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0982-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4137252867221832,
+      "file": "fold2_FN_p0.41_bus_0982-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1016-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.12856337428092957,
+      "file": "fold2_FN_p0.13_bus_1016-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1016-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.08985880762338638,
+      "file": "fold2_FN_p0.09_bus_1016-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1023-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.30740973353385925,
+      "file": "fold2_FN_p0.31_bus_1023-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1023-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.11078515648841858,
+      "file": "fold2_FN_p0.11_bus_1023-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1025-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.06478514522314072,
+      "file": "fold2_FN_p0.06_bus_1025-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1025-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2403372824192047,
+      "file": "fold2_FN_p0.24_bus_1025-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1028-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4192657768726349,
+      "file": "fold2_FN_p0.42_bus_1028-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1028-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.21162442862987518,
+      "file": "fold2_FN_p0.21_bus_1028-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0001-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3778868019580841,
+      "file": "fold3_FN_p0.38_bus_0001-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0001-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.47984209656715393,
+      "file": "fold3_FN_p0.48_bus_0001-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0029-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2866820693016052,
+      "file": "fold3_FN_p0.29_bus_0029-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0106-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.46901625394821167,
+      "file": "fold3_FN_p0.47_bus_0106-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0239-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4825681149959564,
+      "file": "fold3_FN_p0.48_bus_0239-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0239-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.1017649695277214,
+      "file": "fold3_FN_p0.10_bus_0239-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0318-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4624412953853607,
+      "file": "fold3_FN_p0.46_bus_0318-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0362-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.49330106377601624,
+      "file": "fold3_FN_p0.49_bus_0362-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0488-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.48788294196128845,
+      "file": "fold3_FN_p0.49_bus_0488-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0624-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.39982861280441284,
+      "file": "fold3_FN_p0.40_bus_0624-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0649-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.16638240218162537,
+      "file": "fold3_FN_p0.17_bus_0649-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0862-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.03655437380075455,
+      "file": "fold3_FN_p0.04_bus_0862-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0862-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.13522763550281525,
+      "file": "fold3_FN_p0.14_bus_0862-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0901-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.10597222298383713,
+      "file": "fold3_FN_p0.11_bus_0901-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0901-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.01987958513200283,
+      "file": "fold3_FN_p0.02_bus_0901-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0951-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3095438480377197,
+      "file": "fold3_FN_p0.31_bus_0951-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0972-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.09199365228414536,
+      "file": "fold3_FN_p0.09_bus_0972-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1018-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.45732608437538147,
+      "file": "fold3_FN_p0.46_bus_1018-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1056-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.43812066316604614,
+      "file": "fold3_FN_p0.44_bus_1056-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0014-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.1550205796957016,
+      "file": "fold4_FN_p0.16_bus_0014-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0017-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.19898197054862976,
+      "file": "fold4_FN_p0.20_bus_0017-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0078-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.12577033042907715,
+      "file": "fold4_FN_p0.13_bus_0078-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0109-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.47047194838523865,
+      "file": "fold4_FN_p0.47_bus_0109-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0227-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.24668186902999878,
+      "file": "fold4_FN_p0.25_bus_0227-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0234-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.07035575807094574,
+      "file": "fold4_FN_p0.07_bus_0234-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0234-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.03533307835459709,
+      "file": "fold4_FN_p0.04_bus_0234-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0238-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.38286545872688293,
+      "file": "fold4_FN_p0.38_bus_0238-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0328-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.49779602885246277,
+      "file": "fold4_FN_p0.50_bus_0328-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0458-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.16076502203941345,
+      "file": "fold4_FN_p0.16_bus_0458-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0458-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.19346968829631805,
+      "file": "fold4_FN_p0.19_bus_0458-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0471-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.31349727511405945,
+      "file": "fold4_FN_p0.31_bus_0471-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1032-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4470888674259186,
+      "file": "fold4_FN_p0.45_bus_1032-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0012-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.18605764210224152,
+      "file": "fold5_FN_p0.19_bus_0012-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0012-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.024324119091033936,
+      "file": "fold5_FN_p0.02_bus_0012-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0235-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3569658696651459,
+      "file": "fold5_FN_p0.36_bus_0235-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0258-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.34604114294052124,
+      "file": "fold5_FN_p0.35_bus_0258-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0261-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3626496195793152,
+      "file": "fold5_FN_p0.36_bus_0261-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0298-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.0014102335553616285,
+      "file": "fold5_FN_p0.00_bus_0298-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0298-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.030485419556498528,
+      "file": "fold5_FN_p0.03_bus_0298-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0410-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.15932950377464294,
+      "file": "fold5_FN_p0.16_bus_0410-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0410-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3916205167770386,
+      "file": "fold5_FN_p0.39_bus_0410-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0461-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.35938289761543274,
+      "file": "fold5_FN_p0.36_bus_0461-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0461-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.17303040623664856,
+      "file": "fold5_FN_p0.17_bus_0461-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0560-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.22064080834388733,
+      "file": "fold5_FN_p0.22_bus_0560-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0563-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3376599848270416,
+      "file": "fold5_FN_p0.34_bus_0563-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0563-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.07984068244695663,
+      "file": "fold5_FN_p0.08_bus_0563-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0571-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.08119989186525345,
+      "file": "fold5_FN_p0.08_bus_0571-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0571-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.35663124918937683,
+      "file": "fold5_FN_p0.36_bus_0571-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0667-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.09489802271127701,
+      "file": "fold5_FN_p0.09_bus_0667-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0667-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.012541094794869423,
+      "file": "fold5_FN_p0.01_bus_0667-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0714-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.08027148991823196,
+      "file": "fold5_FN_p0.08_bus_0714-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0715-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.07548841834068298,
+      "file": "fold5_FN_p0.08_bus_0715-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0747-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.1292334645986557,
+      "file": "fold5_FN_p0.13_bus_0747-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0938-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4778214991092682,
+      "file": "fold5_FN_p0.48_bus_0938-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0944-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.35160204768180847,
+      "file": "fold5_FN_p0.35_bus_0944-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1050-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2927958071231842,
+      "file": "fold5_FN_p0.29_bus_1050-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1055-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.1582155078649521,
+      "file": "fold5_FN_p0.16_bus_1055-r.png"
+    }
+  ],
+  "busbra_resnet50": [
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0049-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.10882988572120667,
+      "file": "fold1_FN_p0.11_bus_0049-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0050-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3942243754863739,
+      "file": "fold1_FN_p0.39_bus_0050-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0050-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2510005235671997,
+      "file": "fold1_FN_p0.25_bus_0050-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0165-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.481238454580307,
+      "file": "fold1_FN_p0.48_bus_0165-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0165-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3076206147670746,
+      "file": "fold1_FN_p0.31_bus_0165-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0225-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.33047008514404297,
+      "file": "fold1_FN_p0.33_bus_0225-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0225-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.029380103573203087,
+      "file": "fold1_FN_p0.03_bus_0225-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0257-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.1307322084903717,
+      "file": "fold1_FN_p0.13_bus_0257-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0257-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.34515777230262756,
+      "file": "fold1_FN_p0.35_bus_0257-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0263-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.49747252464294434,
+      "file": "fold1_FN_p0.50_bus_0263-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0268-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.16590061783790588,
+      "file": "fold1_FN_p0.17_bus_0268-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0268-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3657605051994324,
+      "file": "fold1_FN_p0.37_bus_0268-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0269-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.49441036581993103,
+      "file": "fold1_FN_p0.49_bus_0269-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0314-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.28092965483665466,
+      "file": "fold1_FN_p0.28_bus_0314-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0344-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.14612549543380737,
+      "file": "fold1_FN_p0.15_bus_0344-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0344-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.030947431921958923,
+      "file": "fold1_FN_p0.03_bus_0344-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0360-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.38456007838249207,
+      "file": "fold1_FN_p0.38_bus_0360-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0414-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.21985019743442535,
+      "file": "fold1_FN_p0.22_bus_0414-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0414-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.22884288430213928,
+      "file": "fold1_FN_p0.23_bus_0414-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0457-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.36310744285583496,
+      "file": "fold1_FN_p0.36_bus_0457-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0460-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.02053961157798767,
+      "file": "fold1_FN_p0.02_bus_0460-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0460-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.1201895922422409,
+      "file": "fold1_FN_p0.12_bus_0460-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0486-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3580601215362549,
+      "file": "fold1_FN_p0.36_bus_0486-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0507-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.1506115198135376,
+      "file": "fold1_FN_p0.15_bus_0507-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0530-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.29386672377586365,
+      "file": "fold1_FN_p0.29_bus_0530-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0543-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.04874445125460625,
+      "file": "fold1_FN_p0.05_bus_0543-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0543-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.07183783501386642,
+      "file": "fold1_FN_p0.07_bus_0543-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0647-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.0462433360517025,
+      "file": "fold1_FN_p0.05_bus_0647-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0647-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.016683556139469147,
+      "file": "fold1_FN_p0.02_bus_0647-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0705-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3590959310531616,
+      "file": "fold1_FN_p0.36_bus_0705-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0818-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.07369594275951385,
+      "file": "fold1_FN_p0.07_bus_0818-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0936-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.24519293010234833,
+      "file": "fold1_FN_p0.25_bus_0936-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0939-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.030071090906858444,
+      "file": "fold1_FN_p0.03_bus_0939-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0947-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2047256976366043,
+      "file": "fold1_FN_p0.20_bus_0947-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0947-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.24061936140060425,
+      "file": "fold1_FN_p0.24_bus_0947-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0985-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.14832380414009094,
+      "file": "fold1_FN_p0.15_bus_0985-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0985-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4656118154525757,
+      "file": "fold1_FN_p0.47_bus_0985-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0993-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.1663118153810501,
+      "file": "fold1_FN_p0.17_bus_0993-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0993-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.1676618605852127,
+      "file": "fold1_FN_p0.17_bus_0993-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1014-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.11542302370071411,
+      "file": "fold1_FN_p0.12_bus_1014-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1014-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4150751531124115,
+      "file": "fold1_FN_p0.42_bus_1014-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1033-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4967437982559204,
+      "file": "fold1_FN_p0.50_bus_1033-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1036-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.26469123363494873,
+      "file": "fold1_FN_p0.26_bus_1036-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1036-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4417402148246765,
+      "file": "fold1_FN_p0.44_bus_1036-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0190-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.15067853033542633,
+      "file": "fold2_FN_p0.15_bus_0190-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0230-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.36407211422920227,
+      "file": "fold2_FN_p0.36_bus_0230-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0251-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.33911198377609253,
+      "file": "fold2_FN_p0.34_bus_0251-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0279-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4179700016975403,
+      "file": "fold2_FN_p0.42_bus_0279-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0279-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3734455406665802,
+      "file": "fold2_FN_p0.37_bus_0279-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0334-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.03451758623123169,
+      "file": "fold2_FN_p0.03_bus_0334-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0334-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.05365273728966713,
+      "file": "fold2_FN_p0.05_bus_0334-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0387-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.47986912727355957,
+      "file": "fold2_FN_p0.48_bus_0387-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0387-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.07949008792638779,
+      "file": "fold2_FN_p0.08_bus_0387-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0426-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4596852660179138,
+      "file": "fold2_FN_p0.46_bus_0426-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0434-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.08800576627254486,
+      "file": "fold2_FN_p0.09_bus_0434-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0459-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.06371802091598511,
+      "file": "fold2_FN_p0.06_bus_0459-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0459-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.39946651458740234,
+      "file": "fold2_FN_p0.40_bus_0459-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0568-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.31174546480178833,
+      "file": "fold2_FN_p0.31_bus_0568-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0576-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.36531442403793335,
+      "file": "fold2_FN_p0.37_bus_0576-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0602-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.18859200179576874,
+      "file": "fold2_FN_p0.19_bus_0602-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0967-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2033216953277588,
+      "file": "fold2_FN_p0.20_bus_0967-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1016-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.32381242513656616,
+      "file": "fold2_FN_p0.32_bus_1016-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1016-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.053328365087509155,
+      "file": "fold2_FN_p0.05_bus_1016-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1023-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.22798053920269012,
+      "file": "fold2_FN_p0.23_bus_1023-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1025-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.1785537749528885,
+      "file": "fold2_FN_p0.18_bus_1025-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1028-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.15961754322052002,
+      "file": "fold2_FN_p0.16_bus_1028-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0001-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3031179904937744,
+      "file": "fold3_FN_p0.30_bus_0001-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0001-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2898814082145691,
+      "file": "fold3_FN_p0.29_bus_0001-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0029-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.15642619132995605,
+      "file": "fold3_FN_p0.16_bus_0029-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0048-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.39418283104896545,
+      "file": "fold3_FN_p0.39_bus_0048-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0106-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4617977440357208,
+      "file": "fold3_FN_p0.46_bus_0106-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0239-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.41882744431495667,
+      "file": "fold3_FN_p0.42_bus_0239-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0239-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.26705169677734375,
+      "file": "fold3_FN_p0.27_bus_0239-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0278-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.45237624645233154,
+      "file": "fold3_FN_p0.45_bus_0278-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0333-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.47221389412879944,
+      "file": "fold3_FN_p0.47_bus_0333-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0362-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2554158866405487,
+      "file": "fold3_FN_p0.26_bus_0362-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0488-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.46240198612213135,
+      "file": "fold3_FN_p0.46_bus_0488-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0509-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3908829689025879,
+      "file": "fold3_FN_p0.39_bus_0509-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0624-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.444255530834198,
+      "file": "fold3_FN_p0.44_bus_0624-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0649-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.47696590423583984,
+      "file": "fold3_FN_p0.48_bus_0649-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0674-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4502488970756531,
+      "file": "fold3_FN_p0.45_bus_0674-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0766-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2863570749759674,
+      "file": "fold3_FN_p0.29_bus_0766-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0862-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.04838622733950615,
+      "file": "fold3_FN_p0.05_bus_0862-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0862-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.04683243855834007,
+      "file": "fold3_FN_p0.05_bus_0862-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0901-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.15250104665756226,
+      "file": "fold3_FN_p0.15_bus_0901-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0901-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3424469232559204,
+      "file": "fold3_FN_p0.34_bus_0901-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0951-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.27182433009147644,
+      "file": "fold3_FN_p0.27_bus_0951-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0972-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2898598611354828,
+      "file": "fold3_FN_p0.29_bus_0972-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1018-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4076383411884308,
+      "file": "fold3_FN_p0.41_bus_1018-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1018-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.37581440806388855,
+      "file": "fold3_FN_p0.38_bus_1018-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1019-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4534621238708496,
+      "file": "fold3_FN_p0.45_bus_1019-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1056-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.43982911109924316,
+      "file": "fold3_FN_p0.44_bus_1056-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1056-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2815348207950592,
+      "file": "fold3_FN_p0.28_bus_1056-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0014-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.23313625156879425,
+      "file": "fold4_FN_p0.23_bus_0014-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0017-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3082234263420105,
+      "file": "fold4_FN_p0.31_bus_0017-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0234-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.13530080020427704,
+      "file": "fold4_FN_p0.14_bus_0234-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0234-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.05603044107556343,
+      "file": "fold4_FN_p0.06_bus_0234-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0331-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4728746712207794,
+      "file": "fold4_FN_p0.47_bus_0331-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0458-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.43029195070266724,
+      "file": "fold4_FN_p0.43_bus_0458-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0458-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4963381886482239,
+      "file": "fold4_FN_p0.50_bus_0458-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1060-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3560464680194855,
+      "file": "fold4_FN_p0.36_bus_1060-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0012-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.23701003193855286,
+      "file": "fold5_FN_p0.24_bus_0012-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0261-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.07690536975860596,
+      "file": "fold5_FN_p0.08_bus_0261-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0298-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.0016554506728425622,
+      "file": "fold5_FN_p0.00_bus_0298-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0298-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.02625340037047863,
+      "file": "fold5_FN_p0.03_bus_0298-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0396-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.1696518063545227,
+      "file": "fold5_FN_p0.17_bus_0396-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0410-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2744807302951813,
+      "file": "fold5_FN_p0.27_bus_0410-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0461-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.08297166973352432,
+      "file": "fold5_FN_p0.08_bus_0461-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0487-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.21868766844272614,
+      "file": "fold5_FN_p0.22_bus_0487-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0563-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4135776162147522,
+      "file": "fold5_FN_p0.41_bus_0563-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0563-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2529921233654022,
+      "file": "fold5_FN_p0.25_bus_0563-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0606-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.17644158005714417,
+      "file": "fold5_FN_p0.18_bus_0606-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0667-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.02987411618232727,
+      "file": "fold5_FN_p0.03_bus_0667-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0667-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.04389142990112305,
+      "file": "fold5_FN_p0.04_bus_0667-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0715-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.007588989567011595,
+      "file": "fold5_FN_p0.01_bus_0715-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0717-s.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4753023386001587,
+      "file": "fold5_FN_p0.48_bus_0717-s.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0938-l.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.488319456577301,
+      "file": "fold5_FN_p0.49_bus_0938-l.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_0944-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.39079371094703674,
+      "file": "fold5_FN_p0.39_bus_0944-r.png"
+    },
+    {
+      "image": "datasets/ultrasound/busbra/BUSBRA/Images/bus_1055-r.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.08854342997074127,
+      "file": "fold5_FN_p0.09_bus_1055-r.png"
+    }
+  ],
+  "busi_resnet18": [
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (141).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.10727809369564056,
+      "file": "fold1_FN_p0.11_malignant (141).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (145).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.017944825813174248,
+      "file": "fold1_FN_p0.02_malignant (145).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (163).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.011292865499854088,
+      "file": "fold1_FN_p0.01_malignant (163).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (204).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.25971314311027527,
+      "file": "fold1_FN_p0.26_malignant (204).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (57).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.10288148373365402,
+      "file": "fold1_FN_p0.10_malignant (57).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (76).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.34277886152267456,
+      "file": "fold1_FN_p0.34_malignant (76).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (93).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2996111214160919,
+      "file": "fold1_FN_p0.30_malignant (93).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (147).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3291289806365967,
+      "file": "fold2_FN_p0.33_malignant (147).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (173).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.21578022837638855,
+      "file": "fold2_FN_p0.22_malignant (173).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (192).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.01831628568470478,
+      "file": "fold2_FN_p0.02_malignant (192).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (28).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.09519440680742264,
+      "file": "fold2_FN_p0.10_malignant (28).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (52).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.0920807346701622,
+      "file": "fold2_FN_p0.09_malignant (52).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (96).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.17802685499191284,
+      "file": "fold2_FN_p0.18_malignant (96).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (97).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2940925359725952,
+      "file": "fold2_FN_p0.29_malignant (97).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (12).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.007115335203707218,
+      "file": "fold3_FN_p0.01_malignant (12).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (148).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4046851098537445,
+      "file": "fold3_FN_p0.40_malignant (148).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (174).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4607163667678833,
+      "file": "fold3_FN_p0.46_malignant (174).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (189).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.039257705211639404,
+      "file": "fold3_FN_p0.04_malignant (189).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (110).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.007349603809416294,
+      "file": "fold4_FN_p0.01_malignant (110).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (112).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.11913866549730301,
+      "file": "fold4_FN_p0.12_malignant (112).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (126).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.1308886706829071,
+      "file": "fold4_FN_p0.13_malignant (126).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (130).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.1369662582874298,
+      "file": "fold4_FN_p0.14_malignant (130).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (131).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.039826713502407074,
+      "file": "fold4_FN_p0.04_malignant (131).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (180).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.07424578815698624,
+      "file": "fold4_FN_p0.07_malignant (180).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (200).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.002195571782067418,
+      "file": "fold4_FN_p0.00_malignant (200).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (53).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.0782448947429657,
+      "file": "fold4_FN_p0.08_malignant (53).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (73).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.209835484623909,
+      "file": "fold4_FN_p0.21_malignant (73).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (75).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4434077739715576,
+      "file": "fold4_FN_p0.44_malignant (75).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (89).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4287884831428528,
+      "file": "fold4_FN_p0.43_malignant (89).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (95).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2948593199253082,
+      "file": "fold4_FN_p0.29_malignant (95).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (109).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.005984727758914232,
+      "file": "fold5_FN_p0.01_malignant (109).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (13).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.004465445410460234,
+      "file": "fold5_FN_p0.00_malignant (13).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (169).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.0009457722771912813,
+      "file": "fold5_FN_p0.00_malignant (169).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (68).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3925759196281433,
+      "file": "fold5_FN_p0.39_malignant (68).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (74).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.003931667655706406,
+      "file": "fold5_FN_p0.00_malignant (74).png"
+    }
+  ],
+  "busi_efficientnet_b0": [
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (141).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.07058462500572205,
+      "file": "fold1_FN_p0.07_malignant (141).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (145).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.282244473695755,
+      "file": "fold1_FN_p0.28_malignant (145).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (163).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.06095357611775398,
+      "file": "fold1_FN_p0.06_malignant (163).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (167).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.45286276936531067,
+      "file": "fold1_FN_p0.45_malignant (167).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (10).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2875775694847107,
+      "file": "fold2_FN_p0.29_malignant (10).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (173).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.049626391381025314,
+      "file": "fold2_FN_p0.05_malignant (173).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (192).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.0033892563078552485,
+      "file": "fold2_FN_p0.00_malignant (192).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (28).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.03777560964226723,
+      "file": "fold2_FN_p0.04_malignant (28).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (80).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.217666357755661,
+      "file": "fold2_FN_p0.22_malignant (80).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (12).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.024683233350515366,
+      "file": "fold3_FN_p0.02_malignant (12).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (148).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.18299177289009094,
+      "file": "fold3_FN_p0.18_malignant (148).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (162).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4438095688819885,
+      "file": "fold3_FN_p0.44_malignant (162).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (189).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.06809116899967194,
+      "file": "fold3_FN_p0.07_malignant (189).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (26).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.33863434195518494,
+      "file": "fold3_FN_p0.34_malignant (26).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (108).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.45302173495292664,
+      "file": "fold4_FN_p0.45_malignant (108).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (110).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.024056419730186462,
+      "file": "fold4_FN_p0.02_malignant (110).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (112).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.09154518693685532,
+      "file": "fold4_FN_p0.09_malignant (112).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (126).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2829582393169403,
+      "file": "fold4_FN_p0.28_malignant (126).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (131).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2825842499732971,
+      "file": "fold4_FN_p0.28_malignant (131).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (200).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.02068246155977249,
+      "file": "fold4_FN_p0.02_malignant (200).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (53).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.05674079433083534,
+      "file": "fold4_FN_p0.06_malignant (53).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (78).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3888029158115387,
+      "file": "fold4_FN_p0.39_malignant (78).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (109).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.004171920474618673,
+      "file": "fold5_FN_p0.00_malignant (109).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (13).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.008770647458732128,
+      "file": "fold5_FN_p0.01_malignant (13).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (146).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.42464229464530945,
+      "file": "fold5_FN_p0.42_malignant (146).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (169).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.0014646900817751884,
+      "file": "fold5_FN_p0.00_malignant (169).png"
+    },
+    {
+      "image": "datasets/ultrasound/Dataset_BUSI/Dataset_BUSI_with_GT/malignant/malignant (209).png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4814305603504181,
+      "file": "fold5_FN_p0.48_malignant (209).png"
+    }
+  ],
+  "busc_resnet18": [],
+  "breast_resnet18": [
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case008.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.13032911717891693,
+      "file": "fold1_FN_p0.13_case008.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case034.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.11639230698347092,
+      "file": "fold1_FN_p0.12_case034.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case050.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.16153959929943085,
+      "file": "fold1_FN_p0.16_case050.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case066.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4643878638744354,
+      "file": "fold1_FN_p0.46_case066.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case089.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.25081902742385864,
+      "file": "fold1_FN_p0.25_case089.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case112.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.42522555589675903,
+      "file": "fold1_FN_p0.43_case112.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case173.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.274677574634552,
+      "file": "fold1_FN_p0.27_case173.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case221.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.45485788583755493,
+      "file": "fold1_FN_p0.45_case221.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case251.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.30921852588653564,
+      "file": "fold1_FN_p0.31_case251.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case026.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3111196756362915,
+      "file": "fold2_FN_p0.31_case026.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case058.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.45049217343330383,
+      "file": "fold2_FN_p0.45_case058.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case107.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.05485987663269043,
+      "file": "fold2_FN_p0.05_case107.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case117.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.0906158983707428,
+      "file": "fold2_FN_p0.09_case117.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case005.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4090166389942169,
+      "file": "fold3_FN_p0.41_case005.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case010.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.09574839472770691,
+      "file": "fold3_FN_p0.10_case010.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case055.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3273352384567261,
+      "file": "fold3_FN_p0.33_case055.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case063.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.1432236135005951,
+      "file": "fold3_FN_p0.14_case063.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case087.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.0557110458612442,
+      "file": "fold3_FN_p0.06_case087.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case102.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.15879780054092407,
+      "file": "fold3_FN_p0.16_case102.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case111.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.02194087766110897,
+      "file": "fold3_FN_p0.02_case111.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case114.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.26562178134918213,
+      "file": "fold3_FN_p0.27_case114.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case150.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.38914841413497925,
+      "file": "fold3_FN_p0.39_case150.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case205.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.10496319830417633,
+      "file": "fold3_FN_p0.10_case205.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case239.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4550628364086151,
+      "file": "fold3_FN_p0.46_case239.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case075.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.1086612418293953,
+      "file": "fold5_FN_p0.11_case075.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case130.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.39261603355407715,
+      "file": "fold5_FN_p0.39_case130.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case199.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.23500120639801025,
+      "file": "fold5_FN_p0.24_case199.png"
+    }
+  ],
+  "breast_efficientnet_b0": [
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case008.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3795270323753357,
+      "file": "fold1_FN_p0.38_case008.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case034.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3940511643886566,
+      "file": "fold1_FN_p0.39_case034.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case050.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4479805827140808,
+      "file": "fold1_FN_p0.45_case050.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case089.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.162603497505188,
+      "file": "fold1_FN_p0.16_case089.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case112.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3487357795238495,
+      "file": "fold1_FN_p0.35_case112.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case132.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.47330063581466675,
+      "file": "fold1_FN_p0.47_case132.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case251.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4918411076068878,
+      "file": "fold1_FN_p0.49_case251.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case026.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.06737601011991501,
+      "file": "fold2_FN_p0.07_case026.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case107.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3293214440345764,
+      "file": "fold2_FN_p0.33_case107.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case117.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3761041760444641,
+      "file": "fold2_FN_p0.38_case117.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case005.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.35021182894706726,
+      "file": "fold3_FN_p0.35_case005.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case010.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.39262911677360535,
+      "file": "fold3_FN_p0.39_case010.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case060.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4168393313884735,
+      "file": "fold3_FN_p0.42_case060.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case063.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.28586632013320923,
+      "file": "fold3_FN_p0.29_case063.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case087.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.08681586384773254,
+      "file": "fold3_FN_p0.09_case087.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case102.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.11406643688678741,
+      "file": "fold3_FN_p0.11_case102.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case111.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.07443626970052719,
+      "file": "fold3_FN_p0.07_case111.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case205.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.17099560797214508,
+      "file": "fold3_FN_p0.17_case205.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case170.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.46042221784591675,
+      "file": "fold4_FN_p0.46_case170.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case075.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.15343645215034485,
+      "file": "fold5_FN_p0.15_case075.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case130.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.10652228444814682,
+      "file": "fold5_FN_p0.11_case130.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case199.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.22887927293777466,
+      "file": "fold5_FN_p0.23_case199.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case228.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.17597684264183044,
+      "file": "fold5_FN_p0.18_case228.png"
+    },
+    {
+      "image": "datasets/ultrasound/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023/BrEaST-Lesions_USG-images_and_masks/case234.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.32176849246025085,
+      "file": "fold5_FN_p0.32_case234.png"
+    }
+  ],
+  "mias_resnet18": [
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb028.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.21989673376083374,
+      "file": "fold1_FN_p0.22_mdb028.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb092.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.05425999313592911,
+      "file": "fold1_FN_p0.05_mdb092.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb102.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.02072763815522194,
+      "file": "fold1_FN_p0.02_mdb102.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb115.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.07014383375644684,
+      "file": "fold1_FN_p0.07_mdb115.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb125.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.015404216013848782,
+      "file": "fold1_FN_p0.02_mdb125.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb130.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.09379073232412338,
+      "file": "fold1_FN_p0.09_mdb130.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb148.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.29706907272338867,
+      "file": "fold1_FN_p0.30_mdb148.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb186.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.03617282956838608,
+      "file": "fold1_FN_p0.04_mdb186.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb213.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.24355171620845795,
+      "file": "fold1_FN_p0.24_mdb213.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb253.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.030411865562200546,
+      "file": "fold1_FN_p0.03_mdb253.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb171.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.02602463588118553,
+      "file": "fold2_FN_p0.03_mdb171.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb274.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.32224610447883606,
+      "file": "fold2_FN_p0.32_mdb274.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb023.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.43440186977386475,
+      "file": "fold3_FN_p0.43_mdb023.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb058.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.32159924507141113,
+      "file": "fold3_FN_p0.32_mdb058.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb095.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4453820586204529,
+      "file": "fold3_FN_p0.45_mdb095.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb155.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4982808530330658,
+      "file": "fold3_FN_p0.50_mdb155.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb144.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.016955606639385223,
+      "file": "fold4_FN_p0.02_mdb144.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb181.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.1121063381433487,
+      "file": "fold4_FN_p0.11_mdb181.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb206.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3865339457988739,
+      "file": "fold4_FN_p0.39_mdb206.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb238.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.06984435021877289,
+      "file": "fold4_FN_p0.07_mdb238.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb256.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.23166200518608093,
+      "file": "fold4_FN_p0.23_mdb256.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb072.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4437919557094574,
+      "file": "fold5_FN_p0.44_mdb072.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb141.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.45557701587677,
+      "file": "fold5_FN_p0.46_mdb141.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb179.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.41944676637649536,
+      "file": "fold5_FN_p0.42_mdb179.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb211.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4774506092071533,
+      "file": "fold5_FN_p0.48_mdb211.png"
+    },
+    {
+      "image": "datasets/mammography/mias/all-mias/mdb241.pgm",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3556467592716217,
+      "file": "fold5_FN_p0.36_mdb241.png"
+    }
+  ],
+  "breamdm_resnet18": [
+    {
+      "image": "datasets/MRI/BreaDM/cls/img9Se/val/Malignant/BreaDM-Ma-1810/p-023.npy",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4241318106651306,
+      "file": "FN_p0.42_p-023.png"
+    },
+    {
+      "image": "datasets/MRI/BreaDM/cls/img9Se/val/Malignant/BreaDM-Ma-1827/p-045.npy",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4973757565021515,
+      "file": "FN_p0.50_p-045.png"
+    },
+    {
+      "image": "datasets/MRI/BreaDM/cls/img9Se/val/Malignant/BreaDM-Ma-1910/p-040.npy",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3246266543865204,
+      "file": "FN_p0.32_p-040.png"
+    }
+  ],
+  "cdd_cesm_resnet18": [
+    {
+      "image": "datasets/mammography/cdd_cesm/Subtracted images of CDD-CESM/P27_L_CM_CC.jpg",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.44827038049697876,
+      "file": "val_FN_p0.45_P27_L_CM_CC.png"
+    },
+    {
+      "image": "datasets/mammography/cdd_cesm/Subtracted images of CDD-CESM/P174_L_CM_CC.jpg",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.48871126770973206,
+      "file": "val_FN_p0.49_P174_L_CM_CC.png"
+    },
+    {
+      "image": "datasets/mammography/cdd_cesm/Subtracted images of CDD-CESM/P174_L_CM_MLO.jpg",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.46326541900634766,
+      "file": "val_FN_p0.46_P174_L_CM_MLO.png"
+    },
+    {
+      "image": "datasets/mammography/cdd_cesm/Subtracted images of CDD-CESM/P256_L_CM_MLO.jpg",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.47493621706962585,
+      "file": "val_FN_p0.47_P256_L_CM_MLO.png"
+    },
+    {
+      "image": "datasets/mammography/cdd_cesm/Subtracted images of CDD-CESM/P313_R_CM_MLO.jpg",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.46311360597610474,
+      "file": "val_FN_p0.46_P313_R_CM_MLO.png"
+    }
+  ],
+  "cmmd_resnet18": [
+    {
+      "image": "datasets/mammography/cmmd_png/70820942-0524-4246-9fa7-3dfc911770ed.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2929380536079407,
+      "file": "val_FN_p0.29_70820942-0524-4246-9fa7-3dfc911770ed.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/d2264a24-07d5-42a8-a0a7-8579c759fab0.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.34898990392684937,
+      "file": "val_FN_p0.35_d2264a24-07d5-42a8-a0a7-8579c759fab0.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/d2d98e8f-5428-490b-8d3e-40970e495ed3.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.18188659846782684,
+      "file": "val_FN_p0.18_d2d98e8f-5428-490b-8d3e-40970e495ed3.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/857a024a-1c31-4b62-97a4-884dc8924d65.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4228619635105133,
+      "file": "val_FN_p0.42_857a024a-1c31-4b62-97a4-884dc8924d65.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/1c098303-2416-4141-80b9-63fcc3a576a9.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2541157007217407,
+      "file": "val_FN_p0.25_1c098303-2416-4141-80b9-63fcc3a576a9.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/d8fb99b2-11ba-462d-a4cd-8448d1e9cfda.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3746652901172638,
+      "file": "val_FN_p0.37_d8fb99b2-11ba-462d-a4cd-8448d1e9cfda.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/91525c4d-163f-477c-a6f1-277a927ee173.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.43924108147621155,
+      "file": "val_FN_p0.44_91525c4d-163f-477c-a6f1-277a927ee173.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/5b75fecb-9d0b-442c-9db5-783711511875.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4606036841869354,
+      "file": "val_FN_p0.46_5b75fecb-9d0b-442c-9db5-783711511875.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/853125ba-ed57-4873-9515-daa7bb5ee7e6.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3598741590976715,
+      "file": "val_FN_p0.36_853125ba-ed57-4873-9515-daa7bb5ee7e6.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/0057e00c-52c0-4fe5-8d97-01d404c31dc2.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4096875786781311,
+      "file": "val_FN_p0.41_0057e00c-52c0-4fe5-8d97-01d404c31dc2.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/4e2f4a4a-b265-4229-86e2-bf29c273d2dd.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.44302448630332947,
+      "file": "val_FN_p0.44_4e2f4a4a-b265-4229-86e2-bf29c273d2dd.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/57eb1d2a-4109-4c9a-8197-1f4e90d2abf5.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.1987295001745224,
+      "file": "val_FN_p0.20_57eb1d2a-4109-4c9a-8197-1f4e90d2abf5.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/46c9db51-5176-47a1-a526-272641e0374c.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.44501495361328125,
+      "file": "val_FN_p0.45_46c9db51-5176-47a1-a526-272641e0374c.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/48075ec9-5a37-4d09-98b6-1ef57c3966c3.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.37246668338775635,
+      "file": "val_FN_p0.37_48075ec9-5a37-4d09-98b6-1ef57c3966c3.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/404f0504-faeb-4916-9609-5ced9e7a622d.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4745846390724182,
+      "file": "val_FN_p0.47_404f0504-faeb-4916-9609-5ced9e7a622d.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/b975621d-e7c8-4c7c-b1f6-66918a0107b6.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.325845867395401,
+      "file": "val_FN_p0.33_b975621d-e7c8-4c7c-b1f6-66918a0107b6.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/c1512f58-ff0c-4355-9fa0-2f42e83d2154.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.48617127537727356,
+      "file": "val_FN_p0.49_c1512f58-ff0c-4355-9fa0-2f42e83d2154.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/2096d2e2-9aa6-4c3e-b913-33ad64ee20d9.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.34087949991226196,
+      "file": "val_FN_p0.34_2096d2e2-9aa6-4c3e-b913-33ad64ee20d9.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/af5e7bb9-4e7e-402f-8d2b-5c03e64dfee0.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.19304151833057404,
+      "file": "val_FN_p0.19_af5e7bb9-4e7e-402f-8d2b-5c03e64dfee0.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/a6eff105-28f8-4a65-890e-5e23b627786d.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2349722981452942,
+      "file": "val_FN_p0.23_a6eff105-28f8-4a65-890e-5e23b627786d.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/466a7cc9-ef3c-4ad7-a4ec-c6c24478717e.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4529499411582947,
+      "file": "val_FN_p0.45_466a7cc9-ef3c-4ad7-a4ec-c6c24478717e.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/14d4725c-0583-42bc-90c0-760d8d5d6691.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3823585510253906,
+      "file": "val_FN_p0.38_14d4725c-0583-42bc-90c0-760d8d5d6691.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/cff6b2a8-0d5f-4086-96b1-0c90693978dc.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.34336355328559875,
+      "file": "val_FN_p0.34_cff6b2a8-0d5f-4086-96b1-0c90693978dc.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/de1bcd50-00b8-44fc-9617-fe62f326fdac.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4171140789985657,
+      "file": "val_FN_p0.42_de1bcd50-00b8-44fc-9617-fe62f326fdac.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/50fa8f3b-3504-4ede-a890-48ed9f448bed.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3441217839717865,
+      "file": "val_FN_p0.34_50fa8f3b-3504-4ede-a890-48ed9f448bed.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/58e38878-c476-4a5e-a980-753b41a77b70.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.37097233533859253,
+      "file": "val_FN_p0.37_58e38878-c476-4a5e-a980-753b41a77b70.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/77f501a6-6b7d-4036-969c-d9d821065668.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.46646520495414734,
+      "file": "val_FN_p0.47_77f501a6-6b7d-4036-969c-d9d821065668.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/77302e22-195b-4ea4-8431-8afc570d3974.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.47985565662384033,
+      "file": "val_FN_p0.48_77302e22-195b-4ea4-8431-8afc570d3974.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/08fa6abf-47d4-4982-b699-fe104fefe634.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.20740880072116852,
+      "file": "val_FN_p0.21_08fa6abf-47d4-4982-b699-fe104fefe634.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/08368a70-fa96-44c5-afab-76de373ab9f9.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.29444459080696106,
+      "file": "val_FN_p0.29_08368a70-fa96-44c5-afab-76de373ab9f9.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/f7da5819-d1ad-4351-82dd-e84235f2a447.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3913542628288269,
+      "file": "val_FN_p0.39_f7da5819-d1ad-4351-82dd-e84235f2a447.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/07ca0397-81a4-4f20-8899-03ad83e6eab0.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3289462625980377,
+      "file": "val_FN_p0.33_07ca0397-81a4-4f20-8899-03ad83e6eab0.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/71fa84c1-313f-4eb3-9b92-fb5a8a389b60.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3152145743370056,
+      "file": "val_FN_p0.32_71fa84c1-313f-4eb3-9b92-fb5a8a389b60.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/94876085-fa69-437a-b537-f77ec185d46f.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3050195574760437,
+      "file": "val_FN_p0.31_94876085-fa69-437a-b537-f77ec185d46f.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/7e5dbab2-dfd4-4d80-bf54-cb6382a84b3f.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3665497899055481,
+      "file": "val_FN_p0.37_7e5dbab2-dfd4-4d80-bf54-cb6382a84b3f.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/d39a57ef-de8d-4273-bf93-0fba717e71b3.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.27475613355636597,
+      "file": "val_FN_p0.27_d39a57ef-de8d-4273-bf93-0fba717e71b3.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/b43ebd41-206d-49ee-a29f-475fa8c6813e.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.34134209156036377,
+      "file": "val_FN_p0.34_b43ebd41-206d-49ee-a29f-475fa8c6813e.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/8fe6fe25-89aa-44a9-9354-550abced2528.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4302787482738495,
+      "file": "val_FN_p0.43_8fe6fe25-89aa-44a9-9354-550abced2528.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/635f1136-90e4-40c3-9531-38da6080aa39.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3811725974082947,
+      "file": "val_FN_p0.38_635f1136-90e4-40c3-9531-38da6080aa39.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/c0805608-7f1b-4543-8c32-b5e17f11d610.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.233290433883667,
+      "file": "val_FN_p0.23_c0805608-7f1b-4543-8c32-b5e17f11d610.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/aa5e2db2-dc59-4f3b-93c3-117a9800e87b.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.17663145065307617,
+      "file": "val_FN_p0.18_aa5e2db2-dc59-4f3b-93c3-117a9800e87b.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/aa8e0d09-46f8-4b8b-9cae-734efe5bb9bf.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.283316433429718,
+      "file": "val_FN_p0.28_aa8e0d09-46f8-4b8b-9cae-734efe5bb9bf.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/612657f1-6aa0-40fe-984e-36e5cf013054.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.23991207778453827,
+      "file": "val_FN_p0.24_612657f1-6aa0-40fe-984e-36e5cf013054.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/d354efc0-43fa-4b19-827b-e8bb96087920.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.3375434875488281,
+      "file": "val_FN_p0.34_d354efc0-43fa-4b19-827b-e8bb96087920.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/6f735335-f020-4515-9425-086f4b9f175b.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4929448962211609,
+      "file": "val_FN_p0.49_6f735335-f020-4515-9425-086f4b9f175b.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/a75b471c-b195-4775-9e30-41fdb26690a1.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.35392525792121887,
+      "file": "val_FN_p0.35_a75b471c-b195-4775-9e30-41fdb26690a1.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/fa51c985-75f8-4a13-b033-ab9004804912.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4817029535770416,
+      "file": "val_FN_p0.48_fa51c985-75f8-4a13-b033-ab9004804912.png"
+    },
+    {
+      "image": "datasets/mammography/cmmd_png/708ee410-30c9-41a3-b75f-0169c454327a.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4640868604183197,
+      "file": "val_FN_p0.46_708ee410-30c9-41a3-b75f-0169c454327a.png"
+    }
+  ],
+  "bcsdbt_resnet18": [
+    {
+      "image": "datasets/mammography/bcsdbt_png/246-51294_s033.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.2550913393497467,
+      "file": "val_FN_p0.26_246-51294_s033.png"
+    },
+    {
+      "image": "datasets/mammography/bcsdbt_png/245-90809_s043.png",
+      "true_label": "malignant",
+      "pred_label": "benign",
+      "p_malignant": 0.4982004165649414,
+      "file": "val_FN_p0.50_245-90809_s043.png"
+    }
+  ]
+}

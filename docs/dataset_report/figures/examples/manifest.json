@@ -1,0 +1,194 @@
+{
+  "busbra": [
+    {
+      "slot": "benign",
+      "label_name": "benign",
+      "sample_id": "bus_1038-r"
+    },
+    {
+      "slot": "malignant",
+      "label_name": "malignant",
+      "sample_id": "bus_1037-l"
+    }
+  ],
+  "mias": [
+    {
+      "slot": "benign",
+      "label_name": "benign",
+      "sample_id": "mdb219"
+    },
+    {
+      "slot": "malignant",
+      "label_name": "malignant",
+      "sample_id": "mdb130"
+    }
+  ],
+  "breamdm": [
+    {
+      "slot": "benign",
+      "label_name": "Benign",
+      "sample_id": "train/Benign/BreaDM-Be-1831/p-038"
+    },
+    {
+      "slot": "malignant",
+      "label_name": "Malignant",
+      "sample_id": "train/Malignant/BreaDM-Ma-1820/p-037"
+    }
+  ],
+  "odelia": [
+    {
+      "slot": "benign",
+      "label_name": "benign",
+      "sample_id": "2B140F35_left"
+    },
+    {
+      "slot": "malignant",
+      "label_name": "malignant",
+      "sample_id": "5797535123_right"
+    }
+  ],
+  "busi": [
+    {
+      "slot": "benign",
+      "label_name": "benign",
+      "sample_id": "benign/benign (267)"
+    },
+    {
+      "slot": "malignant",
+      "label_name": "malignant",
+      "sample_id": "malignant/malignant (179)"
+    }
+  ],
+  "busc": [
+    {
+      "slot": "benign",
+      "label_name": "benign",
+      "sample_id": "benign/us34"
+    },
+    {
+      "slot": "malignant",
+      "label_name": "malignant",
+      "sample_id": "malignant/us236"
+    }
+  ],
+  "breast": [
+    {
+      "slot": "benign",
+      "label_name": "benign",
+      "sample_id": "case192.png"
+    },
+    {
+      "slot": "malignant",
+      "label_name": "malignant",
+      "sample_id": "case058.png"
+    }
+  ],
+  "bus_cot": [
+    {
+      "slot": "benign",
+      "label_name": "Benign",
+      "sample_id": "003886"
+    },
+    {
+      "slot": "malignant",
+      "label_name": "Malignant",
+      "sample_id": "002906"
+    }
+  ],
+  "bus_uclm": [
+    {
+      "slot": "benign",
+      "label_name": "Benign",
+      "sample_id": "CAWI_013"
+    },
+    {
+      "slot": "malignant",
+      "label_name": "Malignant",
+      "sample_id": "HUBL_020"
+    }
+  ],
+  "cdd_cesm": [
+    {
+      "slot": "benign",
+      "label_name": "Benign (CESM)",
+      "sample_id": "P86_R_CM_MLO"
+    },
+    {
+      "slot": "malignant",
+      "label_name": "Malignant (CESM)",
+      "sample_id": "P299_R_CM_MLO"
+    }
+  ],
+  "cmmd": [
+    {
+      "slot": "benign",
+      "label_name": "benign",
+      "sample_id": "0f00e89b-2c18-4974-be09-5eb5c8a4acb2"
+    },
+    {
+      "slot": "malignant",
+      "label_name": "malignant",
+      "sample_id": "2d45f220-ed4b-4c82-a8dd-862564faa7d5"
+    }
+  ],
+  "bcsdbt": [
+    {
+      "slot": "benign",
+      "label_name": "Benign",
+      "sample_id": "DBT-P01941/DBT-S01647/rcc"
+    },
+    {
+      "slot": "malignant",
+      "label_name": "Cancer",
+      "sample_id": "DBT-P03113/DBT-S00369/rmlo"
+    }
+  ],
+  "cbis_ddsm": [
+    {
+      "slot": "benign",
+      "label_name": "benign",
+      "sample_id": "Mass-Test_P_01512_LEFT_MLO_1"
+    },
+    {
+      "slot": "malignant",
+      "label_name": "malignant",
+      "sample_id": "Mass-Training_P_01394_LEFT_MLO_2"
+    }
+  ],
+  "dmid": [
+    {
+      "slot": "benign",
+      "label_name": "benign",
+      "sample_id": "IMG318"
+    },
+    {
+      "slot": "malignant",
+      "label_name": "malignant",
+      "sample_id": "IMG053"
+    }
+  ],
+  "ispy2": [
+    {
+      "slot": "ex0",
+      "label_name": "Malignant",
+      "sample_id": "train/Malignant/ISPY2-778527/p-114"
+    },
+    {
+      "slot": "ex1",
+      "label_name": "Malignant",
+      "sample_id": "train/Malignant/ISPY2-957408/p-048"
+    }
+  ],
+  "ambl": [
+    {
+      "slot": "benign",
+      "label_name": "benign",
+      "sample_id": "AMBL-578/lesion2"
+    },
+    {
+      "slot": "malignant",
+      "label_name": "tumor",
+      "sample_id": "AMBL-569/lesion1"
+    }
+  ]
+}
