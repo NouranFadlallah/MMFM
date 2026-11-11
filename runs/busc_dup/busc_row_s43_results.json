@@ -1,0 +1,70 @@
+{
+  "per_fold": [
+    {
+      "accuracy": 1.0,
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "auc": 1.0
+    },
+    {
+      "accuracy": 0.98,
+      "sensitivity": 0.9666666666666667,
+      "specificity": 1.0,
+      "precision": 1.0,
+      "f1": 0.9830508474576272,
+      "auc": 1.0
+    },
+    {
+      "accuracy": 1.0,
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "auc": 1.0
+    },
+    {
+      "accuracy": 1.0,
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "auc": 1.0
+    },
+    {
+      "accuracy": 1.0,
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "auc": 1.0
+    }
+  ],
+  "summary": {
+    "accuracy": {
+      "mean": 0.9960000000000001,
+      "std": 0.008000000000000007
+    },
+    "sensitivity": {
+      "mean": 0.9933333333333334,
+      "std": 0.01333333333333333
+    },
+    "specificity": {
+      "mean": 1.0,
+      "std": 0.0
+    },
+    "precision": {
+      "mean": 1.0,
+      "std": 0.0
+    },
+    "f1": {
+      "mean": 0.9966101694915255,
+      "std": 0.006779661016949134
+    },
+    "auc": {
+      "mean": 1.0,
+      "std": 0.0
+    }
+  }
+}
