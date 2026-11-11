@@ -130,7 +130,7 @@ def _build_old_combined_val_sources():
     sources.append(('mias', MAMMOGRAPHY_BRANCH, SingleModalityBranchDataset(val_ds, MAMMOGRAPHY_BRANCH, BRANCH_CHANNELS)))
 
     for name in ARGS.ultrasound_datasets:
-        _, validation_frame, _, validation_transform = _ultrasound_frame(name, ARGS)
+        _, validation_frame, _, validation_transform, _ = _ultrasound_frame(name, ARGS)
         val_ds = _make_dataset(validation_frame, validation_transform)
         sources.append((name, ULTRASOUND_BRANCH, SingleModalityBranchDataset(val_ds, ULTRASOUND_BRANCH, BRANCH_CHANNELS)))
 

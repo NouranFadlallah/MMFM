@@ -962,14 +962,15 @@ BUS_COT_CLINICAL_SOURCES = ('TFUSL', 'TUHD', 'BUDIAT', 'STU-Hospital', 'Birads-u
 BUS_COT_DUPLICATES = Path('analysis/bus_cot/duplicates.csv')
 
 
-def _bus_cot_clinical_frame(root, seed=42, validation_fraction=0.1):
-    """BUS-CoT's new-clinical subset for --dataset combined: only
-    BUS_COT_CLINICAL_SOURCES, de-duplicated with the raw-stage audit's duplicate
-    groups (one image kept per group; groups with conflicting labels dropped,
-    which removes most of TUHD's 88 conflict pairs). The official test split is
-    left out; validation is a patient-level hold-out of trainval."""
+def _bus_cot_clinical_metadata(root, include_test=False):
+    """BUS-CoT's new-clinical subset: only BUS_COT_CLINICAL_SOURCES, de-duplicated
+    with the raw-stage audit's duplicate groups (one image kept per group; groups
+    with conflicting labels dropped, which removes most of TUHD's 88 conflict
+    pairs). The official test split is left out unless include_test."""
     metadata = _bus_cot_metadata(root)
-    metadata = metadata[metadata['source'].isin(BUS_COT_CLINICAL_SOURCES) & (metadata['split'] != 'test')]
+    metadata = metadata[metadata['source'].isin(BUS_COT_CLINICAL_SOURCES)]
+    if not include_test:
+        metadata = metadata[metadata['split'] != 'test']
     if BUS_COT_DUPLICATES.exists():
         pairs = pd.read_csv(BUS_COT_DUPLICATES, dtype={'sample_id_a': str, 'sample_id_b': str})
         members = pd.concat([pairs[['group_id', 'sample_id_a', 'label_conflict']].set_axis(['group', 'record', 'conflict'], axis=1),
@@ -979,7 +980,13 @@ def _bus_cot_clinical_frame(root, seed=42, validation_fraction=0.1):
         keep = set(members[~members['record'].isin(conflicted)].groupby('group')['record'].min())
         drop = (set(members['record']) - keep) | conflicted
         metadata = metadata[~metadata['record'].isin(drop)]
-    return _patient_split(metadata.reset_index(drop=True), 'patient', seed, validation_fraction)
+    return metadata.reset_index(drop=True)
+
+
+def _bus_cot_clinical_frame(root, seed=42, validation_fraction=0.1):
+    """BUS-CoT's new-clinical subset for --dataset combined; validation is a
+    patient-level hold-out of trainval."""
+    return _patient_split(_bus_cot_clinical_metadata(root), 'patient', seed, validation_fraction)
 
 
 # BUS-UCLM (37 patients) and DMID (273 images) are small enough that 10% gives a
@@ -1062,7 +1069,39 @@ def _group_kfold_frame(metadata, group_col, num_folds, test_fold, seed, holdout_
     return train, validation, test
 
 
+def _combined_fold_frames(name, args):
+    """Train/validation/test frames for one combined source under --combined-fold:
+    the same split function and grouping as that dataset's single-mode k-fold run
+    (so fold k's test images are identical for fusion and specialist), or the
+    dataset's fixed official split where it has one."""
+    fold, num_folds = args.combined_fold, args.kfold or 5
+    if name == 'busbra':
+        return _busbra_kfold_frame(Path('datasets/ultrasound/busbra/BUSBRA'), num_folds, fold, args.seed, holdout_fraction=0.2)
+    if name == 'cbis_ddsm':
+        return _cbis_ddsm_frames(Path('/mnt/data/mmfm_datasets/mammography/cbis_ddsm'), args.seed)
+    if name == 'bus_cot':
+        metadata = _bus_cot_clinical_metadata(Path('datasets/ultrasound/bus_cot/extracted/BUSCoT'), include_test=True)
+        return _fixed_test_kfold_frame(metadata, 'patient', num_folds, fold, args.seed)
+    spec = DATASET_KFOLD_SPECS[name]
+    metadata, group_col = spec['metadata_fn'](spec['default_root']), spec['group_col']
+    if name == 'busc' and args.sequence_block_groups:
+        numbers = metadata['image'].map(lambda p: int(Path(p).stem.removeprefix('us')))
+        metadata, group_col = metadata.assign(seq_group=(numbers - 1) // args.sequence_block_groups), 'seq_group'
+    elif group_col is None:
+        # no patient IDs (BUSI, BUSC): keep the audit's duplicate groups together
+        metadata, group_col = _attach_duplicate_groups(metadata, Path('analysis') / name / 'duplicates.csv'), 'dup_group'
+    return _group_kfold_frame(metadata, group_col, num_folds, fold, args.seed, holdout_fraction=0.2)
+
+
 def _ultrasound_frame(name, args):
+    if getattr(args, 'combined_fold', None):
+        transform_cls = {'busbra': BusbraTransform, 'busi': BusbraTransform, 'busc': MiasTransform,
+                         'breast': BusbraTransform, 'bus_cot': PadToSquareTransform,
+                         'bus_uclm': PadToSquareTransform}[name]
+        train_frame, validation_frame, test_frame = _combined_fold_frames(name, args)
+        train_transform = _with_us_preprocess(args, transform_cls(size=args.image_size, augment=True))
+        validation_transform = _with_us_preprocess(args, transform_cls(size=args.image_size, augment=False))
+        return train_frame, validation_frame, train_transform, validation_transform, test_frame
     if name == 'busbra':
         root = Path('datasets/ultrasound/busbra/BUSBRA')
         frame = _busbra_frame(root, args.max_samples, args.seed, args.validation_fraction)
@@ -1092,17 +1131,39 @@ def _ultrasound_frame(name, args):
     train_frame, validation_frame = frame
     train_transform = _with_us_preprocess(args, transform_cls(size=args.image_size, augment=True))
     validation_transform = _with_us_preprocess(args, transform_cls(size=args.image_size, augment=False))
-    return train_frame, validation_frame, train_transform, validation_transform
+    return train_frame, validation_frame, train_transform, validation_transform, None
 
 
-def _branch_dataset_source(train_ds, val_ds, labels, branch_index, name=None):
+def _branch_dataset_source(train_ds, val_ds, labels, branch_index, name=None, test_ds=None):
     return {
         'name': name or f'branch{branch_index}_source',
         'branch': branch_index,
         'train': SingleModalityBranchDataset(train_ds, branch_index, BRANCH_CHANNELS),
         'val': SingleModalityBranchDataset(val_ds, branch_index, BRANCH_CHANNELS),
+        'test': SingleModalityBranchDataset(test_ds, branch_index, BRANCH_CHANNELS) if test_ds is not None else None,
         'labels': list(labels),
     }
+
+
+def _frame_source(frames, transform_cls, args, branch_index, name):
+    """Source from (train, validation[, test]) frames with a train/eval transform pair."""
+    train_frame, validation_frame, *rest = frames
+    eval_transform = transform_cls(size=args.image_size, augment=False)
+    test_frame = rest[0] if rest else None
+    return _branch_dataset_source(
+        _make_dataset(train_frame, transform_cls(size=args.image_size, augment=True)),
+        _make_dataset(validation_frame, eval_transform),
+        train_frame['label'], branch_index, name,
+        test_ds=_make_dataset(test_frame, eval_transform) if test_frame is not None else None,
+    )
+
+
+def _image_folder_source(root, train_transform, eval_transform, branch_index, name, with_test):
+    """Source from a preprocessed train/val[/test] image-folder tree (MRI img9Se)."""
+    train_ds = BreaDMDataset(root, 'train', train_transform)
+    test_ds = BreaDMDataset(root, 'test', eval_transform) if with_test and (Path(root) / 'test').exists() else None
+    return _branch_dataset_source(train_ds, BreaDMDataset(root, 'val', eval_transform),
+                                  [label for _, label in train_ds.samples], branch_index, name, test_ds=test_ds)
 
 
 def _build_combined_sources(args):
@@ -1110,22 +1171,30 @@ def _build_combined_sources(args):
     sources_by_branch = {MAMMOGRAPHY_BRANCH: [], ULTRASOUND_BRANCH: [], MRI_BRANCH: []}
 
     # mammography branch: MIAS
+    folded = bool(getattr(args, 'combined_fold', None))
     mias_root = Path('datasets/mammography/mias/all-mias')
+    if folded:
+        sources_by_branch[MAMMOGRAPHY_BRANCH].append(
+            _frame_source(_combined_fold_frames('mias', args), MiasTransform, args, MAMMOGRAPHY_BRANCH, 'mias'))
     train_frame, validation_frame = _mias_frame(mias_root, args.seed, args.validation_fraction)
     train_transform = MiasTransform(size=args.image_size, augment=True)
     validation_transform = MiasTransform(size=args.image_size, augment=False)
     train_ds = _make_dataset(train_frame, train_transform)
     val_ds = _make_dataset(validation_frame, validation_transform)
-    sources_by_branch[MAMMOGRAPHY_BRANCH].append(
-        _branch_dataset_source(train_ds, val_ds, train_frame['label'], MAMMOGRAPHY_BRANCH, 'mias')
-    )
+    if not folded:
+        sources_by_branch[MAMMOGRAPHY_BRANCH].append(
+            _branch_dataset_source(train_ds, val_ds, train_frame['label'], MAMMOGRAPHY_BRANCH, 'mias')
+        )
 
     # mammography branch: BCS-DBT (box-cropped Benign/Cancer slices; optional,
     # skipped if the labels/file-paths/boxes CSVs haven't been placed under
     # datasets/mammography/bcsdbt_*).
     dbt_labels_path = Path('datasets/mammography/bcsdbt_labels.csv')
     dbt_extra_root = DATASET_KFOLD_SPECS['bcsdbt_full']['default_root']
-    if dbt_labels_path.exists() and (dbt_extra_root / 'labels').exists():
+    if folded and (dbt_extra_root / 'labels').exists():
+        sources_by_branch[MAMMOGRAPHY_BRANCH].append(_frame_source(
+            _combined_fold_frames('bcsdbt_full', args), MiasTransform, args, MAMMOGRAPHY_BRANCH, 'bcsdbt_full'))
+    elif dbt_labels_path.exists() and (dbt_extra_root / 'labels').exists():
         # all locally held Benign/Cancer views (validation + train + test releases)
         dbt_train_frame, dbt_validation_frame = _patient_split(
             _dbt_full_metadata(dbt_extra_root), 'patient', args.seed, args.validation_fraction
@@ -1156,46 +1225,35 @@ def _build_combined_sources(args):
     # patient-level split; its test patients stay out). Optional: needs the PNG
     # cache built by --dataset cbis_ddsm.
     if Path('datasets/mammography/cbis_ddsm_png/metadata.csv').exists():
-        cbis_train_frame, cbis_validation_frame, _ = _cbis_ddsm_frames(
-            Path('/mnt/data/mmfm_datasets/mammography/cbis_ddsm'), args.seed
-        )
-        sources_by_branch[MAMMOGRAPHY_BRANCH].append(_branch_dataset_source(
-            _make_dataset(cbis_train_frame, MiasTransform(size=args.image_size, augment=True)),
-            _make_dataset(cbis_validation_frame, MiasTransform(size=args.image_size, augment=False)),
-            cbis_train_frame['label'], MAMMOGRAPHY_BRANCH, 'cbis_ddsm',
-        ))
+        cbis_frames = _cbis_ddsm_frames(Path('/mnt/data/mmfm_datasets/mammography/cbis_ddsm'), args.seed)
+        sources_by_branch[MAMMOGRAPHY_BRANCH].append(_frame_source(
+            cbis_frames if folded else cbis_frames[:2], MiasTransform, args, MAMMOGRAPHY_BRANCH, 'cbis_ddsm'))
 
     # mammography branch: DMID lesion crops (image-level split, breast mirrored
     # to the left). Optional: skipped if the raw release isn't on /mnt/data.
     if not getattr(args, 'no_dmid', False) and ((DMID_ROOT / 'DICOM Images').exists()
                              or Path('datasets/mammography/dmid_png/metadata.csv').exists()):
-        dmid_train_frame, dmid_validation_frame = _dmid_frame(
-            DMID_ROOT, args.seed, max(args.validation_fraction, SMALL_SOURCE_VALIDATION_FRACTION))
-        sources_by_branch[MAMMOGRAPHY_BRANCH].append(_branch_dataset_source(
-            _make_dataset(dmid_train_frame, MiasTransform(size=args.image_size, augment=True)),
-            _make_dataset(dmid_validation_frame, MiasTransform(size=args.image_size, augment=False)),
-            dmid_train_frame['label'], MAMMOGRAPHY_BRANCH, 'dmid',
-        ))
+        dmid_frames = (_combined_fold_frames('dmid', args) if folded else
+                       _dmid_frame(DMID_ROOT, args.seed, max(args.validation_fraction, SMALL_SOURCE_VALIDATION_FRACTION)))
+        sources_by_branch[MAMMOGRAPHY_BRANCH].append(
+            _frame_source(dmid_frames, MiasTransform, args, MAMMOGRAPHY_BRANCH, 'dmid'))
 
     # ultrasound branch: one or more of busbra/busi/busc/breast/bus_cot, concatenated
     for name in args.ultrasound_datasets:
-        train_frame, validation_frame, train_transform, validation_transform = _ultrasound_frame(name, args)
+        train_frame, validation_frame, train_transform, validation_transform, test_frame = _ultrasound_frame(name, args)
         train_ds = _make_dataset(train_frame, train_transform)
         val_ds = _make_dataset(validation_frame, validation_transform)
+        test_ds = _make_dataset(test_frame, validation_transform) if test_frame is not None else None
         sources_by_branch[ULTRASOUND_BRANCH].append(
-            _branch_dataset_source(train_ds, val_ds, train_frame['label'], ULTRASOUND_BRANCH, name)
+            _branch_dataset_source(train_ds, val_ds, train_frame['label'], ULTRASOUND_BRANCH, name, test_ds=test_ds)
         )
 
     # MRI branch: BreaDM
     breamdm_root = Path('datasets/MRI/BreaDM/cls/img9Se')
     train_transform = BreadmTransform(size=args.image_size, augment=True)
     validation_transform = BreadmTransform(size=args.image_size, augment=False)
-    train_ds = BreaDMDataset(breamdm_root, 'train', train_transform)
-    val_ds = BreaDMDataset(breamdm_root, 'val', validation_transform)
-    labels = [label for _, label in train_ds.samples]
     sources_by_branch[MRI_BRANCH].append(
-        _branch_dataset_source(train_ds, val_ds, labels, MRI_BRANCH, 'breamdm')
-    )
+        _image_folder_source(breamdm_root, train_transform, validation_transform, MRI_BRANCH, 'breamdm', folded))
 
     # MRI branch: BreastDCEDL-ISPY2 (malignant-only augmentation; I-SPY2 is a
     # pre-treatment neoadjuvant-trial cohort with no benign cases and ships no
@@ -1204,32 +1262,23 @@ def _build_combined_sources(args):
     # scripts/preprocess_ispy2_mri.py). Optional: skipped if not preprocessed.
     ispy2_root = Path('datasets/MRI/ISPY2/cls/img9Se')
     if (ispy2_root / 'train').exists():
-        ispy2_train_ds = BreaDMDataset(ispy2_root, 'train', train_transform)
-        ispy2_val_ds = BreaDMDataset(ispy2_root, 'val', validation_transform)
-        ispy2_labels = [label for _, label in ispy2_train_ds.samples]
+        # no test folder: malignant-only, so it has no per-source AUC to report
         sources_by_branch[MRI_BRANCH].append(
-            _branch_dataset_source(ispy2_train_ds, ispy2_val_ds, ispy2_labels, MRI_BRANCH, 'ispy2')
-        )
+            _image_folder_source(ispy2_root, train_transform, validation_transform, MRI_BRANCH, 'ispy2', False))
 
     # MRI branch: ODELIA benign / malignant breasts as 9-channel whole-breast
     # slice stacks (scripts/preprocess_odelia_mri.py; RSH held out entirely).
     odelia_root = Path('datasets/MRI/ODELIA/cls/img9Se')
     if (odelia_root / 'train').exists():
-        odelia_train_ds = BreaDMDataset(odelia_root, 'train', train_transform)
-        odelia_val_ds = BreaDMDataset(odelia_root, 'val', validation_transform)
-        sources_by_branch[MRI_BRANCH].append(_branch_dataset_source(
-            odelia_train_ds, odelia_val_ds, [label for _, label in odelia_train_ds.samples], MRI_BRANCH, 'odelia'
-        ))
+        sources_by_branch[MRI_BRANCH].append(
+            _image_folder_source(odelia_root, train_transform, validation_transform, MRI_BRANCH, 'odelia', folded))
 
     # MRI branch: AMBL lesion crops (benign and malignant, side-checked labels;
     # scripts/preprocess_ambl_mri.py, same crop rule as ISPY2)
     ambl_root = Path('datasets/MRI/AMBL/cls/img9Se')
     if (ambl_root / 'train').exists():
-        ambl_train_ds = BreaDMDataset(ambl_root, 'train', train_transform)
-        ambl_val_ds = BreaDMDataset(ambl_root, 'val', validation_transform)
-        sources_by_branch[MRI_BRANCH].append(_branch_dataset_source(
-            ambl_train_ds, ambl_val_ds, [label for _, label in ambl_train_ds.samples], MRI_BRANCH, 'ambl'
-        ))
+        sources_by_branch[MRI_BRANCH].append(
+            _image_folder_source(ambl_root, train_transform, validation_transform, MRI_BRANCH, 'ambl', folded))
     return sources_by_branch
 
 
@@ -1242,6 +1291,7 @@ def _build_combined_datasets(args):
 
     train_parts = []
     val_parts = []
+    test_sources = []
     train_weights = []
     for sources in sources_by_branch.values():
         num_sources = len(sources)
@@ -1256,6 +1306,8 @@ def _build_combined_datasets(args):
                 train_weights.append(weight)
             train_parts.append(source['train'])
             val_parts.append(source['val'])
+            if source.get('test') is not None:
+                test_sources.append(source)
 
     train_dataset = ConcatDataset(train_parts)
     validation_dataset = ConcatDataset(val_parts)
@@ -1265,7 +1317,11 @@ def _build_combined_datasets(args):
         for sources in sources_by_branch.values() for source in sources
     ]
     sampler = WeightedRandomSampler(train_weights, num_samples=len(train_weights), replacement=True)
-    return train_dataset, validation_dataset, sampler
+    test_dataset = None
+    if test_sources:
+        test_dataset = ConcatDataset([source['test'] for source in test_sources])
+        test_dataset.segments = [(source['name'], source['branch'], len(source['test'])) for source in test_sources]
+    return train_dataset, validation_dataset, sampler, test_dataset
 
 
 def _warm_start_branch(model, branch_index, checkpoint_path):
@@ -1292,7 +1348,7 @@ def _warm_start_branch(model, branch_index, checkpoint_path):
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Train the three-branch fusion model.')
     parser.add_argument('--dataset', choices=['busbra', 'busi', 'busc', 'breast', 'mias', 'cdd_cesm', 'cmmd', 'bcsdbt', 'bcsdbt_full',
-                                                  'cbis_ddsm', 'bus_cot', 'breamdm', 'odelia', 'ambl', 'combined'], default='busbra')
+                                                  'cbis_ddsm', 'bus_cot', 'breamdm', 'odelia', 'ambl', 'dmid', 'bus_uclm', 'combined'], default='busbra')
     parser.add_argument(
         '--cdd-cesm-annotations', type=Path, default=None,
         help='Path to the CDD-CESM "Radiology-manual-annotations.xlsx" file (TCIA supporting documentation, not part of the image package).'
@@ -1394,6 +1450,25 @@ def main(argv=None):
              'stratified group k-fold (no official fold assignment exists for these '
              'datasets, unlike BUS-BRA), grouped by patient/case where available. '
              'bus_cot keeps its official test split fixed and rotates validation.'
+    )
+    parser.add_argument(
+        '--duplicate-groups', action='store_true',
+        help='With --kfold: keep each near-duplicate cluster from the raw-stage audit '
+             '(analysis/<dataset>/duplicates.csv) inside a single fold, so duplicates '
+             'cannot straddle train and test. Only for datasets without a patient column.'
+    )
+    parser.add_argument(
+        '--combined-fold', type=int, default=None, metavar='K',
+        help='With --dataset combined: train on fold K of --kfold (default 5) folds, each source split '
+             'exactly as its single-mode k-fold run splits it (fixed official splits for CBIS-DDSM, '
+             'BreastDM, ODELIA, AMBL), and score the best checkpoint per source on the held-out test '
+             'split. "{fold}" in the --*-init-checkpoint paths is replaced by K.'
+    )
+    parser.add_argument(
+        '--sequence-block-groups', type=int, default=None, metavar='K',
+        help='With --kfold on busc: group images into blocks of K consecutive file numbers '
+             '(usN.bmp), a stand-in for patient IDs, since BUSC numbers its frames in acquisition '
+             'order and every audited duplicate pair is 1-3 numbers apart.'
     )
     parser.add_argument(
         '--us-preprocess', nargs='+', default=None, metavar='STEP',
@@ -1518,19 +1593,28 @@ def main(argv=None):
         loader = _make_loader(train_dataset, args.batch_size, args.num_workers, shuffle=True)
         val_loader = _make_loader(validation_dataset, args.batch_size, args.num_workers)
         test_loader = None
-        if args.dataset in ('odelia', 'ambl'):  # held-out test split (ODELIA's RSH lives in test_rsh)
+        if (Path(dataset_root) / 'test').exists():  # held-out test split (ODELIA's RSH lives in test_rsh)
             test_loader = _make_loader(BreaDMDataset(dataset_root, 'test', validation_transform),
                                        args.batch_size, args.num_workers)
         print(f'dataset={args.dataset} device={device} train_samples={len(train_dataset)} validation_samples={len(validation_dataset)}')
         return _train_model(args, device, loader, val_loader, test_loader=test_loader)
     elif args.dataset == 'combined':
-        train_dataset, validation_dataset, sampler = _build_combined_datasets(args)
+        if args.combined_fold:
+            for attr in ('mammography_init_checkpoint', 'ultrasound_init_checkpoint', 'mri_init_checkpoint'):
+                if getattr(args, attr) is not None:
+                    setattr(args, attr, Path(str(getattr(args, attr)).format(fold=args.combined_fold)))
+        train_dataset, validation_dataset, sampler, test_dataset = _build_combined_datasets(args)
         if args.checkpoint_path is None:
-            args.checkpoint_path = Path(f'combined_fusion_{args.backbone}_best.pth')
+            fold_tag = f'_fold{args.combined_fold}' if args.combined_fold else ''
+            args.checkpoint_path = Path(f'combined_fusion_{args.backbone}{fold_tag}_best.pth')
         loader = _make_loader(train_dataset, args.batch_size, args.num_workers, sampler=sampler)
         val_loader = _make_loader(validation_dataset, args.batch_size, args.num_workers)
-        print(f'dataset=combined device={device} train_samples={len(train_dataset)} validation_samples={len(validation_dataset)}')
-        return _train_model(args, device, loader, val_loader)
+        test_loader = None
+        if args.combined_fold and test_dataset is not None:
+            test_loader = _make_loader(test_dataset, args.batch_size, args.num_workers)
+        print(f'dataset=combined device={device} train_samples={len(train_dataset)} validation_samples={len(validation_dataset)}'
+              + (f' test_samples={len(test_dataset)}' if test_loader is not None else ''))
+        return _train_model(args, device, loader, val_loader, test_loader=test_loader)
     elif args.dataset == 'busbra' and args.busbra_kfold is not None:
         return _run_busbra_kfold(args, device)
     else:
@@ -1672,7 +1756,49 @@ DATASET_KFOLD_SPECS = {
         'group_col': 'patient',
         'transform_cls': MiasTransform,
     },
+    # image-level (no patient IDs); duplicate pairs already dropped in _dmid_metadata
+    'dmid': {
+        'metadata_fn': _dmid_metadata,
+        'default_root': DMID_ROOT,
+        'group_col': 'patient',
+        'transform_cls': MiasTransform,
+    },
+    # patient = filename prefix, CHCO merged into CHVI
+    'bus_uclm': {
+        'metadata_fn': _bus_uclm_metadata,
+        'default_root': BUS_UCLM_ROOT,
+        'group_col': 'patient',
+        'transform_cls': PadToSquareTransform,
+    },
 }
+
+
+def _attach_duplicate_groups(metadata, duplicates_csv):
+    """Add a 'dup_group' column: images linked by any near-duplicate pair in the
+    raw-stage audit share a group (union-find); every other image is its own group.
+    Audit sample ids are '<class>/<stem>', matched against each image path."""
+    pairs = pd.read_csv(duplicates_csv, dtype={'sample_id_a': str, 'sample_id_b': str})
+    sample_ids = metadata['image'].map(lambda p: f'{Path(p).parent.name}/{Path(p).stem}')
+    parent = {sid: sid for sid in sample_ids}
+
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    missing = 0
+    for a, b in zip(pairs['sample_id_a'], pairs['sample_id_b']):
+        if a not in parent or b not in parent:
+            missing += 1
+            continue
+        parent[find(a)] = find(b)
+    if missing:
+        print(f'warning: {missing} duplicate pairs reference images not in the metadata')
+    metadata = metadata.copy()
+    metadata['dup_group'] = sample_ids.map(find).to_numpy()
+    print(f'duplicate groups: {metadata["dup_group"].nunique()} groups over {len(metadata)} images')
+    return metadata
 
 
 def _run_generic_kfold(args, device):
@@ -1684,6 +1810,19 @@ def _run_generic_kfold(args, device):
     spec = DATASET_KFOLD_SPECS[args.dataset]
     dataset_root = args.dataset_root or spec['default_root']
     metadata = spec['metadata_fn'](dataset_root)
+    group_col = spec['group_col']
+    if args.duplicate_groups:
+        if group_col is not None:
+            raise ValueError(f'--duplicate-groups is for datasets without a patient column; {args.dataset} groups by {group_col}')
+        metadata = _attach_duplicate_groups(metadata, Path('analysis') / args.dataset / 'duplicates.csv')
+        group_col = 'dup_group'
+    if args.sequence_block_groups:
+        if args.dataset != 'busc' or args.duplicate_groups:
+            raise ValueError('--sequence-block-groups is only for busc, without --duplicate-groups')
+        file_numbers = metadata['image'].map(lambda p: int(Path(p).stem.removeprefix('us')))
+        metadata = metadata.assign(seq_group=(file_numbers - 1) // args.sequence_block_groups)
+        group_col = 'seq_group'
+        print(f'sequence groups: {metadata["seq_group"].nunique()} blocks of {args.sequence_block_groups}')
     transform_cls = spec['transform_cls']
     supports_contrast_stretch = transform_cls is BusbraTransform
 
@@ -1695,11 +1834,11 @@ def _run_generic_kfold(args, device):
     for fold in folds:
         if spec.get('fixed_test'):
             train_frame, validation_frame, test_frame = _fixed_test_kfold_frame(
-                metadata, spec['group_col'], args.kfold, fold, args.seed
+                metadata, group_col, args.kfold, fold, args.seed
             )
         else:
             train_frame, validation_frame, test_frame = _group_kfold_frame(
-                metadata, spec['group_col'], args.kfold, fold, args.seed, holdout_fraction=0.2
+                metadata, group_col, args.kfold, fold, args.seed, holdout_fraction=0.2
             )
         transform_kwargs = {'contrast_stretch': args.paper_match} if supports_contrast_stretch else {}
         augment = not (args.paper_match and spec.get('paper_augment') is False)
@@ -1890,6 +2029,30 @@ def _train_model(args, device, loader, val_loader, test_loader=None, class_weigh
         metrics_path.write_text(json.dumps(best_sources, indent=2))
         run.summary['best/mean_branch_auc'] = best_mean_branch_auc
         print(f"best epoch {best_sources['epoch']}: mean_branch_auc={best_mean_branch_auc:.4f} -> {metrics_path}")
+    test_segments = getattr(test_loader.dataset, 'segments', None) if test_loader is not None else None
+    if not args.single_mode and test_segments:
+        # combined --combined-fold: score the selected checkpoint per source on held-out test
+        model.load_state_dict(torch.load(args.checkpoint_path, map_location=device))
+        _, _, _, probs, labels = validate(model, test_loader, device, criterion=criterion, return_outputs=True)
+        test_sources = source_metrics(probs, labels, test_segments)
+        result['test_source_metrics'] = test_sources
+        test_path = Path(args.checkpoint_path).with_name(Path(args.checkpoint_path).stem + '_test_source_metrics.json')
+        test_path.write_text(json.dumps(test_sources, indent=2))
+        names = np.concatenate([[name] * length for name, _, length in test_segments])
+
+        def image_ids(branch_ds):
+            base = branch_ds.base_dataset
+            return base.df['img1'].tolist() if hasattr(base, 'df') else [str(path) for path, _ in base.samples]
+
+        images = np.concatenate([image_ids(part) for part in test_loader.dataset.datasets])
+        np.savez(test_path.with_suffix('.npz'), probs=probs, labels=labels, source=names, image=images)
+        for group in ('sources', 'branches'):
+            for name, m in test_sources[group].items():
+                if m['auc'] is not None:
+                    run.summary[f'test/{group}/{name}_auc'] = m['auc']
+        print('Held-out test, per source: ' + ' '.join(
+            f"{k}:auc={m['auc']:.3f}" if m['auc'] is not None else f"{k}:acc={m['accuracy']:.3f}"
+            for k, m in test_sources['sources'].items()) + f' -> {test_path}')
     if args.single_mode:
         model.load_state_dict(torch.load(args.checkpoint_path, map_location=device))
         validation_metrics = evaluate_full_metrics(model, val_loader, device)
@@ -1905,6 +2068,11 @@ def _train_model(args, device, loader, val_loader, test_loader=None, class_weigh
             print('Held-out test-fold metrics: ' +
                   ' '.join(f'{k}={v:.4f}' for k, v in test_metrics.items()))
             result['test_metrics'] = test_metrics
+            probs, targets = collect_predictions(model, test_loader, device)
+            np.savez(Path(args.checkpoint_path).with_name(Path(args.checkpoint_path).stem + '_test_predictions.npz'),
+                     probs=probs[:, 1].numpy(), labels=targets.numpy(),
+                     image=np.array(test_loader.dataset.df['img1'].tolist() if hasattr(test_loader.dataset, 'df')
+                                    else [str(path) for path, _ in test_loader.dataset.samples]))
 
     run.save(str(args.checkpoint_path))
     run.summary['best_validation_loss'] = best_validation_loss
