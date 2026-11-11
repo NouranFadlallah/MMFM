@@ -45,3 +45,10 @@ analysis/**/figures/
 # LaTeX build artifacts for the dataset report (sources and generated/ are tracked)
 docs/dataset_report/main.*
 !docs/dataset_report/main.tex
+
+# large / generated artifacts kept out of git
+medgemma_combined_lora/
+docs/latex/*.aux
+docs/latex/*.bbl
+docs/latex/*.blg
+docs/latex/*.out
