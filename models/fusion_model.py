@@ -71,18 +71,23 @@ class FusionLateModel(nn.Module):
             )
 
         for i, x in enumerate(xs):
-            if x is None:
-                # create zero embedding
-                emb = torch.zeros((batch_size, self.projections[i][0].out_features), device=device)
-                logits = torch.zeros((batch_size, self.classifiers[i].out_features), device=device)
-            else:
-                feat = self.backbones[i](x)
+            # absent samples get zero embeddings/logits (masked out of the fusion below).
+            # Run the backbone only on present samples: zero-filled placeholders would
+            # otherwise enter BatchNorm's batch statistics in training mode, and in a
+            # combined batch most samples are absent from any given branch.
+            emb = torch.zeros((batch_size, self.projections[i][0].out_features), device=device)
+            logits = torch.zeros((batch_size, self.classifiers[i].out_features), device=device)
+            present = presence_mask[:, i].nonzero(as_tuple=True)[0] if x is not None else None
+            if present is not None and len(present) > 0:
+                feat = self.backbones[i](x[present])
                 if feat.dim() == 4:
                     feat = F.adaptive_avg_pool2d(feat, 1).flatten(1)
                 else:
                     feat = feat.flatten(1)
-                emb = self.projections[i](feat)
-                logits = self.classifiers[i](emb)
+                present_emb = self.projections[i](feat)
+                present_logits = self.classifiers[i](present_emb)
+                emb = emb.to(present_emb.dtype).index_copy(0, present, present_emb)
+                logits = logits.to(present_logits.dtype).index_copy(0, present, present_logits)
             embeddings.append(emb)
             branch_logits.append(logits)
 
