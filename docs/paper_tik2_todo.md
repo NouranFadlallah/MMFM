@@ -84,35 +84,23 @@ Status markers: `[ ]` open · `[~]` in progress / partial · `[x]` done
       `llncs` + `splncs04` before submission. Red `\pending{}` cells: BUSC/BUSI dup-grouped
       rows, frozen fusion column, specialist column. Room left for a protocol figure.
 
-## >>> NEXT SESSION START HERE (written 2026-11-12 21:45) <<<
-GPU queue finished 2026-11-12 15:51 (all steps). Nothing running. Results on disk:
-- BUSC frame blocks (runs/busc_seq): acc 0.748/0.824/0.788, AUC 0.949/0.930/0.925 (seeds 42-44)
-  vs random split 0.992 → leakage between consecutive frames. Specialist busc (dup groups,
-  pretrained): runs/specialists/busc_results.json.
-- BUSI (runs/busi_dup): row AUC 0.939/0.937/0.931, dup 0.945/0.941/+s44 → duplicates don't matter.
-- Fusion fold-aligned (runs/fold_aligned): all-trained test mean-branch AUC 0.796±0.008,
-  frozen 0.779±0.010; all-trained wins every fold; frozen better on MRI (AMBL 0.716 vs 0.576).
-- Fusion vs specialist (runs/fold_aligned/fusion_{all,frozen}_vs_specialists.json), all-trained:
-  fusion better on mini-MIAS (+0.12), BrEaST (+0.06), BUS-UCLM (+0.17); worse on DMID (−0.07),
-  BUS-BRA (−0.02), BreastDM (−0.04); rest n.s.
-TODO next, in order:
-1. [x] (2026-11-17, per-fold paired deltas + bootstrap) **Fix the comparison stats for fixed-split sources** (CBIS-DDSM, BreastDM, ODELIA, AMBL):
-   their test set is identical in all 5 folds, so pooling folds counts each image 5×
-   (n=2230 for BreastDM = 446×5) → CI/p too optimistic. Average the 5 fusion probabilities
-   per image (or compare per fold) before DeLong/bootstrap. K-fold sources are fine.
-2. [x] (footnoted in both tables) Note: MRI + CBIS specialists used the default Adam recipe with early stopping (7-10 epochs),
-   not --paper-match; say so in the table or re-run with a stronger recipe.
-3. [~] (running: runs/fold_aligned/busc_seq_fusion.sh, started 2026-11-17 16:21) Re-run fusion with BUSC grouped by frame blocks (`--sequence-block-groups 10`), all-trained,
-   5 folds (~45 min/fold); BUSC is still leaky in the current fusion runs (0.998).
-4. [~] (all filled except BUSC fusion footnote) Fill the MICCAI draft's red cells (docs/miccai_draft): BUSC/BUSI dup rows, frozen column,
-   specialist column (after step 1); add the frozen/AMBL observation.
-5. [x] (2026-11-17: abstract, new 4.2.4 leak-controlled, Sec. 5 update, new 6.5 fold-aligned) Update the TIK2 report (~/Desktop/paper): abstract (freezing claim is reversed), Sec. 5
-   BUSC discussion (leakage, not framing), Sec. 6 with the fold-aligned results.
-6. Upload new weights to the private HF repo noe95/mmfm-checkpoints: fusion_all_fold{1-5},
-   busi_dup_s42 folds, busc_seq10_s42 folds; update docs/hf_checkpoints_card.md.
-7. Commit (code/docs only): scripts/compare_fusion_specialists.py fix, docs/miccai_draft,
-   docs/hf_checkpoints_card.md, todo, runs/* JSON/NPZ. ~/Desktop/paper is outside the repo.
-8. Disk: ~3.5 GB free; fusion checkpoints in runs/fold_aligned (~1.4 GB) can go once on HF.
+## >>> STATUS (2026-11-17 late) <<<
+Done: comparison stats (per-fold paired deltas + bootstrap for every source; pooled OOF
+DeLong kept in JSON for reference); BUSC frame-block multi-source re-run
+(runs/fold_aligned/fusion_seq_*: mean per-branch test AUC 0.806±0.015; BUSC 0.998→0.951);
+MICCAI draft + TIK2 report updated (no pending cells); "fusion" reframed as multi-source
+training within modality (one modality per sample → branch weights inert); leak-free
+BUSI/BUSC folds + multisource folds on HF (noe95/mmfm-checkpoints, private);
+superseded fusion checkpoints deleted.
+Headline (multi-source vs single-dataset, same test images): better BUS-UCLM +0.17, AMBL +0.07;
+trend mini-MIAS +0.12 (p=.08), BrEaST +0.05 (p=.06); worse BreastDM −0.02; 8 n.s.
+Next candidates:
+- [ ] Seeds: per-source AUCs move up to 0.09 between runs (AMBL 0.58 vs 0.66) → 3 seeds of the
+      fold-aligned multi-source run (~4 h each) before final paper numbers.
+- [ ] Real cross-modality fusion needs paired multi-modality patients (none in the 16 sets)
+      + the proposal's gated attention fusion (Term 3).
+- [ ] Shortcut tests (A1 third bullet) still not run.
+- [ ] Re-typeset MICCAI draft in real llncs (needs llncs.cls download).
 
 ### A2. Content still missing for the paper
 - [ ] Fusion vs. single-dataset specialist, per source, same test split (Objective 1.2).

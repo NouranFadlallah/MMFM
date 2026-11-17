@@ -62,22 +62,29 @@ def paired_bootstrap(y, p1, p2, groups, n_boot=2000, seed=0):
     return [float(np.percentile(deltas, 2.5)), float(np.percentile(deltas, 97.5))]
 
 
-def fixed_split_delta(y, fus, spec, n_boot=2000, seed=0):
-    """Mean over folds of AUC(fusion_k) - AUC(specialist_k) on one fixed test set, with a
-    paired bootstrap over images (95% CI and two-sided bootstrap p)."""
-    def mean_delta(idx):
-        return float(np.mean([roc_auc_score(y[idx], f[idx]) - roc_auc_score(y[idx], s[idx])
-                              for f, s in zip(fus, spec)]))
+def per_fold_delta(ys, fus, spec, shared_images, n_boot=2000, seed=0):
+    """Mean over folds of AUC(fusion_k) - AUC(specialist_k), with a paired bootstrap over
+    images (95% CI, two-sided bootstrap p). With shared_images (a fixed test set) one
+    resample of the image indices is used for every fold; otherwise images are resampled
+    within each fold's own test set. Per-fold AUCs avoid mixing fold models with different
+    calibration, which pooled out-of-fold AUCs do."""
+    def mean_delta(idxs):
+        return float(np.mean([roc_auc_score(y[i], f[i]) - roc_auc_score(y[i], s[i])
+                              for y, f, s, i in zip(ys, fus, spec, idxs)]))
     rng = np.random.default_rng(seed)
-    observed = mean_delta(np.arange(len(y)))
+    observed = mean_delta([np.arange(len(y)) for y in ys])
     deltas = []
     for _ in range(n_boot):
-        idx = rng.integers(0, len(y), len(y))
-        if len(np.unique(y[idx])) == 2:
-            deltas.append(mean_delta(idx))
+        if shared_images:
+            idx = rng.integers(0, len(ys[0]), len(ys[0]))
+            idxs = [idx] * len(ys)
+        else:
+            idxs = [rng.integers(0, len(y), len(y)) for y in ys]
+        if all(len(np.unique(y[i])) == 2 for y, i in zip(ys, idxs)):
+            deltas.append(mean_delta(idxs))
     deltas = np.array(deltas)
     p = float(min(1.0, 2 * min((deltas <= 0).mean(), (deltas >= 0).mean())))
-    return {'delta_pooled': observed, 'delta_ci95': [float(np.percentile(deltas, 2.5)), float(np.percentile(deltas, 97.5))],
+    return {'delta_mean_over_folds': observed, 'delta_ci95': [float(np.percentile(deltas, 2.5)), float(np.percentile(deltas, 97.5))],
             'bootstrap_p': p, 'delong_p': None}
 
 
@@ -151,34 +158,32 @@ def main(argv=None):
             # images in every fold, so pooling would count each image once per fold. Compare
             # fold by fold on the unique images, average the per-fold AUC differences, and
             # bootstrap that mean over images (no ensembling of the fold models).
-            y = bucket['y'][0]
-            fus, spec = np.vstack(bucket['fusion']), np.vstack(bucket['specialist'])
             summary[source] = {
-                'n': int(len(y)), 'fixed_split': True,
+                'n': int(len(bucket['y'][0])), 'fixed_split': True,
                 'auc_fusion_mean_over_folds': float(np.mean([r['auc_fusion'] for r in folds])),
                 'auc_specialist_mean_over_folds': float(np.mean([r['auc_specialist'] for r in folds])),
-                **fixed_split_delta(y, fus, spec),
+                **per_fold_delta(bucket['y'], bucket['fusion'], bucket['specialist'], shared_images=True),
             }
             s = summary[source]
             print(f"{source:12s} n={s['n']:5d} fusion={s['auc_fusion_mean_over_folds']:.3f} "
-                  f"specialist={s['auc_specialist_mean_over_folds']:.3f} delta={s['delta_pooled']:+.3f} "
+                  f"specialist={s['auc_specialist_mean_over_folds']:.3f} delta={s['delta_mean_over_folds']:+.3f} "
                   f"CI[{s['delta_ci95'][0]:+.3f},{s['delta_ci95'][1]:+.3f}] p_boot={s['bootstrap_p']:.3f} (fixed split)")
             continue
         else:
             y, p_fus, p_spec, groups = (np.concatenate(bucket[key]) for key in ('y', 'fusion', 'specialist', 'group'))
         summary[source] = {
             'n': int(len(y)),
-            'fixed_split': bool(fixed_split),
+            'fixed_split': False,
             'auc_fusion_mean_over_folds': float(np.mean([r['auc_fusion'] for r in folds])),
             'auc_specialist_mean_over_folds': float(np.mean([r['auc_specialist'] for r in folds])),
-            'delta_pooled': float(roc_auc_score(y, p_fus) - roc_auc_score(y, p_spec)),
-            'delta_ci95': paired_bootstrap(y, p_fus, p_spec, groups),
-            'delong_p': delong_paired(y, p_fus, p_spec),
+            **per_fold_delta(bucket['y'], bucket['fusion'], bucket['specialist'], shared_images=False),
+            'pooled_oof_delta': float(roc_auc_score(y, p_fus) - roc_auc_score(y, p_spec)),
+            'pooled_oof_delong_p': delong_paired(y, p_fus, p_spec),
         }
         s = summary[source]
         print(f"{source:12s} n={s['n']:5d} fusion={s['auc_fusion_mean_over_folds']:.3f} "
-              f"specialist={s['auc_specialist_mean_over_folds']:.3f} delta={s['delta_pooled']:+.3f} "
-              f"CI[{s['delta_ci95'][0]:+.3f},{s['delta_ci95'][1]:+.3f}] p={s['delong_p']:.3f}")
+              f"specialist={s['auc_specialist_mean_over_folds']:.3f} delta={s['delta_mean_over_folds']:+.3f} "
+              f"CI[{s['delta_ci95'][0]:+.3f},{s['delta_ci95'][1]:+.3f}] p_boot={s['bootstrap_p']:.3f}")
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps({'per_fold': per_fold, 'summary': summary}, indent=2))
     print(f'saved {args.out}')

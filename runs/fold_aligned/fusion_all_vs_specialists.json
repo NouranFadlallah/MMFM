@@ -462,31 +462,37 @@
       "fixed_split": false,
       "auc_fusion_mean_over_folds": 0.6606615606615607,
       "auc_specialist_mean_over_folds": 0.5427200577200578,
-      "delta_pooled": 0.11764705882352944,
+      "delta_mean_over_folds": 0.11794150294150296,
       "delta_ci95": [
-        0.015107323232323286,
-        0.2250052270011949
+        -0.004094223271041301,
+        0.25274942245254756
       ],
-      "delong_p": 0.03503585204723833
+      "bootstrap_p": 0.061,
+      "delong_p": null,
+      "pooled_oof_delta": 0.11764705882352944,
+      "pooled_oof_delong_p": 0.03503585204723833
     },
     "bcsdbt_full": {
       "n": 396,
       "fixed_split": false,
       "auc_fusion_mean_over_folds": 0.6385597549649004,
       "auc_specialist_mean_over_folds": 0.6373335846001821,
-      "delta_pooled": 0.0,
+      "delta_mean_over_folds": 0.0012261703647183041,
       "delta_ci95": [
-        -0.06991341059129634,
-        0.06392639915415123
+        -0.05951728983450716,
+        0.06590374915753947
       ],
-      "delong_p": 1.0
+      "bootstrap_p": 0.946,
+      "delong_p": null,
+      "pooled_oof_delta": 0.0,
+      "pooled_oof_delong_p": 1.0
     },
     "cbis_ddsm": {
       "n": 250,
       "fixed_split": true,
       "auc_fusion_mean_over_folds": 0.7153246753246754,
       "auc_specialist_mean_over_folds": 0.7135064935064934,
-      "delta_pooled": 0.001818181818181852,
+      "delta_mean_over_folds": 0.001818181818181852,
       "delta_ci95": [
         -0.05488717402408064,
         0.061750330403808444
@@ -499,67 +505,82 @@
       "fixed_split": false,
       "auc_fusion_mean_over_folds": 0.8191299734748011,
       "auc_specialist_mean_over_folds": 0.8652095490716182,
-      "delta_pooled": -0.06670258620689662,
+      "delta_mean_over_folds": -0.04607957559681699,
       "delta_ci95": [
-        -0.11612994281031441,
-        -0.01530099069074301
+        -0.09838225091823992,
+        0.00498339813897452
       ],
-      "delong_p": 0.010536662316202374
+      "bootstrap_p": 0.082,
+      "delong_p": null,
+      "pooled_oof_delta": -0.06670258620689662,
+      "pooled_oof_delong_p": 0.010536662316202374
     },
     "busbra": {
       "n": 1875,
       "fixed_split": false,
       "auc_fusion_mean_over_folds": 0.8874753033989131,
       "auc_specialist_mean_over_folds": 0.903289041718223,
-      "delta_pooled": -0.018548064380336404,
+      "delta_mean_over_folds": -0.015813738319309722,
       "delta_ci95": [
-        -0.03246297571261637,
-        -0.005636803206772617
+        -0.02853124942327895,
+        -0.002954038902800123
       ],
-      "delong_p": 0.006413466159817289
+      "bootstrap_p": 0.023,
+      "delong_p": null,
+      "pooled_oof_delta": -0.018548064380336404,
+      "pooled_oof_delong_p": 0.006413466159817289
     },
     "busi": {
       "n": 647,
       "fixed_split": false,
       "auc_fusion_mean_over_folds": 0.9439158874383196,
       "auc_specialist_mean_over_folds": 0.944584319852361,
-      "delta_pooled": 0.0020812901819768914,
+      "delta_mean_over_folds": -0.0006684324140414644,
       "delta_ci95": [
-        -0.01678140038703565,
-        0.021444232662499743
+        -0.01823665884593791,
+        0.015519390161677277
       ],
-      "delong_p": 0.8333545899646622
+      "bootstrap_p": 0.944,
+      "delong_p": null,
+      "pooled_oof_delta": 0.0020812901819768914,
+      "pooled_oof_delong_p": 0.8333545899646622
     },
     "busc": {
       "n": 250,
       "fixed_split": false,
       "auc_fusion_mean_over_folds": 0.9984189723320158,
       "auc_specialist_mean_over_folds": 0.9918313570487485,
-      "delta_pooled": 0.002466666666666728,
+      "delta_mean_over_folds": 0.006587615283267479,
       "delta_ci95": [
         0.0,
-        0.0062272268437958776
+        0.01685823754789273
       ],
-      "delong_p": 0.11323056080627382
+      "bootstrap_p": 0.055,
+      "delong_p": null,
+      "pooled_oof_delta": 0.002466666666666728,
+      "pooled_oof_delong_p": 0.11323056080627382
     },
     "breast": {
       "n": 252,
       "fixed_split": false,
       "auc_fusion_mean_over_folds": 0.8476061120543295,
       "auc_specialist_mean_over_folds": 0.7952518392756083,
-      "delta_pooled": 0.05585740789822424,
+      "delta_mean_over_folds": 0.052354272778721,
       "delta_ci95": [
-        0.005648099253121592,
-        0.10393304856147435
+        0.002326368387799144,
+        0.10118651338160747
       ],
-      "delong_p": 0.02397849157618988
+      "bootstrap_p": 0.041,
+      "delong_p": null,
+      "pooled_oof_delta": 0.05585740789822424,
+      "pooled_oof_delong_p": 0.02397849157618988
     },
     "bus_cot": {
       "n": 364,
       "fixed_split": true,
       "auc_fusion_mean_over_folds": 0.8184969512195123,
       "auc_specialist_mean_over_folds": 0.8321524390243902,
-      "delta_pooled": -0.013655487804878042,
+      "delta_mean_over_folds": -0.013655487804878042,
       "delta_ci95": [
         -0.03788880166175124,
         0.010682556402975222
@@ -572,19 +593,22 @@
       "fixed_split": false,
       "auc_fusion_mean_over_folds": 0.7918157188769144,
       "auc_specialist_mean_over_folds": 0.6373509844216676,
-      "delta_pooled": 0.16564495530012768,
+      "delta_mean_over_folds": 0.15446473445524683,
       "delta_ci95": [
-        0.09578164598445844,
-        0.2391603621425449
+        0.07871135604136145,
+        0.2314278384126096
       ],
-      "delong_p": 9.206559666851088e-06
+      "bootstrap_p": 0.001,
+      "delong_p": null,
+      "pooled_oof_delta": 0.16564495530012768,
+      "pooled_oof_delong_p": 9.206559666851088e-06
     },
     "breamdm": {
       "n": 446,
       "fixed_split": true,
       "auc_fusion_mean_over_folds": 0.8639663918833227,
       "auc_specialist_mean_over_folds": 0.8938120904671317,
-      "delta_pooled": -0.029845698583808988,
+      "delta_mean_over_folds": -0.029845698583808988,
       "delta_ci95": [
         -0.05266796572655894,
         -0.00766645306998064
@@ -597,7 +621,7 @@
       "fixed_split": true,
       "auc_fusion_mean_over_folds": 0.7791925465838508,
       "auc_specialist_mean_over_folds": 0.7996894409937888,
-      "delta_pooled": -0.02049689440993787,
+      "delta_mean_over_folds": -0.02049689440993787,
       "delta_ci95": [
         -0.07225766370949087,
         0.03299268526114307
@@ -610,7 +634,7 @@
       "fixed_split": true,
       "auc_fusion_mean_over_folds": 0.5764406028368795,
       "auc_specialist_mean_over_folds": 0.5921985815602837,
-      "delta_pooled": -0.015757978723404266,
+      "delta_mean_over_folds": -0.015757978723404266,
       "delta_ci95": [
         -0.08421666056647334,
         0.04679270953664479
