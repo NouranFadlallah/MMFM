@@ -62,6 +62,32 @@ def paired_bootstrap(y, p1, p2, groups, n_boot=2000, seed=0):
     return [float(np.percentile(deltas, 2.5)), float(np.percentile(deltas, 97.5))]
 
 
+def fixed_split_delta(y, fus, spec, n_boot=2000, seed=0):
+    """Mean over folds of AUC(fusion_k) - AUC(specialist_k) on one fixed test set, with a
+    paired bootstrap over images (95% CI and two-sided bootstrap p)."""
+    def mean_delta(idx):
+        return float(np.mean([roc_auc_score(y[idx], f[idx]) - roc_auc_score(y[idx], s[idx])
+                              for f, s in zip(fus, spec)]))
+    rng = np.random.default_rng(seed)
+    observed = mean_delta(np.arange(len(y)))
+    deltas = []
+    for _ in range(n_boot):
+        idx = rng.integers(0, len(y), len(y))
+        if len(np.unique(y[idx])) == 2:
+            deltas.append(mean_delta(idx))
+    deltas = np.array(deltas)
+    p = float(min(1.0, 2 * min((deltas <= 0).mean(), (deltas >= 0).mean())))
+    return {'delta_pooled': observed, 'delta_ci95': [float(np.percentile(deltas, 2.5)), float(np.percentile(deltas, 97.5))],
+            'bootstrap_p': p, 'delong_p': None}
+
+
+def _same_images_every_fold(groups_per_fold):
+    """True when every fold scored the same images in the same order (group ids are
+    '<fold>:<image>', so the fold prefix is stripped before comparing)."""
+    images = [[g.split(':', 1)[1] for g in groups] for groups in groups_per_fold]
+    return len(images) > 1 and all(other == images[0] for other in images[1:])
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--fusion', required=True, help='fusion npz path with {fold}')
@@ -85,15 +111,27 @@ def main(argv=None):
                 continue
             spec = np.load(path, allow_pickle=False)
             mask = fusion['source'] == source
-            fusion_prob = dict(zip(fusion['image'][mask], fusion['probs'][mask]))
-            fusion_label = dict(zip(fusion['image'][mask], fusion['labels'][mask]))
-            shared = [i for i, image in enumerate(spec['image']) if image in fusion_prob]
-            if len(shared) < len(spec['image']):
-                print(f'fold {fold} {source}: {len(spec["image"]) - len(shared)} specialist images not in fusion test')
-            images = spec['image'][shared]
-            y = spec['labels'][shared]
-            assert all(fusion_label[image] == label for image, label in zip(images, y)), f'label mismatch in {source}'
-            p_spec, p_fus = spec['probs'][shared], np.array([fusion_prob[image] for image in images])
+            fusion_images, fusion_probs, fusion_labels = fusion['image'][mask], fusion['probs'][mask], fusion['labels'][mask]
+            if list(spec['image']) == list(fusion_images):
+                # same split function and order: align by position (also handles datasets
+                # with several lesion crops per image file, e.g. mini-MIAS)
+                images, y, p_spec, p_fus = fusion_images, spec['labels'], spec['probs'], fusion_probs
+            else:
+                # specialist test set is a superset (e.g. BUS-CoT full test vs. clinical subset)
+                if len(set(fusion_images)) != len(fusion_images) or len(set(spec['image'])) != len(spec['image']):
+                    raise ValueError(f'fold {fold} {source}: test lists differ and image ids are not unique')
+                fusion_prob = dict(zip(fusion_images, fusion_probs))
+                shared = [i for i, image in enumerate(spec['image']) if image in fusion_prob]
+                if len(shared) < len(fusion_images):
+                    raise ValueError(f'fold {fold} {source}: {len(fusion_images) - len(shared)} fusion test images '
+                                     'missing from the specialist predictions')
+                print(f'fold {fold} {source}: {len(spec["image"]) - len(shared)} specialist-only images ignored')
+                images, y, p_spec = spec['image'][shared], spec['labels'][shared], spec['probs'][shared]
+                p_fus = np.array([fusion_prob[image] for image in images])
+            fusion_label = dict(zip(fusion_images, fusion_labels))
+            assert all(fusion_label[image] == label for image, label in zip(images, y)) or list(spec['image']) == list(fusion_images), \
+                f'label mismatch in {source}'
+            assert np.array_equal(y, fusion_labels) or len(y) != len(fusion_labels), f'label order mismatch in {source}'
             per_fold.append({'fold': fold, 'source': source, 'n': int(len(y)),
                              'auc_fusion': float(roc_auc_score(y, p_fus)),
                              'auc_specialist': float(roc_auc_score(y, p_spec))})
@@ -106,10 +144,31 @@ def main(argv=None):
     for source, bucket in pooled.items():
         if not bucket['y']:
             continue
-        y, p_fus, p_spec, groups = (np.concatenate(bucket[key]) for key in ('y', 'fusion', 'specialist', 'group'))
         folds = [r for r in per_fold if r['source'] == source]
+        fixed_split = _same_images_every_fold(bucket['group'])
+        if fixed_split:
+            # fixed official test split (CBIS-DDSM, BreastDM, ODELIA, AMBL, BUS-CoT): the same
+            # images in every fold, so pooling would count each image once per fold. Compare
+            # fold by fold on the unique images, average the per-fold AUC differences, and
+            # bootstrap that mean over images (no ensembling of the fold models).
+            y = bucket['y'][0]
+            fus, spec = np.vstack(bucket['fusion']), np.vstack(bucket['specialist'])
+            summary[source] = {
+                'n': int(len(y)), 'fixed_split': True,
+                'auc_fusion_mean_over_folds': float(np.mean([r['auc_fusion'] for r in folds])),
+                'auc_specialist_mean_over_folds': float(np.mean([r['auc_specialist'] for r in folds])),
+                **fixed_split_delta(y, fus, spec),
+            }
+            s = summary[source]
+            print(f"{source:12s} n={s['n']:5d} fusion={s['auc_fusion_mean_over_folds']:.3f} "
+                  f"specialist={s['auc_specialist_mean_over_folds']:.3f} delta={s['delta_pooled']:+.3f} "
+                  f"CI[{s['delta_ci95'][0]:+.3f},{s['delta_ci95'][1]:+.3f}] p_boot={s['bootstrap_p']:.3f} (fixed split)")
+            continue
+        else:
+            y, p_fus, p_spec, groups = (np.concatenate(bucket[key]) for key in ('y', 'fusion', 'specialist', 'group'))
         summary[source] = {
             'n': int(len(y)),
+            'fixed_split': bool(fixed_split),
             'auc_fusion_mean_over_folds': float(np.mean([r['auc_fusion'] for r in folds])),
             'auc_specialist_mean_over_folds': float(np.mean([r['auc_specialist'] for r in folds])),
             'delta_pooled': float(roc_auc_score(y, p_fus) - roc_auc_score(y, p_spec)),

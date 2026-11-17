@@ -52,3 +52,7 @@ docs/latex/*.aux
 docs/latex/*.bbl
 docs/latex/*.blg
 docs/latex/*.out
+docs/miccai_draft/*.aux
+docs/miccai_draft/*.bbl
+docs/miccai_draft/*.blg
+docs/miccai_draft/*.out

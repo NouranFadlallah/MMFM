@@ -1,0 +1,622 @@
+{
+  "per_fold": [
+    {
+      "fold": 1,
+      "source": "mias",
+      "n": 26,
+      "auc_fusion": 0.5272727272727272,
+      "auc_specialist": 0.5515151515151515
+    },
+    {
+      "fold": 1,
+      "source": "bcsdbt_full",
+      "n": 76,
+      "auc_fusion": 0.6624383368569414,
+      "auc_specialist": 0.634954193093728
+    },
+    {
+      "fold": 1,
+      "source": "cbis_ddsm",
+      "n": 250,
+      "auc_fusion": 0.6809090909090909,
+      "auc_specialist": 0.7135064935064934
+    },
+    {
+      "fold": 1,
+      "source": "dmid",
+      "n": 55,
+      "auc_fusion": 0.9389920424403183,
+      "auc_specialist": 0.9177718832891247
+    },
+    {
+      "fold": 1,
+      "source": "busbra",
+      "n": 384,
+      "auc_fusion": 0.8700410396716827,
+      "auc_specialist": 0.8860617115063079
+    },
+    {
+      "fold": 1,
+      "source": "busi",
+      "n": 132,
+      "auc_fusion": 0.9250065325320095,
+      "auc_specialist": 0.9278808466161484
+    },
+    {
+      "fold": 1,
+      "source": "busc",
+      "n": 47,
+      "auc_fusion": 0.9851851851851852,
+      "auc_specialist": 1.0
+    },
+    {
+      "fold": 1,
+      "source": "breast",
+      "n": 51,
+      "auc_fusion": 0.714516129032258,
+      "auc_specialist": 0.817741935483871
+    },
+    {
+      "fold": 1,
+      "source": "bus_cot",
+      "n": 364,
+      "auc_fusion": 0.7085975609756098,
+      "auc_specialist": 0.8285670731707317
+    },
+    {
+      "fold": 1,
+      "source": "bus_uclm",
+      "n": 63,
+      "auc_fusion": 0.6764112903225806,
+      "auc_specialist": 0.5735887096774194
+    },
+    {
+      "fold": 1,
+      "source": "breamdm",
+      "n": 446,
+      "auc_fusion": 0.8556330585499894,
+      "auc_specialist": 0.8938120904671317
+    },
+    {
+      "fold": 1,
+      "source": "odelia",
+      "n": 88,
+      "auc_fusion": 0.7971014492753623,
+      "auc_specialist": 0.7996894409937888
+    },
+    {
+      "fold": 1,
+      "source": "ambl",
+      "n": 143,
+      "auc_fusion": 0.6695478723404256,
+      "auc_specialist": 0.5921985815602837
+    },
+    {
+      "fold": 2,
+      "source": "mias",
+      "n": 22,
+      "auc_fusion": 0.6666666666666667,
+      "auc_specialist": 0.6416666666666666
+    },
+    {
+      "fold": 2,
+      "source": "bcsdbt_full",
+      "n": 81,
+      "auc_fusion": 0.4485924112607099,
+      "auc_specialist": 0.5336597307221542
+    },
+    {
+      "fold": 2,
+      "source": "cbis_ddsm",
+      "n": 250,
+      "auc_fusion": 0.6478571428571428,
+      "auc_specialist": 0.7135064935064934
+    },
+    {
+      "fold": 2,
+      "source": "dmid",
+      "n": 55,
+      "auc_fusion": 0.7519893899204244,
+      "auc_specialist": 0.8143236074270557
+    },
+    {
+      "fold": 2,
+      "source": "busbra",
+      "n": 373,
+      "auc_fusion": 0.8853469762560672,
+      "auc_specialist": 0.8957431457431458
+    },
+    {
+      "fold": 2,
+      "source": "busi",
+      "n": 124,
+      "auc_fusion": 0.8715838965618572,
+      "auc_specialist": 0.9306494269761975
+    },
+    {
+      "fold": 2,
+      "source": "busc",
+      "n": 50,
+      "auc_fusion": 0.9716666666666667,
+      "auc_specialist": 1.0
+    },
+    {
+      "fold": 2,
+      "source": "breast",
+      "n": 51,
+      "auc_fusion": 0.8387096774193549,
+      "auc_specialist": 0.8225806451612903
+    },
+    {
+      "fold": 2,
+      "source": "bus_cot",
+      "n": 364,
+      "auc_fusion": 0.7459146341463415,
+      "auc_specialist": 0.8346036585365854
+    },
+    {
+      "fold": 2,
+      "source": "bus_uclm",
+      "n": 65,
+      "auc_fusion": 0.5159313725490197,
+      "auc_specialist": 0.7806372549019607
+    },
+    {
+      "fold": 2,
+      "source": "breamdm",
+      "n": 446,
+      "auc_fusion": 0.8628725428027901,
+      "auc_specialist": 0.8938120904671317
+    },
+    {
+      "fold": 2,
+      "source": "odelia",
+      "n": 88,
+      "auc_fusion": 0.770703933747412,
+      "auc_specialist": 0.7996894409937888
+    },
+    {
+      "fold": 2,
+      "source": "ambl",
+      "n": 143,
+      "auc_fusion": 0.7588652482269503,
+      "auc_specialist": 0.5921985815602837
+    },
+    {
+      "fold": 3,
+      "source": "mias",
+      "n": 24,
+      "auc_fusion": 0.6285714285714286,
+      "auc_specialist": 0.6214285714285714
+    },
+    {
+      "fold": 3,
+      "source": "bcsdbt_full",
+      "n": 77,
+      "auc_fusion": 0.6258549931600547,
+      "auc_specialist": 0.6703146374829001
+    },
+    {
+      "fold": 3,
+      "source": "cbis_ddsm",
+      "n": 250,
+      "auc_fusion": 0.6773376623376623,
+      "auc_specialist": 0.7135064935064934
+    },
+    {
+      "fold": 3,
+      "source": "dmid",
+      "n": 55,
+      "auc_fusion": 0.8541114058355438,
+      "auc_specialist": 0.9098143236074271
+    },
+    {
+      "fold": 3,
+      "source": "busbra",
+      "n": 380,
+      "auc_fusion": 0.9087058823529411,
+      "auc_specialist": 0.9260549019607843
+    },
+    {
+      "fold": 3,
+      "source": "busi",
+      "n": 132,
+      "auc_fusion": 0.9158609877188398,
+      "auc_specialist": 0.9375489939900704
+    },
+    {
+      "fold": 3,
+      "source": "busc",
+      "n": 48,
+      "auc_fusion": 0.9963702359346642,
+      "auc_specialist": 1.0
+    },
+    {
+      "fold": 3,
+      "source": "breast",
+      "n": 51,
+      "auc_fusion": 0.8096774193548387,
+      "auc_specialist": 0.7548387096774194
+    },
+    {
+      "fold": 3,
+      "source": "bus_cot",
+      "n": 364,
+      "auc_fusion": 0.7265548780487804,
+      "auc_specialist": 0.8535670731707317
+    },
+    {
+      "fold": 3,
+      "source": "bus_uclm",
+      "n": 52,
+      "auc_fusion": 0.6324324324324324,
+      "auc_specialist": 0.7099099099099099
+    },
+    {
+      "fold": 3,
+      "source": "breamdm",
+      "n": 446,
+      "auc_fusion": 0.8625290636229128,
+      "auc_specialist": 0.8938120904671317
+    },
+    {
+      "fold": 3,
+      "source": "odelia",
+      "n": 88,
+      "auc_fusion": 0.7872670807453416,
+      "auc_specialist": 0.7996894409937888
+    },
+    {
+      "fold": 3,
+      "source": "ambl",
+      "n": 143,
+      "auc_fusion": 0.7342641843971632,
+      "auc_specialist": 0.5921985815602837
+    },
+    {
+      "fold": 4,
+      "source": "mias",
+      "n": 24,
+      "auc_fusion": 0.44755244755244755,
+      "auc_specialist": 0.4545454545454546
+    },
+    {
+      "fold": 4,
+      "source": "bcsdbt_full",
+      "n": 83,
+      "auc_fusion": 0.6524822695035463,
+      "auc_specialist": 0.7659574468085106
+    },
+    {
+      "fold": 4,
+      "source": "cbis_ddsm",
+      "n": 250,
+      "auc_fusion": 0.6718831168831169,
+      "auc_specialist": 0.7135064935064934
+    },
+    {
+      "fold": 4,
+      "source": "dmid",
+      "n": 54,
+      "auc_fusion": 0.7848275862068965,
+      "auc_specialist": 0.8248275862068966
+    },
+    {
+      "fold": 4,
+      "source": "busbra",
+      "n": 361,
+      "auc_fusion": 0.8755015519721403,
+      "auc_specialist": 0.9228177757589523
+    },
+    {
+      "fold": 4,
+      "source": "busi",
+      "n": 126,
+      "auc_fusion": 0.956671449067432,
+      "auc_specialist": 0.9833572453371593
+    },
+    {
+      "fold": 4,
+      "source": "busc",
+      "n": 49,
+      "auc_fusion": 0.9982078853046594,
+      "auc_specialist": 1.0
+    },
+    {
+      "fold": 4,
+      "source": "breast",
+      "n": 50,
+      "auc_fusion": 0.8998302207130731,
+      "auc_specialist": 0.8828522920203735
+    },
+    {
+      "fold": 4,
+      "source": "bus_cot",
+      "n": 364,
+      "auc_fusion": 0.7467378048780486,
+      "auc_specialist": 0.8467987804878049
+    },
+    {
+      "fold": 4,
+      "source": "bus_uclm",
+      "n": 44,
+      "auc_fusion": 0.47857142857142854,
+      "auc_specialist": 0.5571428571428572
+    },
+    {
+      "fold": 4,
+      "source": "breamdm",
+      "n": 446,
+      "auc_fusion": 0.8559501162544916,
+      "auc_specialist": 0.8938120904671317
+    },
+    {
+      "fold": 4,
+      "source": "odelia",
+      "n": 88,
+      "auc_fusion": 0.7696687370600414,
+      "auc_specialist": 0.7996894409937888
+    },
+    {
+      "fold": 4,
+      "source": "ambl",
+      "n": 143,
+      "auc_fusion": 0.7094414893617021,
+      "auc_specialist": 0.5921985815602837
+    },
+    {
+      "fold": 5,
+      "source": "mias",
+      "n": 23,
+      "auc_fusion": 0.5396825396825397,
+      "auc_specialist": 0.4444444444444444
+    },
+    {
+      "fold": 5,
+      "source": "bcsdbt_full",
+      "n": 79,
+      "auc_fusion": 0.5957446808510639,
+      "auc_specialist": 0.581781914893617
+    },
+    {
+      "fold": 5,
+      "source": "cbis_ddsm",
+      "n": 250,
+      "auc_fusion": 0.662987012987013,
+      "auc_specialist": 0.7135064935064934
+    },
+    {
+      "fold": 5,
+      "source": "dmid",
+      "n": 54,
+      "auc_fusion": 0.8537931034482759,
+      "auc_specialist": 0.8593103448275863
+    },
+    {
+      "fold": 5,
+      "source": "busbra",
+      "n": 377,
+      "auc_fusion": 0.8396449704142012,
+      "auc_specialist": 0.8857676736219247
+    },
+    {
+      "fold": 5,
+      "source": "busi",
+      "n": 133,
+      "auc_fusion": 0.9236002093144949,
+      "auc_specialist": 0.9434850863422292
+    },
+    {
+      "fold": 5,
+      "source": "busc",
+      "n": 56,
+      "auc_fusion": 0.9920948616600791,
+      "auc_specialist": 0.9591567852437417
+    },
+    {
+      "fold": 5,
+      "source": "breast",
+      "n": 49,
+      "auc_fusion": 0.787719298245614,
+      "auc_specialist": 0.6982456140350877
+    },
+    {
+      "fold": 5,
+      "source": "bus_cot",
+      "n": 364,
+      "auc_fusion": 0.6920426829268294,
+      "auc_specialist": 0.7972256097560976
+    },
+    {
+      "fold": 5,
+      "source": "bus_uclm",
+      "n": 40,
+      "auc_fusion": 0.5714285714285714,
+      "auc_specialist": 0.5654761904761905
+    },
+    {
+      "fold": 5,
+      "source": "breamdm",
+      "n": 446,
+      "auc_fusion": 0.8587772141196364,
+      "auc_specialist": 0.8938120904671317
+    },
+    {
+      "fold": 5,
+      "source": "odelia",
+      "n": 88,
+      "auc_fusion": 0.7748447204968943,
+      "auc_specialist": 0.7996894409937888
+    },
+    {
+      "fold": 5,
+      "source": "ambl",
+      "n": 143,
+      "auc_fusion": 0.7094414893617021,
+      "auc_specialist": 0.5921985815602837
+    }
+  ],
+  "summary": {
+    "mias": {
+      "n": 119,
+      "fixed_split": false,
+      "auc_fusion_mean_over_folds": 0.5619491619491619,
+      "auc_specialist_mean_over_folds": 0.5427200577200578,
+      "delta_pooled": 0.016724336793541017,
+      "delta_ci95": [
+        -0.11575484917744047,
+        0.145599335748792
+      ],
+      "delong_p": 0.7871451141799028
+    },
+    "bcsdbt_full": {
+      "n": 396,
+      "fixed_split": false,
+      "auc_fusion_mean_over_folds": 0.5970225383264631,
+      "auc_specialist_mean_over_folds": 0.6373335846001821,
+      "delta_pooled": -0.028849892428523316,
+      "delta_ci95": [
+        -0.09576881507163608,
+        0.037372810066149655
+      ],
+      "delong_p": 0.38162471793785124
+    },
+    "cbis_ddsm": {
+      "n": 250,
+      "fixed_split": true,
+      "auc_fusion_mean_over_folds": 0.6681948051948052,
+      "auc_specialist_mean_over_folds": 0.7135064935064934,
+      "delta_pooled": -0.045311688311688234,
+      "delta_ci95": [
+        -0.10876515776012653,
+        0.02073909497564605
+      ],
+      "bootstrap_p": 0.188,
+      "delong_p": null
+    },
+    "dmid": {
+      "n": 273,
+      "fixed_split": false,
+      "auc_fusion_mean_over_folds": 0.8367427055702918,
+      "auc_specialist_mean_over_folds": 0.8652095490716182,
+      "delta_pooled": -0.03146551724137925,
+      "delta_ci95": [
+        -0.07895927668016836,
+        0.016099648346230802
+      ],
+      "delong_p": 0.18890597648385332
+    },
+    "busbra": {
+      "n": 1875,
+      "fixed_split": false,
+      "auc_fusion_mean_over_folds": 0.8758480841334064,
+      "auc_specialist_mean_over_folds": 0.903289041718223,
+      "delta_pooled": -0.028600346119665665,
+      "delta_ci95": [
+        -0.04118572513799183,
+        -0.01721412723717518
+      ],
+      "delong_p": 8.83766802882835e-06
+    },
+    "busi": {
+      "n": 647,
+      "fixed_split": false,
+      "auc_fusion_mean_over_folds": 0.9185446150389268,
+      "auc_specialist_mean_over_folds": 0.944584319852361,
+      "delta_pooled": -0.023395445134575588,
+      "delta_ci95": [
+        -0.041874699674433184,
+        -0.005189449297090183
+      ],
+      "delong_p": 0.011813527617934113
+    },
+    "busc": {
+      "n": 250,
+      "fixed_split": false,
+      "auc_fusion_mean_over_folds": 0.988704966950251,
+      "auc_specialist_mean_over_folds": 0.9918313570487485,
+      "delta_pooled": -0.013933333333333353,
+      "delta_ci95": [
+        -0.028769738120177787,
+        -0.002269497170189606
+      ],
+      "delong_p": 0.039404163247513585
+    },
+    "breast": {
+      "n": 252,
+      "fixed_split": false,
+      "auc_fusion_mean_over_folds": 0.8100905489530277,
+      "auc_specialist_mean_over_folds": 0.7952518392756083,
+      "delta_pooled": 0.02723297111052214,
+      "delta_ci95": [
+        -0.03218279574151239,
+        0.0833410453621246
+      ],
+      "delong_p": 0.35119456277611505
+    },
+    "bus_cot": {
+      "n": 364,
+      "fixed_split": true,
+      "auc_fusion_mean_over_folds": 0.723969512195122,
+      "auc_specialist_mean_over_folds": 0.8321524390243902,
+      "delta_pooled": -0.1081829268292683,
+      "delta_ci95": [
+        -0.13887157733933803,
+        -0.0793415335074088
+      ],
+      "bootstrap_p": 0.0,
+      "delong_p": null
+    },
+    "bus_uclm": {
+      "n": 264,
+      "fixed_split": false,
+      "auc_fusion_mean_over_folds": 0.5749550190608066,
+      "auc_specialist_mean_over_folds": 0.6373509844216676,
+      "delta_pooled": 0.011174968071519742,
+      "delta_ci95": [
+        -0.07463270659724082,
+        0.09550098974187048
+      ],
+      "delong_p": 0.795270733829073
+    },
+    "breamdm": {
+      "n": 446,
+      "fixed_split": true,
+      "auc_fusion_mean_over_folds": 0.859152399069964,
+      "auc_specialist_mean_over_folds": 0.8938120904671317,
+      "delta_pooled": -0.034659691397167666,
+      "delta_ci95": [
+        -0.06027790440900254,
+        -0.00883509623502979
+      ],
+      "bootstrap_p": 0.009,
+      "delong_p": null
+    },
+    "odelia": {
+      "n": 88,
+      "fixed_split": true,
+      "auc_fusion_mean_over_folds": 0.7799171842650103,
+      "auc_specialist_mean_over_folds": 0.7996894409937888,
+      "delta_pooled": -0.01977225672877849,
+      "delta_ci95": [
+        -0.10801847200418625,
+        0.06476947535771058
+      ],
+      "bootstrap_p": 0.693,
+      "delong_p": null
+    },
+    "ambl": {
+      "n": 143,
+      "fixed_split": true,
+      "auc_fusion_mean_over_folds": 0.7163120567375888,
+      "auc_specialist_mean_over_folds": 0.5921985815602837,
+      "delta_pooled": 0.12411347517730498,
+      "delta_ci95": [
+        0.014017169229805788,
+        0.22737138638675905
+      ],
+      "bootstrap_p": 0.028,
+      "delong_p": null
+    }
+  }
+}

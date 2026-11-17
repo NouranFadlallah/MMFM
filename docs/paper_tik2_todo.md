@@ -79,12 +79,47 @@ Status markers: `[ ]` open · `[~]` in progress / partial · `[x]` done
       scratch** (`--paper-match` default recipe sets no `pretrained`) and still reached
       0.98–1.0; the reported baseline and all new runs use ImageNet weights.
 
+- [~] **MICCAI first draft** `docs/miccai_draft/main.tex` (2026-11-11): leakage-and-shortcuts
+      story, 8 pp incl. references (content ≈5.5 pp). Fallback class — re-typeset in real
+      `llncs` + `splncs04` before submission. Red `\pending{}` cells: BUSC/BUSI dup-grouped
+      rows, frozen fusion column, specialist column. Room left for a protocol figure.
+
+## >>> NEXT SESSION START HERE (written 2026-11-12 21:45) <<<
+GPU queue finished 2026-11-12 15:51 (all steps). Nothing running. Results on disk:
+- BUSC frame blocks (runs/busc_seq): acc 0.748/0.824/0.788, AUC 0.949/0.930/0.925 (seeds 42-44)
+  vs random split 0.992 → leakage between consecutive frames. Specialist busc (dup groups,
+  pretrained): runs/specialists/busc_results.json.
+- BUSI (runs/busi_dup): row AUC 0.939/0.937/0.931, dup 0.945/0.941/+s44 → duplicates don't matter.
+- Fusion fold-aligned (runs/fold_aligned): all-trained test mean-branch AUC 0.796±0.008,
+  frozen 0.779±0.010; all-trained wins every fold; frozen better on MRI (AMBL 0.716 vs 0.576).
+- Fusion vs specialist (runs/fold_aligned/fusion_{all,frozen}_vs_specialists.json), all-trained:
+  fusion better on mini-MIAS (+0.12), BrEaST (+0.06), BUS-UCLM (+0.17); worse on DMID (−0.07),
+  BUS-BRA (−0.02), BreastDM (−0.04); rest n.s.
+TODO next, in order:
+1. [x] (2026-11-17, per-fold paired deltas + bootstrap) **Fix the comparison stats for fixed-split sources** (CBIS-DDSM, BreastDM, ODELIA, AMBL):
+   their test set is identical in all 5 folds, so pooling folds counts each image 5×
+   (n=2230 for BreastDM = 446×5) → CI/p too optimistic. Average the 5 fusion probabilities
+   per image (or compare per fold) before DeLong/bootstrap. K-fold sources are fine.
+2. [x] (footnoted in both tables) Note: MRI + CBIS specialists used the default Adam recipe with early stopping (7-10 epochs),
+   not --paper-match; say so in the table or re-run with a stronger recipe.
+3. [~] (running: runs/fold_aligned/busc_seq_fusion.sh, started 2026-11-17 16:21) Re-run fusion with BUSC grouped by frame blocks (`--sequence-block-groups 10`), all-trained,
+   5 folds (~45 min/fold); BUSC is still leaky in the current fusion runs (0.998).
+4. [~] (all filled except BUSC fusion footnote) Fill the MICCAI draft's red cells (docs/miccai_draft): BUSC/BUSI dup rows, frozen column,
+   specialist column (after step 1); add the frozen/AMBL observation.
+5. [x] (2026-11-17: abstract, new 4.2.4 leak-controlled, Sec. 5 update, new 6.5 fold-aligned) Update the TIK2 report (~/Desktop/paper): abstract (freezing claim is reversed), Sec. 5
+   BUSC discussion (leakage, not framing), Sec. 6 with the fold-aligned results.
+6. Upload new weights to the private HF repo noe95/mmfm-checkpoints: fusion_all_fold{1-5},
+   busi_dup_s42 folds, busc_seq10_s42 folds; update docs/hf_checkpoints_card.md.
+7. Commit (code/docs only): scripts/compare_fusion_specialists.py fix, docs/miccai_draft,
+   docs/hf_checkpoints_card.md, todo, runs/* JSON/NPZ. ~/Desktop/paper is outside the repo.
+8. Disk: ~3.5 GB free; fusion checkpoints in runs/fold_aligned (~1.4 GB) can go once on HF.
+
 ### A2. Content still missing for the paper
 - [ ] Fusion vs. single-dataset specialist, per source, same test split (Objective 1.2).
 - [ ] Leave-one-source-out / leave-one-country-out evaluation (Objective 2.2).
 - [ ] Literature positioning: `siddique2026audit`; prior BUSI duplicate/quality critiques;
       CBIS-DDSM mass/calc split issue; check which audit findings are new.
-- [ ] Decide venue and page limit; then cut to one story (audit → consequences → fixes).
+- [~] Venue: MICCAI-style draft started; confirm year's page limit and anonymity rules.
 - [ ] Remove repo paths / script names from the prose (old "point 5").
 
 ### A3. Small fixes
@@ -118,7 +153,7 @@ Status markers: `[ ]` open · `[~]` in progress / partial · `[x]` done
 ### B3. Report structure
 - [ ] Restructure into: aims → work done per term vs. Gantt → key results → deviations
       from plan (datasets, hardware, fusion started early) → plan for Term 3.
-- [ ] Merge fusion sections (6, 8, 12), reproduction sections (5, 11), VLM sections (9, 10);
+- [x] Merged (2026-11-12): fusion → Sec. 6, single-modality baselines + reproductions → Sec. 4, VLMs → Sec. 7;
       drop superseded Section 7 content; fold Section 13 into the preprocessing part.
 - [ ] Term 3 plan: paired multi-modality data source (none of the 16 datasets has the same
       patient in US + MG + MRI); gated multimodal attention fusion; missing-modality ablations;
