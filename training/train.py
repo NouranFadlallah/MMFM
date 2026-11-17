@@ -185,7 +185,15 @@ def _freeze_backbones(model):
     print(f'frozen {len(backbones)} backbone(s); {trainable:,} trainable parameters left')
 
 
-def train_one_epoch(model, loader, opt, device, modality_dropout_prob=0.0, criterion=None, scheduler=None):
+def _aux_branch_loss(branch_logits, y, presence, criterion):
+    """Mean over branches of each branch's own loss on the samples that carry it."""
+    losses = [criterion(logits[presence[:, i]], y[presence[:, i]])
+              for i, logits in enumerate(branch_logits) if presence[:, i].any()]
+    return torch.stack(losses).mean() if losses else torch.zeros((), device=y.device)
+
+
+def train_one_epoch(model, loader, opt, device, modality_dropout_prob=0.0, criterion=None, scheduler=None,
+                    aux_branch_loss_weight=0.0):
     model.train()
     for module in getattr(model, 'frozen_modules', []):
         module.eval()
@@ -211,6 +219,8 @@ def train_one_epoch(model, loader, opt, device, modality_dropout_prob=0.0, crite
         opt.zero_grad()
         fused, branch_logits, weights = model(x1,x2,x3,pres)
         loss = criterion(fused, y)
+        if aux_branch_loss_weight > 0:
+            loss = loss + aux_branch_loss_weight * _aux_branch_loss(branch_logits, y, pres.bool(), criterion)
         loss.backward()
         opt.step()
         if scheduler is not None:
@@ -1394,6 +1404,15 @@ def main(argv=None):
     parser.add_argument('--epochs', type=int, default=cfg.epochs)
     parser.add_argument('--lr', type=float, default=None,
                         help=f'Adam learning rate (default {cfg.lr}); ignored by --paper-match recipes, which set their own.')
+    parser.add_argument('--fusion-mode', choices=['masked_scalar', 'gated_attention'], default=cfg.fusion_mode,
+                        help='Fusion layer of the three-branch model: per-branch scalar weights on logits '
+                             '(masked_scalar) or per-sample gated attention over branch embeddings with a '
+                             'shared classifier (gated_attention). With one modality per sample both reduce '
+                             'to the present branch; they differ only on multi-modality samples.')
+    parser.add_argument('--aux-branch-loss-weight', type=float, default=0.0,
+                        help='Add this weight x the mean per-branch loss (each branch\'s own classifier on the '
+                             'samples that carry it) to the fused loss. Useful with gated_attention, whose '
+                             'shared head starts untrained while warm-started branch heads do not.')
     parser.add_argument('--freeze-backbones', action='store_true',
                         help='Freeze every backbone (weights and BatchNorm statistics); train only projections, '
                              'classifier heads and fusion weights. Meant for warm-started --dataset combined runs.')
@@ -1924,7 +1943,7 @@ def _train_model(args, device, loader, val_loader, test_loader=None, class_weigh
             pretrained=args.pretrained,
             embedding_dim=args.embedding_dim,
             num_classes=cfg.num_classes,
-            fusion_mode=cfg.fusion_mode,
+            fusion_mode=getattr(args, 'fusion_mode', cfg.fusion_mode),
             input_channels=BRANCH_CHANNELS,
             pretrained_weights=branch_weights,
         )
@@ -1969,7 +1988,8 @@ def _train_model(args, device, loader, val_loader, test_loader=None, class_weigh
             print(f'epoch {epoch+1}: stage lr={lr} trainable={scope}')
         dropout_prob = 0.0 if (args.single_mode or args.dataset == 'combined') else cfg.modality_dropout_prob
         loss = train_one_epoch(model, loader, opt, device, modality_dropout_prob=dropout_prob,
-                               criterion=criterion, scheduler=scheduler)
+                               criterion=criterion, scheduler=scheduler,
+                               aux_branch_loss_weight=getattr(args, 'aux_branch_loss_weight', 0.0))
         segments = getattr(val_loader.dataset, 'segments', None)
         sources = None
         if segments:

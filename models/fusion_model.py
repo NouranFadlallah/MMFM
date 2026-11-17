@@ -13,10 +13,21 @@ class FusionLateModel(nn.Module):
                  fusion_mode='masked_scalar',
                  use_auxiliary=False,
                  input_channels=(3, 3, 3),
-                 pretrained_weights=None):
+                 pretrained_weights=None,
+                 attention_dim=128):
         """Late fusion model with three independent backbones.
 
-        fusion_mode: 'masked_scalar' or 'gating' (gating not implemented here)
+        fusion_mode:
+            'masked_scalar': fused logits = per-branch logits weighted by one learnable
+                scalar per branch, softmax-normalised over the present branches. The
+                weights are the same for every sample.
+            'gated_attention': gated attention pooling of the branch embeddings
+                (Ilse et al. 2018): each present branch gets a per-sample score
+                w^T (tanh(V h) * sigmoid(U h)), scores are softmax-normalised over the
+                present branches, and a shared classifier reads the weighted sum of
+                embeddings. Per-branch logits are still returned (auxiliary losses).
+            'gating': reserved, not implemented.
+        attention_dim: hidden size of the gated attention scorer.
         input_channels: per-branch input channel count, e.g. (3, 3, 9) for a
             9-channel MRI branch.
         pretrained_weights: optional local checkpoint path (e.g. RadImageNet),
@@ -52,6 +63,11 @@ class FusionLateModel(nn.Module):
         # learnable scalar logits for fusion
         self.logit_scalars = nn.Parameter(torch.zeros(self.num_branches))
         self.fusion_mode = fusion_mode
+        if fusion_mode == 'gated_attention':
+            self.attention_v = nn.Linear(embedding_dim, attention_dim)
+            self.attention_u = nn.Linear(embedding_dim, attention_dim)
+            self.attention_w = nn.Linear(attention_dim, 1)
+            self.fused_classifier = nn.Linear(embedding_dim, num_classes)
         self.use_auxiliary = use_auxiliary
 
     def forward(self, x1, x2, x3, presence_mask=None):
@@ -93,18 +109,25 @@ class FusionLateModel(nn.Module):
 
         # compute weights
         pres = presence_mask.float()
+        large_neg = -1e9
 
         if self.fusion_mode == 'masked_scalar':
             # expand scalar per-batch and mask
             scalars = self.logit_scalars.unsqueeze(0).expand(pres.shape[0], -1)
             # mask absent branches
-            large_neg = -1e9
             masked = scalars * pres + (1.0 - pres) * large_neg
             weights = F.softmax(masked, dim=1)
             # weighted sum of logits
             fused = 0
             for i in range(self.num_branches):
                 fused = fused + weights[:, i].unsqueeze(1) * branch_logits[i]
+        elif self.fusion_mode == 'gated_attention':
+            stacked = torch.stack(embeddings, dim=1)  # [B, branches, embedding_dim]
+            gated = torch.tanh(self.attention_v(stacked)) * torch.sigmoid(self.attention_u(stacked))
+            scores = self.attention_w(gated).squeeze(-1)  # [B, branches]
+            scores = scores.masked_fill(~presence_mask.bool(), large_neg)
+            weights = F.softmax(scores, dim=1)
+            fused = self.fused_classifier((weights.unsqueeze(-1) * stacked).sum(dim=1))
         else:
             raise NotImplementedError('Gating mode not implemented')
 

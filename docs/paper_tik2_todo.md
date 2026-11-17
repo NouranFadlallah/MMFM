@@ -97,8 +97,11 @@ trend mini-MIAS +0.12 (p=.08), BrEaST +0.05 (p=.06); worse BreastDM −0.02; 8 n
 Next candidates:
 - [ ] Seeds: per-source AUCs move up to 0.09 between runs (AMBL 0.58 vs 0.66) → 3 seeds of the
       fold-aligned multi-source run (~4 h each) before final paper numbers.
-- [ ] Real cross-modality fusion needs paired multi-modality patients (none in the 16 sets)
-      + the proposal's gated attention fusion (Term 3).
+- [ ] Real cross-modality fusion needs paired multi-modality patients (none in the 16 sets).
+      Gated attention fusion is now implemented (2026-11-17, `--fusion-mode gated_attention`,
+      `--aux-branch-loss-weight`, tests in tests/test_fusion_model.py) but NOT yet trained:
+      on single-modality samples it cannot learn its weights (zero gradient, tested). Run it
+      once paired data exists, with modality dropout for missing-modality ablations.
 - [ ] Shortcut tests (A1 third bullet) still not run.
 - [ ] Re-typeset MICCAI draft in real llncs (needs llncs.cls download).
 

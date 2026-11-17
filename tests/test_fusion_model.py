@@ -118,3 +118,45 @@ def test_single_present_branch_output_equals_its_logits():
         assert torch.allclose(fused[row], branch_logits[branch][row], atol=1e-6)
         for other in {0, 1, 2} - {branch}:
             assert torch.all(branch_logits[other][row] == 0)
+
+
+def test_gated_attention_weights_mask_absent_branches_and_depend_on_the_sample():
+    torch.manual_seed(0)
+    model = _make_model(fusion_mode="gated_attention").eval()
+    x = torch.randn(4, 3, 32, 32)
+    presence = torch.tensor([[True, True, True], [True, True, True], [True, False, True], [False, True, False]])
+    fused, branch_logits, weights = model(x, x.flip(0), x * 2, presence)
+
+    assert fused.shape == (4, 2)
+    assert torch.allclose(weights.sum(dim=1), torch.ones(4), atol=1e-5)
+    assert weights[2, 1] < 1e-6 and weights[3, 0] < 1e-6 and weights[3, 2] < 1e-6
+    assert torch.isclose(weights[3, 1], torch.tensor(1.0))
+    # unlike masked_scalar, two all-present samples with different images get different weights
+    assert not torch.allclose(weights[0], weights[1])
+
+
+def test_gated_attention_learns_only_from_multi_modality_samples():
+    """With one modality per sample the attention scorer gets no gradient (softmax over a
+    single branch is constant), so it can only be trained on multi-modality samples."""
+    torch.manual_seed(0)
+    x = torch.randn(4, 3, 32, 32)
+    for presence, expect_gradient in ((torch.eye(3, dtype=torch.bool)[[0, 1, 2, 0]], False),
+                                      (torch.ones(4, 3, dtype=torch.bool), True)):
+        model = _make_model(fusion_mode="gated_attention")
+        fused, _, _ = model(x, x, x, presence)
+        torch.nn.functional.cross_entropy(fused, torch.tensor([0, 1, 0, 1])).backward()
+        gradient = model.attention_w.weight.grad.abs().sum().item()
+        assert (gradient > 1e-8) == expect_gradient
+
+
+def test_aux_branch_loss_uses_only_present_samples():
+    from training.train import _aux_branch_loss
+
+    criterion = torch.nn.CrossEntropyLoss()
+    y = torch.tensor([0, 1, 1])
+    presence = torch.tensor([[True, False, False], [False, True, False], [False, True, False]])
+    branch_logits = [torch.tensor([[5.0, 0.0], [0.0, 0.0], [0.0, 0.0]]),
+                     torch.tensor([[9.0, -9.0], [0.0, 5.0], [0.0, 5.0]]),
+                     torch.zeros(3, 2)]
+    expected = (criterion(branch_logits[0][:1], y[:1]) + criterion(branch_logits[1][1:], y[1:])) / 2
+    assert torch.isclose(_aux_branch_loss(branch_logits, y, presence, criterion), expected)
