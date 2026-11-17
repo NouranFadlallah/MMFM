@@ -56,3 +56,10 @@ docs/miccai_draft/*.aux
 docs/miccai_draft/*.bbl
 docs/miccai_draft/*.blg
 docs/miccai_draft/*.out
+
+# private drafts kept out of the public repo
+docs/tubitak_1002a/
+docs/miccai_draft/
+msca-postdoctoral-fellowship.skill
+msca_skill_review.html
+tubitak-1002.skill
